@@ -27,7 +27,7 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ message: 'số điện thoại đã được đăng kí' });
       }
   
-      const existingUser = await User.findOne({ username });
+      const existingUser = await User.findOne({ name });
       if (existingUser) {
         return res.status(400).json({ message: 'Tên người dùng đã tồn tại' });
       }
