@@ -2,8 +2,6 @@ const router = require("express").Router();
 const User = require('../models/UserModel')
 const Company = require('../models/CompanyModel')
 const multer = require('multer')
-const User=require('../models/UserModel');
-
 const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
