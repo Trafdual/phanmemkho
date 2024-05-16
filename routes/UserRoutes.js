@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
       }
       const existingemail = await User.findOne({ email });
       if (existingemail) {
-        return res.status(400).json({ message: 'email đã được đăng kí' });
+        return res.status(400).json({ message: 'email này đã được đăng kí' });
       }
   
       const hashedPassword = await bcrypt.hash(password, 10);
