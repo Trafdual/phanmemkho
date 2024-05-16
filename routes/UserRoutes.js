@@ -2,7 +2,6 @@ const router = require("express").Router();
 const User = require('../models/UserModel')
 const bcrypt = require("bcryptjs");
 const multer = require('multer')
-const User=require('../models/UserModel');
 const jwt = require('jsonwebtoken');
 
 const storage = multer.memoryStorage();
