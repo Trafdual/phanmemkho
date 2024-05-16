@@ -7,6 +7,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const MongoStore = require('connect-mongo');
 var path = require('path');
+const userRoutes=require('./routes/UserRoutes')
+const companyRoutes=require('./routes/CompanyRoutes')
 
 
 var app = express();
@@ -45,6 +47,9 @@ app.use(session({
   }
 }));
 app.use(cors());
+
+app.use('/',userRoutes);
+app.use('/',companyRoutes);
 
 const port=process.env.PORT || 8080
 app.listen(port, () => {
