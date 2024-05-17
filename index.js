@@ -8,6 +8,7 @@ const cookieParser = require('cookie-parser');
 const MongoStore = require('connect-mongo');
 const userRoutes=require('./routes/UserRoutes')
 const companyRoutes=require('./routes/CompanyRoutes')
+const depotroutes=require('./routes/DepotRoutes');
 var path = require('path');
 
 var app = express();
@@ -47,6 +48,7 @@ app.use(cors());
 
 app.use('/',userRoutes);
 app.use('/',companyRoutes);
+app.use('/',depotroutes);
 
 const port=process.env.PORT || 8080
 app.listen(port, () => {

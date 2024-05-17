@@ -66,4 +66,14 @@ router.post('/register', async (req, res) => {
     }
   });
 
+  router.get('/user',async(req,res)=>{
+    try {
+      const user=await User.find().lean();
+      res.json(user);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+  })
+
 module.exports=router;
