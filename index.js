@@ -6,10 +6,9 @@ const methodOverride = require('method-override');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const MongoStore = require('connect-mongo');
-var path = require('path');
 const userRoutes=require('./routes/UserRoutes')
 const companyRoutes=require('./routes/CompanyRoutes')
-
+var path = require('path');
 
 var app = express();
 app.use(methodOverride('_method'));
@@ -30,6 +29,10 @@ const mongoStoreOptions = {
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, '/public')));
+app.use(express.static(path.join(__dirname, '/uploads')));
 
 app.use(session({
   secret: 'mysecretkey',
