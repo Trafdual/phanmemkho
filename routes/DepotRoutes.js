@@ -21,5 +21,13 @@ router.post('/postdepot/:iduser',async(req,res)=>{
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
+router.get('/admin',async(req,res)=>{
+    try {
+        res.render('admin')
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+})
 
 module.exports=router;

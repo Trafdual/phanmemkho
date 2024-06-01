@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/6.0.2/firebase.js"></script>
+    <style>
+        /* Your CSS styles here */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        #register-container {
+            width: 300px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            /* Align the content in the center */
+        }
+
+        .logo {
+            margin-bottom: 20px;
+            /* Adjust the margin as needed */
+        }
+
+        .logo img {
+            max-width: 100%;
+            height: auto;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: 0;
+            background: #2FF2FE;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="submit"]:hover {
+            background: #2c707f;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="register-container">
+        <h2>Nhập mã OTP</h2>
+        <form name="loginForm" action="/register/<%= userId %>" method="post">
+            <input type="text" placeholder="nhập mã OTP" id="otp" name="otp" required><br>
+            <input type="submit" value="Login" onclick="phoneAuth()">
+        </form>
+    </div>
+</body>
+
+
+</html>

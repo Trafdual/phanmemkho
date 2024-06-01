@@ -3,6 +3,20 @@ const User = require('../models/UserModel')
 const bcrypt = require("bcryptjs");
 const multer = require('multer')
 const jwt = require('jsonwebtoken');
+const momenttimezone = require('moment-timezone');
+const moment = require('moment');
+const firebase=require('firebase-admin')
+firebase.initializeApp({
+  credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
+})
+const AWS = require('aws-sdk');
+AWS.config.update({
+  accessKeyId: 'AKIATBPL3NPE3ATWZEWR',
+  secretAccessKey: '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',
+  region:'ap-southeast-1'
+});
+const sns = new AWS.SNS();
+
 
 const storage = multer.memoryStorage();
 
@@ -10,70 +24,236 @@ const upload = multer({ storage: storage });
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 router.post('/register', async (req, res) => {
-    try {
-      const { name,email, password, role, phone } = req.body;
-  
-      // Kiểm tra số điện thoại
-      if (!phone || !/^\d{10}$/.test(phone)) {
-        return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
-      }
-
-      if(!emailRegex.test(email)){
-        return res.status(400).json({ message: 'email không hợp lệ' });
-      }
-
-      const exitphone = await User.findOne({ phone });
-      if (exitphone) {
-        return res.status(400).json({ message: 'số điện thoại đã được đăng kí' });
-      }
-  
-      const existingUser = await User.findOne({ name });
-      if (existingUser) {
-        return res.status(400).json({ message: 'Tên người dùng đã tồn tại' });
-      }
-      const existingemail = await User.findOne({ email });
-      if (existingemail) {
-        return res.status(400).json({ message: 'email này đã được đăng kí' });
-      }
-  
-      const hashedPassword = await bcrypt.hash(password, 10);
-  
-      const user = new User({ name,email, password: hashedPassword, role, phone });
-      await user.save();
-  
-      const responseData = {
-        success: user.success,
-        data: {
-          user: [
-            {
-              _id: user._id,
-              name: user.name,
-              email:user.email,
-              password: user.password,
-              role: user.role,
-              coin: user.coin,
-              phone: user.phone,
-              __v: user.__v,
-            },
-          ],
-        },
-      };
-  
-      res.status(201).json(responseData);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  try {
+    const { name, email, password, role, phone } = req.body;
+    const vietnamTime = momenttimezone().toDate();
+    // Kiểm tra số điện thoại
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
     }
-  });
 
-  router.get('/user',async(req,res)=>{
-    try {
-      const user=await User.find().lean();
-      res.json(user);
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'email không hợp lệ' });
     }
-  })
 
-module.exports=router;
+    const exitphone = await User.findOne({ phone });
+    if (exitphone) {
+      return res.status(400).json({ message: 'số điện thoại đã được đăng kí' });
+    }
+
+    const existingUser = await User.findOne({ name });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Tên người dùng đã tồn tại' });
+    }
+    const existingemail = await User.findOne({ email });
+    if (existingemail) {
+      return res.status(400).json({ message: 'email này đã được đăng kí' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP ngẫu nhiên
+    const phoneNumber = `+84${phone.slice(1)}`; // Chuyển đổi số điện thoại sang định dạng quốc tế
+
+    try {
+      // Gửi OTP qua Firebase
+      const userRecord = await firebase.auth().getUserByPhoneNumber(phoneNumber);
+
+      // Xử lý trường hợp số điện thoại đã tồn tại
+      if (userRecord) {
+        return res.status(400).json({ message: 'Số điện thoại đã tồn tại trong hệ thống Firebase' });
+      }
+    } catch (error) {
+      if (error.code === 'auth/user-not-found') {
+        // Nếu số điện thoại chưa tồn tại, tạo mới người dùng với OTP
+        await firebase.auth().createUser({
+          phoneNumber: phoneNumber,
+          password: otp,
+        });
+      } else {
+        throw error;
+      }
+    }
+
+    const user = new User({ name, email, password: hashedPassword, role, phone,date:vietnamTime,otp, isVerified: false  });
+    await user.save();
+
+    const responseData = {
+      success: user.success,
+      data: {
+        user: [
+          {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            phone: user.phone,
+            date:moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+          },
+        ],
+      },
+    };
+
+    res.json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+});
+router.get('/getregister',async(req,res)=>{
+  res.render('register')
+})
+
+router.post('/register/:id', async (req, res) => {
+  try {
+    const id=req.params.id;
+
+    // Tìm người dùng bằng ID
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(400).json({ message: 'Người dùng không tồn tại.' });
+    }
+    user.isVerified = true;
+    user.otp = undefined; // Xóa mã OTP sau khi xác minh
+    await user.save();
+
+    res.redirect('/');
+  } catch (error) {
+    console.error('Error verifying OTP:', error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' });
+  }
+});
+
+router.post('/login',async(req,res)=>{
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password,user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
+    }
+    const accountCreationTime = moment(user.date);
+    const currentTime = moment();
+    const differenceInMinutes = currentTime.diff(accountCreationTime, 'months');
+
+    // Kiểm tra nếu khoảng thời gian lớn hơn 10 phút
+    if (differenceInMinutes > 8) {
+      return res.status(401).json({ message: 'Tài khoản bạn đã hết hạn.' });
+    }
+    const responseData = {
+      success: user.success,
+      data: {
+        user: [
+          {
+            _id: user._id,
+            username: user.username,
+            password: user.password,
+            role: user.role,
+            date:moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+          },
+        ],
+      },
+    };
+
+    const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey');
+    responseData.token = token;
+    res.status(200).json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+})
+
+
+router.get('/user', async (req, res) => {
+  try {
+    const user = await User.find().lean();
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+})
+router.post('/deletePhone', async (req, res) => {
+  try {
+    const { phone } = req.body;
+
+    // Kiểm tra số điện thoại hợp lệ
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
+    }
+
+    // Chuyển đổi số điện thoại sang định dạng quốc tế
+    const phoneNumber = `+84${phone.slice(1)}`;
+
+    // Tìm người dùng qua số điện thoại
+    const userRecord = await firebase.auth().getUserByPhoneNumber(phoneNumber);
+
+    // Xóa người dùng
+    await firebase.auth().deleteUser(userRecord.uid);
+
+    res.status(200).json({ message: 'Đã xóa số điện thoại khỏi hệ thống Firebase.' });
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    if (error.code === 'auth/user-not-found') {
+      return res.status(404).json({ message: 'Không tìm thấy người dùng với số điện thoại này.' });
+    }
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+});
+
+router.get('/test',async(req,res)=>{
+  res.render('testOTP');
+})
+
+router.post('/loginadmin', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.render('login', {
+        UserError: 'Email này không đúng'
+      });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.render('login', {
+        PassError: 'Mật khẩu không đúng'
+      });
+    }
+
+    if (user.role === 'admin') {
+      const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey', { expiresIn: '1h' });
+      req.session.userId = user._id;
+      req.session.token = token;
+      return res.redirect('/admin')
+    } else if (user.role === 'manager') {
+      const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey', { expiresIn: '1h' });
+      req.session.userId = user._id;
+      req.session.token = token;
+      return res.redirect('/admin')
+    } else {
+      return res.render('login', {
+        RoleError: 'Bạn không có quyền truy cập trang web'
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+});
+router.get('/',async(req,res)=>{
+  res.render('login')
+})
+
+module.exports = router;
