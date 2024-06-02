@@ -9,6 +9,7 @@ const MongoStore = require('connect-mongo');
 const userRoutes=require('./routes/UserRoutes')
 const companyRoutes=require('./routes/CompanyRoutes')
 const depotroutes=require('./routes/DepotRoutes');
+const sanphamRoutes=require('./routes/SanphamRoutes');
 var path = require('path');
 
 var app = express();
@@ -49,6 +50,7 @@ app.use(cors());
 app.use('/',userRoutes);
 app.use('/',companyRoutes);
 app.use('/',depotroutes);
+app.use('/',sanphamRoutes);
 
 const port=process.env.PORT || 8080
 app.listen(port, () => {

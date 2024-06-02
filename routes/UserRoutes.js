@@ -22,6 +22,24 @@ const storage = multer.memoryStorage();
 
 const upload = multer({ storage: storage });
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const checkAuth = (req, res, next) => {
+  if (!req.session.token) {
+    return res.redirect('/');
+  }
+  try {
+    const decoded = jwt.verify(req.session.token, 'mysecretkey', { expiresIn: '1h' });
+    req.userData = decoded;
+    next();
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      req.session.destroy();
+      return res.redirect('/');
+    } else {
+      console.error(error);
+      return res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+  }
+};
 
 router.post('/register', async (req, res) => {
   try {
@@ -241,7 +259,7 @@ router.post('/loginadmin', async (req, res) => {
       const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey', { expiresIn: '1h' });
       req.session.userId = user._id;
       req.session.token = token;
-      return res.redirect('/admin')
+      return res.redirect('/manager')
     } else {
       return res.render('login', {
         RoleError: 'Bạn không có quyền truy cập trang web'
@@ -252,8 +270,13 @@ router.post('/loginadmin', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' });
   }
 });
+
+router.get('/manager',checkAuth,async(req,res)=>{
+  res.render('manager');
+})
 router.get('/',async(req,res)=>{
   res.render('login')
 })
+
 
 module.exports = router;
