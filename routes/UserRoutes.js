@@ -47,17 +47,14 @@ router.post('/register', async (req, res) => {
     const vietnamTime = momenttimezone().toDate();
     // Kiểm tra số điện thoại
     if (!phone || !/^\d{10}$/.test(phone)) {
-      return res.status(400).json({ message: 'Số điện thoại không hợp lệ' });
+      return res.json({ message: 'Số điện thoại không hợp lệ' });
     }
 
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'email không hợp lệ' });
+      return res.json({ message: 'email không hợp lệ' });
     }
 
     const exitphone = await User.findOne({ phone });
-    if (exitphone) {
-      return res.json({ message: 'số điện thoại đã được đăng kí' });
-    }
 
     const existingemail = await User.findOne({ email });
     if (existingemail) {
@@ -74,8 +71,8 @@ router.post('/register', async (req, res) => {
       const userRecord = await firebase.auth().getUserByPhoneNumber(phoneNumber);
 
       // Xử lý trường hợp số điện thoại đã tồn tại
-      if (userRecord) {
-        return res.status(400).json({ message: 'Số điện thoại đã tồn tại trong hệ thống Firebase' });
+      if (userRecord && exitphone) {
+        return res.json({ message: 'Số điện thoại đã tồn tại trong hệ thống' });
       }
     } catch (error) {
       if (error.code === 'auth/user-not-found') {

@@ -47,8 +47,13 @@ function registerUser() {
             password: password
         }),
         success: function (response) {
-            userId = response.data.user[0]._id;
-            phoneAuth();
+            if (response.data && response.data.user && response.data.user.length > 0) {
+                 userId = response.data.user[0]._id;
+                phoneAuth();
+            } else {
+                var errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+            }
         },
         error: function (error) {
             var errorResponse;
