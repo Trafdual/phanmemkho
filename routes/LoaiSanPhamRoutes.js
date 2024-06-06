@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const LoaiSanPham = require('../models/LoaiSanPhamModel');
 const Depot = require('../models/DepotModel')
-router.get('/getloaisanpham1', async (req, res) => {
+router.get('/getloaisanphamweb', async (req, res) => {
     try {
         const depotId = req.session.depotId;
         const depot = await Depot.findById(depotId);
