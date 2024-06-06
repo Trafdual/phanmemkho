@@ -46,7 +46,7 @@ function getAndDisplay(id) {
     const commentsTableBody = document.getElementById('commentsTableBody');
     document.getElementById('loaisanpham').style.display = 'none';
     document.getElementById('sanpham').style.display = 'block';
-    fetch(`/gettest/${id}`)
+    fetch(`/getsanpham/${id}`)
         .then(response => response.json())
         .then(data => {
             commentsTableBody.innerHTML = ''; // Clear the existing content
