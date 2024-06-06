@@ -5,7 +5,7 @@ function getloaisanpham() {
     document.getElementById('loaisanpham').style.display = 'block';
     document.getElementById('sanpham').style.display = 'none';
     return new Promise((resolve, reject) => {
-        fetch(`/getloaisanpham`)
+        fetch(`/getloaisanpham1`)
             .then(response => response.json())
             .then(data => {
                 commentsTableBody.innerHTML = ''; // Clear the existing content
