@@ -5,7 +5,7 @@ name:{type:String},
 password:{type:String},
 email:{type:String},
 phone:{type:String},
-company:{type: mongoose.Schema.Types.ObjectId, ref: 'company'},
+depot:{type: mongoose.Schema.Types.ObjectId, ref: 'depot'},
 date:{type:Date},
 role: { type: String, enum: ['admin', 'staff','manager'], default: 'manager' },
 otp: { type: String }, // Thêm trường này để lưu mã OTP

@@ -3,14 +3,22 @@
 
 <head>
     <title>Nhập kho</title>
- 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-	<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
-	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        #sanpham {
+            display: none;
+        }
+        #loaisanpham {
+            display: block;
+        }
+    </style>
 </head>
 
 
@@ -19,17 +27,34 @@
         <h1>Product</h1>
         <hr>
         <h2>Danh Sách Hàng Nhập Kho</h2>
-        <div class="table-data">
+        <div id="loaisanpham" class="table-data">
             <div class="order">
                 <table class="table">
                     <thead class="thead-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Tên</th>
-                            <th>Màu sắc</th>
-                            <th>Imel</th>
-                            <th>Dung lượng</th>
-                            <th>Chức năng</th>
+                            <th style="text-align:center">Tên</th>
+                            <th style="text-align:center">Chức năng</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="loaiTableBody">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="sanpham" class="table-data">
+            <div class="order">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th style="text-align:center">Tên</th>
+                            <th style="text-align:center">Màu sắc</th>
+                            <th style="text-align:center">Imel</th>
+                            <th style="text-align:center">Dung lượng</th>
+                            <th style="text-align:center">Chức năng</th>
                         </tr>
                     </thead>
 
@@ -40,38 +65,7 @@
             </div>
         </div>
     </div>
-
-    <script>
-        function getAndDisplay() {
-            const commentsTableBody = document.getElementById('commentsTableBody');
-
-            fetch(`/gettest`)
-            .then(response => response.json())
-            .then(data => {
-                commentsTableBody.innerHTML = ''; // Clear the existing content
-
-                data.forEach(sanpham => {
-                    const newCommentDiv = document.createElement('tr');
-                    newCommentDiv.innerHTML = `
-                        <td class="td-id">${sanpham._id}</td>
-                        <td class="td-name">${sanpham.name}</td>
-                        <td class="td-name">${sanpham.color}</td>
-                        <td class="td-name">${sanpham.imel}</td>
-                        <td class="td-name">${sanpham.dungluong}</td>
-                        <td></td>
-                    `;
-                    commentsTableBody.appendChild(newCommentDiv);
-                });
-            })
-            .catch(error => {
-                console.error('Lỗi khi lấy danh sách bình luận:', error);
-                alert('Đã xảy ra lỗi khi lấy danh sách bình luận.');
-            });
-        }
-
-        setInterval(getAndDisplay,5000)
-    </script>
+<script src="https://www.ansuataohanoi.com/nhapkho.js"></script>
 </body>
 
 </html>
-

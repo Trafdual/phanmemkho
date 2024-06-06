@@ -7,9 +7,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const MongoStore = require('connect-mongo');
 const userRoutes=require('./routes/UserRoutes')
-const companyRoutes=require('./routes/CompanyRoutes')
 const depotroutes=require('./routes/DepotRoutes');
 const sanphamRoutes=require('./routes/SanphamRoutes');
+const loaisanphamRoutes=require('./routes/LoaiSanPhamRoutes');
 var path = require('path');
 
 var app = express();
@@ -35,6 +35,10 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.static(path.join(__dirname, '/uploads')));
+app.use(express.static(path.join(__dirname, '/javascript')));
+app.use(express.static(path.join(__dirname, '/style')));
+
+
 
 app.use(session({
   secret: 'mysecretkey',
@@ -48,9 +52,10 @@ app.use(session({
 app.use(cors());
 
 app.use('/',userRoutes);
-app.use('/',companyRoutes);
 app.use('/',depotroutes);
 app.use('/',sanphamRoutes);
+app.use('/',loaisanphamRoutes);
+
 
 const port=process.env.PORT || 8080
 app.listen(port, () => {

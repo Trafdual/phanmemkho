@@ -254,17 +254,60 @@ router.post('/loginadmin', async (req, res) => {
       const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey', { expiresIn: '1h' });
       req.session.userId = user._id;
       req.session.token = token;
+      req.session.depotId=user.depot;
       return res.redirect('/admin')
     } else if (user.role === 'manager') {
       const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey', { expiresIn: '1h' });
       req.session.userId = user._id;
       req.session.token = token;
+      req.session.depotId=user.depot;
       return res.redirect('/manager')
     } else {
       return res.render('login', {
         RoleError: 'Bạn không có quyền truy cập trang web'
       });
     }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+  }
+});
+
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ message: 'Email không đúng.' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.json({ message: 'Mật khẩu không đúng.' });
+    }
+
+    const responseData = {
+      success: user.success,
+      data: {
+        user: [
+          {
+            _id: user._id,
+            email: user.email,
+            phone:user.phone,
+            password: user.password,
+            role: user.role,
+            depotId:user.depot,
+            date: user.date
+          },
+        ],
+      },
+    };
+
+    const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey');
+    responseData.token = token;
+    res.status(200).json(responseData);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Đã xảy ra lỗi.' });

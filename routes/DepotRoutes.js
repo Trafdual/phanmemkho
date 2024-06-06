@@ -1,6 +1,5 @@
 const router = require("express").Router();
 const User = require('../models/UserModel');
-const Company = require('../models/CompanyModel');
 const Depot=require('../models/DepotModel');
 const multer = require('multer')
 const storage = multer.memoryStorage();
@@ -12,15 +11,18 @@ router.post('/postdepot/:iduser',async(req,res)=>{
         const iduser=req.params.iduser;
         const{name,address}=req.body;
         const user=await User.findById(iduser);
-        const company= new Company({name,address});
-        company.user.push(user._id);
-        await company.save();
-        res.json(company);
+        const depot=new Depot({name,address});
+        user.depot=depot._id;
+        depot.user.push(user._id);
+        await depot.save();
+        await user.save();
+        res.json(depot);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
+
 router.get('/admin',async(req,res)=>{
     try {
         res.render('admin')
