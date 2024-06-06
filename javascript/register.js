@@ -51,8 +51,17 @@ function registerUser() {
             phoneAuth();
         },
         error: function (error) {
-            var errorResponse = JSON.parse(error.responseText);
-            console.log(errorResponse.error);
+            var errorResponse;
+            try {
+                errorResponse = JSON.parse(error.responseText);
+            } catch (e) {
+                errorResponse = { message: 'Lỗi không xác định' };
+            }
+
+            // Lấy container để hiển thị lỗi
+            var errorContainer = document.getElementById('error-container');
+            // Chèn thông báo lỗi vào container
+            errorContainer.innerHTML = `<p class="alert alert-danger">${errorResponse.message}</p>`;
         }
     });
 }

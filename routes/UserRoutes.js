@@ -56,16 +56,12 @@ router.post('/register', async (req, res) => {
 
     const exitphone = await User.findOne({ phone });
     if (exitphone) {
-      return res.status(400).json({ message: 'số điện thoại đã được đăng kí' });
+      return res.json({ message: 'số điện thoại đã được đăng kí' });
     }
 
-    const existingUser = await User.findOne({ name });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Tên người dùng đã tồn tại' });
-    }
     const existingemail = await User.findOne({ email });
     if (existingemail) {
-      return res.status(400).json({ message: 'email này đã được đăng kí' });
+      return res.json({ message: 'email này đã được đăng kí' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
