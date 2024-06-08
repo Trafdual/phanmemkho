@@ -10,6 +10,8 @@ const userRoutes=require('./routes/UserRoutes')
 const depotroutes=require('./routes/DepotRoutes');
 const sanphamRoutes=require('./routes/SanphamRoutes');
 const loaisanphamRoutes=require('./routes/LoaiSanPhamRoutes');
+const khachhangRoutes=require('./routes/KhachHangRoutes');
+const hoadonRoutes=require('./routes/HoaDonRoutes');
 var path = require('path');
 
 var app = express();
@@ -55,6 +57,8 @@ app.use('/',userRoutes);
 app.use('/',depotroutes);
 app.use('/',sanphamRoutes);
 app.use('/',loaisanphamRoutes);
+app.use('/',khachhangRoutes);
+app.use('/',hoadonRoutes);
 
 
 const port=process.env.PORT || 8080
