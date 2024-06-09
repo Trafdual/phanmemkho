@@ -70,7 +70,7 @@ function getAndDisplay(id) {
             alert('Đã xảy ra lỗi khi lấy danh sách sản phẩm.');
         });
 }
-function close(){
+function closeloai(){
     document.getElementById('loaisanpham').style.display = 'block';
     document.getElementById('sanpham').style.display = 'none';
 }
