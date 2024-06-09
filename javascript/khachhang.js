@@ -2,7 +2,7 @@ let inter;
 
 function getkhachhang() {
     const commentsTableBody = document.getElementById('loaiTableBody');
-    return new Promise((resolve, reject) => {
+    
         fetch(`/getkhachhang`)
             .then(response => response.json())
             .then(data => {
@@ -27,8 +27,6 @@ function getkhachhang() {
             </td>
     `;
                     commentsTableBody.appendChild(newCommentDiv);
-                });
-                resolve();
             })
             .catch(error => {
                 console.error('Lỗi khi lấy danh sách khách hàng:', error);
