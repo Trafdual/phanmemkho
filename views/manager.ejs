@@ -232,7 +232,6 @@
                 .then(data => {
                     const mainContent = document.querySelector("#content main");
                     mainContent.innerHTML = data;
-                    openkhach();
                 })
                 .catch(error => console.error('Đã xảy ra lỗi:', error));
         });
