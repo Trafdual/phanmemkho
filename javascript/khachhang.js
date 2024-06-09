@@ -1,3 +1,4 @@
+let inter;
 
 function getkhachhang() {
     const commentsTableBody = document.getElementById('loaiTableBody');
@@ -35,7 +36,7 @@ function getkhachhang() {
             });
     });
 }
-setInterval(getkhachhang,1000);
+inter=setInterval(getkhachhang,1000);
 function openkhach(){
     document.getElementById('khachhang').style.display = 'block';
 }
