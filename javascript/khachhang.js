@@ -2,14 +2,14 @@ let inter;
 
 function getkhachhang() {
     const khachhangTableBody = document.getElementById('khachhangTableBody');
-    
-        fetch(`/getkhachhang`)
-            .then(response => response.json())
-            .then(data => {
-                khachhangTableBody.innerHTML = ''; // Clear the existing content
-                data.forEach(khachhang => {
-                    const newCommentDiv = document.createElement('tr');
-                    newCommentDiv.innerHTML = `
+
+    fetch(`/getkhachhang`)
+        .then(response => response.json())
+        .then(data => {
+            khachhangTableBody.innerHTML = ''; // Clear the existing content
+            data.forEach(khachhang => {
+                const newCommentDiv = document.createElement('tr');
+                newCommentDiv.innerHTML = `
         <td class="td-id" >
             ${khachhang._id}
             </td>
@@ -26,15 +26,15 @@ function getkhachhang() {
                 ${khachhang.date}
             </td>
     `;
-                    commentsTableBody.appendChild(newCommentDiv);
+                khachhangTableBody.appendChild(newCommentDiv);
             })
-            .catch(error => {
-                console.error('Lỗi khi lấy danh sách khách hàng:', error);
-                alert('Đã xảy ra lỗi khi lấy danh sách khách hàng.');
-            });
-    });
+                .catch(error => {
+                    console.error('Lỗi khi lấy danh sách khách hàng:', error);
+                    alert('Đã xảy ra lỗi khi lấy danh sách khách hàng.');
+                });
+        });
 }
-inter=setInterval(getkhachhang,1000);
-function openkhach(){
+inter = setInterval(getkhachhang, 1000);
+function openkhach() {
     document.getElementById('khachhang').style.display = 'block';
 }
