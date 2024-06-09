@@ -1,12 +1,12 @@
 let inter;
 
 function getkhachhang() {
-    const commentsTableBody = document.getElementById('loaiTableBody');
+    const khachhangTableBody = document.getElementById('khachhangTableBody');
     
         fetch(`/getkhachhang`)
             .then(response => response.json())
             .then(data => {
-                commentsTableBody.innerHTML = ''; // Clear the existing content
+                khachhangTableBody.innerHTML = ''; // Clear the existing content
                 data.forEach(khachhang => {
                     const newCommentDiv = document.createElement('tr');
                     newCommentDiv.innerHTML = `
