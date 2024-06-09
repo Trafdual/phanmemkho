@@ -33,8 +33,8 @@ function getloaisanpham() {
                 resolve(firstId);
             })
             .catch(error => {
-                console.error('Lỗi khi lấy danh sách bình luận:', error);
-                alert('Đã xảy ra lỗi khi lấy danh sách bình luận.');
+                console.error('Lỗi khi lấy danh sách loại sản phẩm:', error);
+                alert('Đã xảy ra lỗi khi lấy danh sách loại sản phẩm.');
             });
     });
 }
@@ -66,8 +66,8 @@ function getAndDisplay(id) {
             clearInterval(intervalID);
         })
         .catch(error => {
-            console.error('Lỗi khi lấy danh sách bình luận:', error);
-            alert('Đã xảy ra lỗi khi lấy danh sách bình luận.');
+            console.error('Lỗi khi lấy danh sách sản phẩm:', error);
+            alert('Đã xảy ra lỗi khi lấy danh sách sản phẩm.');
         });
 }
 function close(){

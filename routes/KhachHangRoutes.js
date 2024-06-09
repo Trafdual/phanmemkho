@@ -3,6 +3,15 @@ const KhachHang=require('../models/KhachHangModel');
 router.get('/khachhang',async(req,res)=>{
     try {
         const khachhang =await KhachHang.find().lean();
+        res.render('khachhang',{khachhang});
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+})
+router.get('/getkhachhang',async(req,res)=>{
+    try {
+        const khachhang =await KhachHang.find().lean();
         res.json(khachhang);
     } catch (error) {
         console.error(error);

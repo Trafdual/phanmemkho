@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>QuanLyKhachHang</title>
+    <link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="jumbotron text-center">
+        <h1>Khách Hàng</h1>
+        <hr>
+        <h2>Danh Sách Khách Hàng</h2>
+        <div id="khachhang" class="table-data">
+            <div class="order">
+                <table class="table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>ID</th>
+                            <th style="text-align:center">Tên khách hàng</th>
+                            <th style="text-align:center">Email</th>
+                            <th style="text-align:center">Số điện thoại</th>
+                            <th style="text-align:center">Ngày sinh</th>
+                            <th style="text-align:center">Chức năng</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="loaiTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+    <script src="http://localhost:8080/khachhang.js"></script>
+</body>
+
+</html>
