@@ -13,11 +13,20 @@ function getloaisanpham() {
                 loaiDataMap[loaisanpham._id] = loaisanpham;
                 const newCommentDiv = document.createElement('tr');
                 newCommentDiv.innerHTML = `
-                <td class="td-id" style="margin-right:5px; padding:10px" >
-                    ${loaisanpham._id}
-                    </td>
                     <td class="td-name" style="margin-right:5px; padding:10px">
                         ${loaisanpham.name}
+                    </td>
+                    <td class="td-soluong" style="margin-right:5px; padding:10px">
+                        ${loaisanpham.soluong}
+                    </td>
+                    <td class="td-date" style="margin-right:5px; padding:10px">
+                        ${loaisanpham.date}
+                    </td>
+                    <td class="td-tongtien" style="margin-right:5px; padding:10px">
+                        ${loaisanpham.tongtien} VNĐ
+                    </td>
+                    <td class="td-average" style="margin-right:5px; padding:10px">
+                        ${loaisanpham.average} VNĐ
                     </td>
                     <td style="margin-right:5px; padding:10px">
                       <button
@@ -105,13 +114,18 @@ function closeputloaimodal() {
 
 function clearInputFieldsloai() {
     document.getElementById('nameloai').value = '';
+    document.getElementById('soluong').value = '';
+    document.getElementById('tienlo').value = '';
+    document.getElementById('date').value = '';
 }
 
 
 
 function addloaisp() {
     var nameloai = document.getElementById('nameloai').value;
-
+    var soluong = document.getElementById('soluong').value;
+    var tienlo = document.getElementById('tienlo').value;
+    var date = document.getElementById('dateloai').value;
 
     fetch('/postloaisanpham', {
             method: 'POST',
@@ -120,6 +134,9 @@ function addloaisp() {
             },
             body: JSON.stringify({
                 name: nameloai,
+                soluong: soluong,
+                tongtien: tienlo,
+                date: date
             })
         })
         .then(response => response.json())
@@ -137,8 +154,16 @@ function addloaisp() {
 
 }
 
+function formatDateForInputloai(dateString) {
+    const [day, month, year] = dateString.split('/');
+    return `${year}-${month}-${day}`;
+}
+
 function fillInputFieldsloai(customerData) {
     document.getElementById('nameloai1').value = customerData.name;
+    document.getElementById('soluong1').value = customerData.soluong;
+    document.getElementById('tienlo1').value = customerData.tongtien;
+    document.getElementById('date1').value = formatDateForInputloai(customerData.date);
 }
 
 function editloai(customerId) {
@@ -151,6 +176,9 @@ function editloai(customerId) {
 
     const customerData = {
         name: loai.name,
+        date: loai.date,
+        soluong: loai.soluong,
+        tongtien: loai.tongtien
     };
 
     // Điền dữ liệu vào các input
@@ -167,6 +195,9 @@ function editloai(customerId) {
 
 function putloai(id) {
     var nameloai1 = document.getElementById('nameloai1').value;
+    var soluong1 = document.getElementById('soluong1').value;
+    var tienlo1 = document.getElementById('tienlo1').value;
+    var date1 = document.getElementById('date1').value;
 
     fetch(`/putloaisanpham/${id}`, {
             method: 'POST',
@@ -174,7 +205,10 @@ function putloai(id) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                name: nameloai1
+                name: nameloai1,
+                soluong: soluong1,
+                tongtien: tienlo1,
+                date: date1
             })
         })
         .then(response => response.json())

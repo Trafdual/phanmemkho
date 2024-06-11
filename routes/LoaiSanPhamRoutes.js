@@ -1,15 +1,21 @@
 const router = require("express").Router();
 const LoaiSanPham = require('../models/LoaiSanPhamModel');
 const Depot = require('../models/DepotModel')
-router.get('/getloaisanphamweb', async (req, res) => {
+const moment = require('moment');
+
+router.get('/getloaisanphamweb', async(req, res) => {
     try {
         const depotId = req.session.depotId;
         const depot = await Depot.findById(depotId);
-        const loaisanpham = await Promise.all(depot.loaisanpham.map(async (loai) => {
+        const loaisanpham = await Promise.all(depot.loaisanpham.map(async(loai) => {
             const loaisp = await LoaiSanPham.findById(loai._id);
             return {
                 _id: loaisp._id,
                 name: loaisp.name,
+                soluong: loaisp.soluong,
+                tongtien: loaisp.tongtien,
+                date: moment(loaisp.date).format('DD/MM/YYYY'),
+                average: loaisp.average
             }
         }))
         res.json(loaisanpham);
@@ -18,15 +24,19 @@ router.get('/getloaisanphamweb', async (req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
-router.get('/getloaisanpham/:depotId', async (req, res) => {
+router.get('/getloaisanpham/:depotId', async(req, res) => {
     try {
         const depotId = req.params.depotId;
         const depot = await Depot.findById(depotId);
-        const loaisanpham = await Promise.all(depot.loaisanpham.map(async (loai) => {
+        const loaisanpham = await Promise.all(depot.loaisanpham.map(async(loai) => {
             const loaisp = await LoaiSanPham.findById(loai._id);
             return {
                 _id: loaisp._id,
                 name: loaisp.name,
+                soluong: loaisp.soluong,
+                tongtien: loaisp.tongtien,
+                date: moment(loaisp.date).format('DD/MM/YYYY'),
+                average: loaisp.average
             }
         }))
         res.json(loaisanpham);
@@ -35,12 +45,13 @@ router.get('/getloaisanpham/:depotId', async (req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
-router.post('/postloaisanpham', async (req, res) => {
+router.post('/postloaisanpham', async(req, res) => {
     try {
         const depotId = req.session.depotId;
-        const { name } = req.body;
+        const { name, tongtien, soluong, date } = req.body;
         const depot = await Depot.findById(depotId);
-        const loaisanpham = new LoaiSanPham({ name, depot: depot._id });
+        const loaisanpham = new LoaiSanPham({ name, depot: depot._id, tongtien, soluong, date });
+        loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1));
         await loaisanpham.save();
         depot.loaisanpham.push(loaisanpham._id);
         await depot.save();
@@ -51,7 +62,7 @@ router.post('/postloaisanpham', async (req, res) => {
     }
 })
 
-router.post('/postloaisanpham/:depotId', async (req, res) => {
+router.post('/postloaisanpham/:depotId', async(req, res) => {
     try {
         const depotId = req.params.depotId;
         const { name } = req.body;
@@ -66,7 +77,7 @@ router.post('/postloaisanpham/:depotId', async (req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
-router.post('/putloaisanpham/:idloai', async (req, res) => {
+router.post('/putloaisanpham/:idloai', async(req, res) => {
     try {
         const idloai = req.params.idloai;
         const { name } = req.body;
@@ -77,7 +88,7 @@ router.post('/putloaisanpham/:idloai', async (req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
-router.post('deletesanpham/:idloai', async (req, res) => {
+router.post('deletesanpham/:idloai', async(req, res) => {
     try {
         const idloai = req.params.idloai;
         const loaisanpham = await LoaiSanPham.findById(idloai);
