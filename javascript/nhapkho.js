@@ -116,7 +116,7 @@ function clearInputFieldsloai() {
     document.getElementById('nameloai').value = '';
     document.getElementById('soluong').value = '';
     document.getElementById('tienlo').value = '';
-    document.getElementById('date').value = '';
+    document.getElementById('dateloai').value = '';
 }
 
 
@@ -163,7 +163,7 @@ function fillInputFieldsloai(customerData) {
     document.getElementById('nameloai1').value = customerData.name;
     document.getElementById('soluong1').value = customerData.soluong;
     document.getElementById('tienlo1').value = customerData.tongtien;
-    document.getElementById('date1').value = formatDateForInputloai(customerData.date);
+    document.getElementById('dateloai1').value = formatDateForInputloai(customerData.date);
 }
 
 function editloai(customerId) {
@@ -197,7 +197,7 @@ function putloai(id) {
     var nameloai1 = document.getElementById('nameloai1').value;
     var soluong1 = document.getElementById('soluong1').value;
     var tienlo1 = document.getElementById('tienlo1').value;
-    var date1 = document.getElementById('date1').value;
+    var date1 = document.getElementById('dateloai1').value;
 
     fetch(`/putloaisanpham/${id}`, {
             method: 'POST',

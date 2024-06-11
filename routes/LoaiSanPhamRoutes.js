@@ -80,8 +80,9 @@ router.post('/postloaisanpham/:depotId', async(req, res) => {
 router.post('/putloaisanpham/:idloai', async(req, res) => {
     try {
         const idloai = req.params.idloai;
-        const { name } = req.body;
-        const loaisanpham = await LoaiSanPham.findByIdAndUpdate(idloai, { name });
+        const { name, tongtien, soluong, date } = req.body;
+        const average = parseFloat((tongtien / soluong).toFixed(1));
+        const loaisanpham = await LoaiSanPham.findByIdAndUpdate(idloai, { name, tongtien, soluong, date, average });
         res.json(loaisanpham);
     } catch (error) {
         console.error(error);
