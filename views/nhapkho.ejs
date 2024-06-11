@@ -12,11 +12,44 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        #sanpham {
-            display: none;
+        input[type="button"] {
+            margin-bottom: 5px;
+            border: 0;
+            background: #2FF2FE;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            left: 0;
+            margin-right: 600px;
         }
-        #loaisanpham {
-            display: block;
+        
+        input[type="button"]:hover {
+            background: #2c707f;
+        }
+        
+        .form-input {
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            height: 36px;
+            float: right;
+            border: 1px solid #fff;
+            background-color: #fff;
+            padding: 15px;
+        }
+        
+        input[type="search"]:focus {
+            outline: none;
+            /* Remove the outline */
+            box-shadow: none;
+            /* Remove the box shadow */
+        }
+        
+        button[type="submit"]:focus {
+            outline: none;
+            /* Remove the outline */
+            box-shadow: none;
+            /* Remove the box shadow */
         }
     </style>
 </head>
@@ -24,9 +57,14 @@
 
 <body>
     <div class="jumbotron text-center">
-        <h1>Product</h1>
+        <h1>Hàng Hóa</h1>
         <hr>
         <h2>Danh Sách Hàng Nhập Kho</h2>
+        <input id="addloaisp" type="button" class="btn btn-danger" value="➕ Thêm loại sản phẩm" onclick="openaddloaimodal()">
+        <div class="form-input" id="form-input">
+            <input type="search" placeholder="Search..." style="border:none ">
+            <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
+        </div>
         <div id="loaisanpham" class="table-data">
             <div class="order">
                 <table class="table">
@@ -44,28 +82,95 @@
                 </table>
             </div>
         </div>
-        <div id="sanpham" class="table-data">
-            <div class="order">
-                <table class="table">
-                    <thead class="thead-dark">
-                        <tr>
-                            <th>ID</th>
-                            <th style="text-align:center">Tên</th>
-                            <th style="text-align:center">Màu sắc</th>
-                            <th style="text-align:center">Imel</th>
-                            <th style="text-align:center">Dung lượng</th>
-                            <th style="text-align:center">Chức năng</th>
-                        </tr>
-                    </thead>
 
-                    <tbody id="commentsTableBody">
-                        <!-- Hàng dữ liệu sẽ được chèn vào đây từ phía client -->
-                    </tbody>
-                </table>
+
+        <div class="modal fade modalchitiet" id="chitietloaispmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content" style="width: 800px;">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Sản phẩm</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body ">
+                        <!-- Form thêm thể loại -->
+                        <div id="sanpham" class="table-data">
+                            <div class="order">
+                                <table class="table">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>ID</th>
+                                            <th style="text-align:center">Tên</th>
+                                            <th style="text-align:center">Màu sắc</th>
+                                            <th style="text-align:center">Imel</th>
+                                            <th style="text-align:center">Dung lượng</th>
+                                            <th style="text-align:center">Chức năng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="sanphamTableBody">
+                                        <!-- Hàng dữ liệu sẽ được chèn vào đây từ phía client -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="closeModalchitiet">Đóng</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="addloaispmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Thêm loại sản phẩm</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form thêm thể loại -->
+                        <div class="form-group">
+                            <label for="name" style="float: left;">Tên loại sản phẩm:</label>
+                            <input type="text" class="form-control" id="nameloai" name="name" placeholder="Nhập tên loại sản phẩm">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary" id="savekhachButton" onclick="addloaisp()" data-dismiss="modal">Lưu</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="putloaispmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Cập nhật loại sản phẩm</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form thêm thể loại -->
+                        <div class="form-group">
+                            <label for="name" style="float: left;">Tên loại sản phẩm:</label>
+                            <input type="text" class="form-control" id="nameloai1" name="name" placeholder="Nhập tên loại sản phẩm">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary" id="saveloaispButton" data-dismiss="modal">Lưu</button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
-<script src="https://www.ansuataohanoi.com/nhapkho.js"></script>
+    <script src="https://www.ansuataohanoi.com/nhapkho.js"></script>
 </body>
 
 </html>

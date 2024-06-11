@@ -11,12 +11,58 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        input[type="button"] {
+            float: left;
+            margin-bottom: 5px;
+            border: 0;
+            background: #2FF2FE;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        input[type="button"]:hover {
+            background: #2c707f;
+        }
+        
+        .form-input {
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            height: 36px;
+            float: right;
+            border: 1px solid #fff;
+            background-color: #fff;
+            padding: 15px;
+        }
+        
+        input[type="search"]:focus {
+            outline: none;
+            /* Remove the outline */
+            box-shadow: none;
+            /* Remove the box shadow */
+        }
+        
+        button[type="submit"]:focus {
+            outline: none;
+            /* Remove the outline */
+            box-shadow: none;
+            /* Remove the box shadow */
+        }
+    </style>
 </head>
+
 <body>
     <div class="jumbotron text-center">
         <h1>Khách Hàng</h1>
         <hr>
         <h2>Danh Sách Khách Hàng</h2>
+        <input id="addkhach" type="button" class="btn btn-danger" value="➕ Thêm khách hàng" onclick="openaddmodal()">
+        <div class="form-input">
+            <input type="search" placeholder="Search..." style="border:none ">
+            <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
+        </div>
         <div id="khachhang" class="table-data">
             <div class="order">
                 <table class="table">
@@ -37,6 +83,95 @@
             </div>
         </div>
 
+        <div class="modal fade" id="addkhachmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Thêm khách hàng</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form thêm thể loại -->
+                        <div class="form-group">
+                            <label for="name" style="float: left;">Họ và tên:</label>
+                            <input type="text" class="form-control" id="namekhach" name="name" placeholder="Nhập họ và tên">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" style="float: left;">Số điện thoại:</label>
+                            <input type="text" class="form-control" id="phonekhach" name="phone" placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="form-group">
+                            <label for="email" style="float: left;">Email:</label>
+                            <input type="text" class="form-control" id="emailkhach" name="email" placeholder="Nhập email">
+                        </div>
+                        <div class="form-group">
+                            <label for="date" style="float: left;">Ngày sinh:</label>
+                            <input type="date" class="form-control" id="datekhach" name="date" placeholder="Nhập ngày sinh">
+                        </div>
+                        <div class="form-group">
+                            <label for="cancuoc" style="float: left;">Số CCCD/CMND:</label>
+                            <input type="text" class="form-control" id="cancuockhach" name="cancuoc" placeholder="Nhập số CCCD/CMND">
+                        </div>
+                        <div class="form-group">
+                            <label for="address" style="float: left;">Địa chỉ:</label>
+                            <input type="text" class="form-control" id="addresskhach" name="address" placeholder="Nhập địa chỉ">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary" id="savekhachButton" onclick="addkhachhang()" data-dismiss="modal">Lưu</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="putkhachmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addCategoryModalLabel">Cập nhật thông tin khách hàng</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Form thêm thể loại -->
+                        <div class="form-group">
+                            <label for="name" style="float: left;">Họ và tên:</label>
+                            <input type="text" class="form-control" id="namekhach1" name="name" placeholder="Nhập họ và tên">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone" style="float: left;">Số điện thoại:</label>
+                            <input type="text" class="form-control" id="phonekhach1" name="phone" placeholder="Nhập số điện thoại">
+                        </div>
+                        <div class="form-group">
+                            <label for="email" style="float: left;">Email:</label>
+                            <input type="text" class="form-control" id="emailkhach1" name="email" placeholder="Nhập email">
+                        </div>
+                        <div class="form-group">
+                            <label for="date" style="float: left;">Ngày sinh:</label>
+                            <input type="date" class="form-control" id="datekhach1" name="date" placeholder="Nhập ngày sinh">
+                        </div>
+                        <div class="form-group">
+                            <label for="cancuoc" style="float: left;">Số CCCD/CMND:</label>
+                            <input type="text" class="form-control" id="cancuockhach1" name="cancuoc" placeholder="Nhập số CCCD/CMND">
+                        </div>
+                        <div class="form-group">
+                            <label for="address" style="float: left;">Địa chỉ:</label>
+                            <input type="text" class="form-control" id="addresskhach1" name="address" placeholder="Nhập địa chỉ">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                            <button type="button" class="btn btn-primary" id="putkhachButton" data-dismiss="modal">Cập nhật</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
     <script src="https://www.ansuataohanoi.com/khachhang.js"></script>
 </body>

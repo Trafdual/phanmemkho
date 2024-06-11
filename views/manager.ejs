@@ -154,7 +154,7 @@
         allSideMenu.forEach(item => {
             const li = item.parentElement;
 
-            item.addEventListener('click', function () {
+            item.addEventListener('click', function() {
                 allSideMenu.forEach(i => {
                     i.parentElement.classList.remove('active');
                 })
@@ -165,7 +165,7 @@
         const menuBar = document.querySelector('#content nav .bx.bx-menu');
         const sidebar = document.getElementById('sidebar');
 
-        menuBar.addEventListener('click', function () {
+        menuBar.addEventListener('click', function() {
             sidebar.classList.toggle('hide');
         })
 
@@ -173,7 +173,7 @@
         const searchButtonIcon = document.querySelector('#content nav form .form-input button .bx');
         const searchForm = document.querySelector('#content nav form');
 
-        searchButton.addEventListener('click', function (e) {
+        searchButton.addEventListener('click', function(e) {
             if (window.innerWidth < 576) {
                 e.preventDefault();
                 searchForm.classList.toggle('show');
@@ -193,7 +193,7 @@
         }
 
 
-        window.addEventListener('resize', function () {
+        window.addEventListener('resize', function() {
             if (this.innerWidth > 576) {
                 searchButtonIcon.classList.replace('bx-x', 'bx-search');
                 searchForm.classList.remove('show');
@@ -202,7 +202,7 @@
 
         const switchMode = document.getElementById('switch-mode');
 
-        switchMode.addEventListener('change', function () {
+        switchMode.addEventListener('change', function() {
             if (this.checked) {
                 document.body.classList.add('dark');
             } else {
@@ -210,22 +210,22 @@
             }
         })
     </script>
-        
+
     <script>
         const productManagerLink = document.getElementById('productManagerLink');
-        productManagerLink.addEventListener("click", function (event) {
+        productManagerLink.addEventListener("click", function(event) {
             event.preventDefault();
             fetch('/getloaisanpham')
                 .then(response => response.text())
                 .then(data => {
                     const mainContent = document.querySelector("#content main");
                     mainContent.innerHTML = data;
-                    closeloai();
+
                 })
                 .catch(error => console.error('Đã xảy ra lỗi:', error));
         });
         const khachhangManagerLink = document.getElementById('khachhangManagerLink');
-        khachhangManagerLink.addEventListener("click", function (event) {
+        khachhangManagerLink.addEventListener("click", function(event) {
             event.preventDefault();
             fetch('/khachhang')
                 .then(response => response.text())
@@ -235,8 +235,7 @@
                 })
                 .catch(error => console.error('Đã xảy ra lỗi:', error));
         });
-
- </script>
+    </script>
 </body>
 
 </html>
