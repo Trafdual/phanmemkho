@@ -14,7 +14,8 @@
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-    <script src="http://localhost:8080/nhapkho.js"></script>
+    <script src="https://www.ansuataohanoi.com/nhapkho.js"></script>
+    <script src="https://www.ansuataohanoi.com/nhanvien.js"></script>
     <script src="https://www.ansuataohanoi.com/khachhang.js"></script>
     <link rel="stylesheet" href="https://www.ansuataohanoi.com/trangchu.css">
     <!-- My CSS -->
@@ -44,11 +45,11 @@
                     <i class='bx bx-chevron-down arrow'></i>
                 </a>
                 <ul class="submenu" id="staffSubMenu">
-                    <li><a href="#">Danh sách nhân viên</a></li>
+                    <li><a href="#" id="DanhsachNhanvien">Danh sách nhân viên</a></li>
                     <li>
-                        <a href="#">Chấm công</a>
+                        <a href="#" id="ChamCong">Chấm công</a>
                     </li>
-                    <li><a href="#">Quản lý KPI</a></li>
+                    <li><a href="#" id="QuanLyKPI">Quản lý KPI</a></li>
                 </ul>
             </li>
             <li>
@@ -242,6 +243,19 @@
                     const mainContent = document.querySelector("#content main");
                     mainContent.innerHTML = data;
                     getkhachhang();
+                })
+                .catch(error => console.error('Đã xảy ra lỗi:', error));
+        });
+
+        const DanhsachNhanvien = document.getElementById('DanhsachNhanvien');
+        DanhsachNhanvien.addEventListener("click", function(event) {
+            event.preventDefault();
+            fetch('/nhanvienweb')
+                .then(response => response.text())
+                .then(data => {
+                    const mainContent = document.querySelector("#content main");
+                    mainContent.innerHTML = data;
+                    getnhanvien()
                 })
                 .catch(error => console.error('Đã xảy ra lỗi:', error));
         });
