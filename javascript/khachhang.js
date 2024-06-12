@@ -45,7 +45,7 @@ function getkhachhang() {
                 });
         });
 }
-inter = setInterval(getkhachhang, 1000);
+getkhachhang();
 
 function openkhach() {
     document.getElementById('khachhang').style.display = 'block';
@@ -61,19 +61,6 @@ function openputmodal() {
     modal.show();
 }
 
-function closeaddmodal() {
-    var modal = bootstrap.Modal.getInstance(document.getElementById('addkhachmodal'));
-    if (modal) {
-        modal.hide();
-    }
-}
-
-function closeputmodal() {
-    var modal = bootstrap.Modal.getInstance(document.getElementById('putkhachmodal'));
-    if (modal) {
-        modal.hide();
-    }
-}
 
 function clearInputFields() {
     document.getElementById('namekhach').value = '';
@@ -112,14 +99,16 @@ function addkhachhang() {
         .then(response => response.json())
         .then(data => {
             clearInputFields();
-            closeaddmodal();
+            inter = setInterval(getkhachhang, 500);
+            setTimeout(() => {
+                clearInterval(inter);
+                console.error('Interval cleared');
+            }, 1000)
 
         })
         .catch(error => {
-            // Lấy container để hiển thị lỗi
-            var errorContainer = document.getElementById('error-container');
-            // Chèn thông báo lỗi vào container
-            errorContainer.innerHTML = `<p class="alert alert-danger">${error.message}</p>`;
+            console.error(error.message)
+
         });
 
 }
@@ -192,7 +181,12 @@ function putkhachhang(id) {
         })
         .then(response => response.json())
         .then(data => {
-            closeputmodal();
+            inter = setInterval(getkhachhang, 500);
+            setTimeout(() => {
+                clearInterval(inter);
+                console.error('Interval cleared');
+            }, 1000)
+
 
         })
         .catch(error => {

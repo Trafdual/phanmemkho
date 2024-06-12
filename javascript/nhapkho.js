@@ -1,4 +1,5 @@
 let intervalID;
+let intersp;
 let loaiDataMap = {};
 
 
@@ -46,15 +47,16 @@ function getloaisanpham() {
         });
 
 }
-intervalID = setInterval(getloaisanpham, 1000)
+getloaisanpham();
 
 function openchitietloaimodal(id) {
     const modalElement = document.getElementById('chitietloaispmodal');
     modalElement.id = `chitietloaispmodal${id}`;
     var modal = new bootstrap.Modal(modalElement);
     modal.show();
-    setInterval(() => getAndDisplay(id), 1000)
+    intersp = setInterval(() => getAndDisplay(id), 1000)
     document.getElementById('closeModalchitiet').onclick = function() {
+        clearInterval(intersp);
         modalElement.id = 'chitietloaispmodal'
     };
 }
@@ -98,19 +100,7 @@ function openputloaimodal() {
     modal.show();
 }
 
-function closeaddloaimodal() {
-    var modal = bootstrap.Modal.getInstance(document.getElementById('addloaispmodal'));
-    if (modal) {
-        modal.hide();
-    }
-}
 
-function closeputloaimodal() {
-    var modal = bootstrap.Modal.getInstance(document.getElementById('putloaispmodal'));
-    if (modal) {
-        modal.hide();
-    }
-}
 
 function clearInputFieldsloai() {
     document.getElementById('nameloai').value = '';
@@ -142,14 +132,15 @@ function addloaisp() {
         .then(response => response.json())
         .then(data => {
             clearInputFieldsloai();
-            closeaddloaimodal();
-
+            intervalID = setInterval(getloaisanpham, 500);
+            setTimeout(() => {
+                clearInterval(intervalID);
+                console.error('Interval cleared');
+            }, 1000)
         })
         .catch(error => {
-            // Lấy container để hiển thị lỗi
-            var errorContainer = document.getElementById('error-container');
-            // Chèn thông báo lỗi vào container
-            errorContainer.innerHTML = ` < p class = "alert alert-danger" > $ { error.message } < /p>`;
+            console.error(error.message)
+
         });
 
 }
@@ -213,14 +204,15 @@ function putloai(id) {
         })
         .then(response => response.json())
         .then(data => {
-            closeputloaimodal();
+            intervalID = setInterval(getloaisanpham, 500);
+            setTimeout(() => {
+                clearInterval(intervalID);
+                console.error('Interval cleared');
+            }, 1000)
 
         })
         .catch(error => {
-            // Lấy container để hiển thị lỗi
-            var errorContainer = document.getElementById('error-container');
-            // Chèn thông báo lỗi vào container
-            errorContainer.innerHTML = ` < p class = "alert alert-danger" > $ { error.message } < /p>`;
+            console.error(error.message)
         });
 
 }
