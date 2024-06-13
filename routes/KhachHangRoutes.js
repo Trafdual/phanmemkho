@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const KhachHang = require('../models/KhachHangModel');
+const Depot = require('../models/DepotModel')
 const moment = require('moment');
 router.get('/khachhang', async(req, res) => {
     try {
@@ -12,16 +13,21 @@ router.get('/khachhang', async(req, res) => {
 })
 router.get('/getkhachhang', async(req, res) => {
     try {
-        const khachhang1 = await KhachHang.find({ isActivity: true }).lean();
-        const khachhang = await Promise.all(khachhang1.map(async(kh) => {
-            return {
-                _id: kh._id,
-                name: kh.name,
-                phone: kh.phone,
-                email: kh.email,
-                cancuoc: kh.cancuoc,
-                address: kh.address,
-                date: moment(kh.date).format('DD/MM/YYYY')
+        const depotId = req.session.depotId;
+        const depot = await Depot.findById(depotId);
+        const khachhang = [];
+        await Promise.all(depot.khachang.map(async(kh) => {
+            const khach = await KhachHang.findById(kh._id)
+            if (khach.isActivity === true) {
+                khachhang.push({
+                    _id: khach._id,
+                    name: khach.name,
+                    phone: khach.phone,
+                    email: khach.email,
+                    cancuoc: khach.cancuoc,
+                    address: khach.address,
+                    date: moment(khach.date).format('DD/MM/YYYY')
+                })
             }
         }))
         res.json(khachhang);
@@ -32,9 +38,32 @@ router.get('/getkhachhang', async(req, res) => {
 })
 router.post('/postkhachhang', async(req, res) => {
     try {
+        const depotId = req.session.depotId;
+        const depot = await Depot.findById(depotId);
         const { name, phone, email, cancuoc, address, date } = req.body;
         const khachhang = new KhachHang({ name, phone, email, cancuoc, address, date });
+        depot.khachang.push(khachhang._id);
+        khachhang.depotId = depot._id;
         await khachhang.save();
+        await depot.save();
+        res.json(khachhang);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+})
+
+
+router.post('/postkhachhang/:depotId', async(req, res) => {
+    try {
+        const depotId = req.params.depotId;
+        const depot = await Depot.findById(depotId);
+        const { name, phone, email, cancuoc, address, date } = req.body;
+        const khachhang = new KhachHang({ name, phone, email, cancuoc, address, date });
+        depot.khachang.push(khachhang._id);
+        khachhang.depotId = depot._id;
+        await khachhang.save();
+        await depot.save();
         res.json(khachhang);
     } catch (error) {
         console.error(error);

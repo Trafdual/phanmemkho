@@ -61,9 +61,8 @@ router.post('/postnhanvien', async(req, res) => {
         const user = new User({
             name,
             email,
-            password: encryptedPassword,
+            password: JSON.stringify(encryptedPassword),
             phone,
-            otp,
             date: vietnamTime,
             isVerified: false,
             birthday
@@ -74,6 +73,58 @@ router.post('/postnhanvien', async(req, res) => {
         depot.user.push(user._id);
         await user.save();
         await depot.save();
+
+        const responseData = {
+            success: user.success,
+            data: {
+                user: [{
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    password: user.password,
+                    role: user.role,
+                    phone: user.phone,
+                }, ],
+            },
+        };
+
+        res.json(responseData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+});
+
+router.post('/putnhanvien/:userId', async(req, res) => {
+    try {
+        const userId = req.params.userId;
+        const { name, email, password, phone, birthday, date } = req.body;
+        const user = await User.findById(userId);
+        if (!phone || !/^\d{10}$/.test(phone)) {
+            return res.json({ message: 'Số điện thoại không hợp lệ' });
+        }
+
+        if (!emailRegex.test(email)) {
+            return res.json({ message: 'Email không hợp lệ' });
+        }
+
+        const exitphone = await User.findOne({ phone, _id: { $ne: userId } });
+        const existingemail = await User.findOne({ email, _id: { $ne: userId } });
+
+        if (existingemail) {
+            return res.json({ message: 'Email này đã được đăng ký' });
+        }
+        if (exitphone) {
+            return res.json({ message: 'Số điện thoại đã tồn tại trong hệ thống' });
+        }
+        const encryptedPassword = encrypt(password);
+        user.name = name;
+        user.email = email;
+        user.password = JSON.stringify(encryptedPassword);
+        user.phone = phone;
+        user.date = date;
+        user.birthday = birthday
+        await user.save();
 
         const responseData = {
             success: user.success,
@@ -168,7 +219,7 @@ router.get('/getnhanvienjson', async(req, res) => {
         await Promise.all(depot.user.map(async(nv) => {
             const staff = await User.findById(nv._id);
 
-            if (staff && staff.role === 'staff') {
+            if (staff && staff.role === 'staff' && staff.isActivity === true) {
                 const encryptedPassword = JSON.parse(staff.password);
                 nhanvien.push({
                     _id: staff._id,
@@ -223,4 +274,17 @@ router.get('/nhanvienweb', async(req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 })
+
+router.post('/ngunghoatdongnhanvien/:userId', async(req, res) => {
+    try {
+        const userId = req.params.userId;
+        const user = await User.findById(userId);
+        user.isActivity = false;
+        await user.save();
+        res.json({ message: 'ngừng hoạt động thành công' })
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
+    }
+});
 module.exports = router

@@ -246,8 +246,8 @@ router.post('/loginadmin', async(req, res) => {
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        const encryptedPassword = JSON.parse(user.password);
         if (!isPasswordValid) {
+            const encryptedPassword = JSON.parse(user.password);
             const isPasswordValidCrypto = decrypt(encryptedPassword) === password;
 
             if (!isPasswordValidCrypto) {

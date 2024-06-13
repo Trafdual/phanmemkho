@@ -11,6 +11,7 @@ const userSchema = new mongoose.Schema({
     role: { type: String, enum: ['admin', 'staff', 'manager'], default: 'manager' },
     otp: { type: String }, // Thêm trường này để lưu mã OTP
     isVerified: { type: Boolean, default: false },
+    isActivity: { type: Boolean, default: true },
 });
 
 const User = mongoose.model('user', userSchema);
