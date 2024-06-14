@@ -219,6 +219,13 @@ function ngunghoatdong(id) {
             }
         })
         .then(response => response.json())
+        .then(data => {
+            inter = setInterval(getkhachhang, 500);
+            setTimeout(() => {
+                clearInterval(inter);
+                console.error('Interval cleared');
+            }, 1000)
+        })
         .catch(error => {
             // Lấy container để hiển thị lỗi
             var errorContainer = document.getElementById('error-container');
