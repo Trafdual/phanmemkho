@@ -34,7 +34,7 @@ function getkhachhang() {
                             type="button" onclick="editCustomer('${khachhang._id}')">Cập Nhật</button>
                             <button
                             style="width: 120px; height: 50px; margin-top: 5px; background-color: #FA0303; border: none; border-radius: 5px; color: white;font-size:13px"
-                            type="button" onclick="ngunghoatdong('${khachhang._id}')">Ngừng hoạt động</button>
+                            type="button" onclick="ngungkh('${khachhang._id}')">Ngừng hoạt động</button>
                     </td>
     `;
                     khachhangTableBody.appendChild(newCommentDiv);
@@ -58,6 +58,11 @@ function openaddmodal() {
 
 function openputmodal() {
     var modal = new bootstrap.Modal(document.getElementById('putkhachmodal'));
+    modal.show();
+}
+
+function openngunghoatdongkhmodal() {
+    var modal = new bootstrap.Modal(document.getElementById('ngunghdkhachangmodal'));
     modal.show();
 }
 
@@ -196,6 +201,14 @@ function putkhachhang(id) {
             errorContainer.innerHTML = ` < p class = "alert alert-danger" > $ { error.message } < /p>`;
         });
 
+}
+
+function ngungkh(customerId) {
+    openngunghoatdongkhmodal()
+
+    document.getElementById('ngunghdkhachhangButton').onclick = function() {
+        ngunghoatdong(customerId);
+    };
 }
 
 function ngunghoatdong(id) {
