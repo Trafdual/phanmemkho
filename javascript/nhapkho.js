@@ -2,10 +2,23 @@ let intervalID;
 let intersp;
 let loaiDataMap = {};
 
+function quaylai() {
+    intervalID = setInterval(getloaisanpham, 500);
+    setTimeout(() => {
+        clearInterval(intervalID);
+        console.error('Interval cleared');
+    }, 1000)
+}
 
 function getloaisanpham() {
     const commentsTableBody = document.getElementById('loaiTableBody');
     document.getElementById('loaisanpham').style.display = 'block'
+    document.getElementById('addloaisp').style.display = 'block'
+    document.getElementById('form-input').style.display = 'block';
+    document.getElementById('sanpham').style.display = 'none';
+    document.getElementById('quaylai').style.display = 'none'
+    document.getElementById('form-input1').style.display = 'none';
+
     fetch(`/getloaisanphamweb`)
         .then(response => response.json())
         .then(data => {
@@ -14,6 +27,9 @@ function getloaisanpham() {
                 loaiDataMap[loaisanpham._id] = loaisanpham;
                 const newCommentDiv = document.createElement('tr');
                 newCommentDiv.innerHTML = `
+                                    <td class="td-name" style="margin-right:5px; padding:10px">
+                        ${loaisanpham._id}
+                    </td>
                     <td class="td-name" style="margin-right:5px; padding:10px">
                         ${loaisanpham.name}
                     </td>
@@ -49,38 +65,62 @@ function getloaisanpham() {
 }
 getloaisanpham();
 
+
+
 function openchitietloaimodal(id) {
-    const modalElement = document.getElementById('chitietloaispmodal');
-    modalElement.id = `chitietloaispmodal${id}`;
-    var modal = new bootstrap.Modal(modalElement);
-    modal.show();
-    intersp = setInterval(() => getAndDisplay(id), 1000)
-    document.getElementById('closeModalchitiet').onclick = function() {
+    const modalElement = document.getElementById('sanpham');
+    const sanpham = document.getElementById('sanphamTableBody');
+    modalElement.id = `sanpham${id}`;
+    sanpham.id = `sanphamTableBody${id}`
+    document.getElementById('loaisanpham').style.display = 'none'
+    document.getElementById('addloaisp').style.display = 'none'
+    document.getElementById('form-input').style.display = 'none';
+    document.getElementById('quaylai').style.display = 'block'
+    document.getElementById('form-input1').style.display = 'block';
+    getAndDisplay(id);
+    intersp = setInterval(() => getAndDisplay(id), 5000)
+    modalElement.style.display = 'none'
+    var loadingSpinner = document.getElementById('loadingspinnercontainer');
+    loadingSpinner.style.display = 'block';
+    setTimeout(() => {
+        loadingSpinner.style.display = 'none';
+        modalElement.style.display = 'block'
+    }, 5000);
+
+    document.getElementById('quaylai').onclick = function() {
         clearInterval(intersp);
-        modalElement.id = 'chitietloaispmodal'
+        modalOpen = false;
+        modalElement.id = 'sanpham'
+        sanpham.id = 'sanphamTableBody'
+        document.getElementById('loaisanpham').style.display = 'block'
+        document.getElementById('addloaisp').style.display = 'block'
+        document.getElementById('form-input').style.display = 'block';
+        document.getElementById('sanpham').style.display = 'none';
+        document.getElementById('quaylai').style.display = 'none'
+        document.getElementById('form-input1').style.display = 'none';
+
     };
 }
 
 function getAndDisplay(id) {
-    const modalElement = document.getElementById(`chitietloaispmodal${id}`);
-    const sanphamTableBody = modalElement.querySelector('#sanphamTableBody');
-
+    const modalElement = document.getElementById(`sanpham${id}`);
+    const sanphamTableBody = modalElement.querySelector(`#sanphamTableBody${id}`);
     fetch(`/getsanpham/${id}`)
         .then(response => response.json())
         .then(data => {
             sanphamTableBody.innerHTML = ''; // Clear the existing content
-
             data.forEach(sanpham => {
                 const newRow = document.createElement('tr');
                 newRow.innerHTML = `
-                    <td class="td-id">${sanpham._id}</td>
-                    <td class="td-namesp">${sanpham.name}</td>
-                    <td class="td-color">${sanpham.color}</td>
-                    <td class="td-imel">${sanpham.imel}</td>
-                    <td class="td-capacity">${sanpham.capacity}</td>
+                    <td class="td-id" style="text-align:center; ">${sanpham._id}</td>
+                    <td class="td-namesp" style="text-align:center">${sanpham.name}</td>
+                    <td class="td-color" style="text-align:center">${sanpham.color}</td>
+                    <td class="td-imel" style="text-align:center">${sanpham.imel}</td>
+                    <td class="td-capacity" style="text-align:center">${sanpham.capacity}</td>
                     <td></td>
                 `;
                 sanphamTableBody.appendChild(newRow);
+
             });
         })
         .catch(error => {

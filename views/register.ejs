@@ -8,11 +8,12 @@
 
     <style>
         /* Your CSS styles here */
+        
         body {
             font-family: Arial, sans-serif;
             background-color: #f2f2f2;
         }
-
+        
         #register-container {
             width: 350px;
             margin: 0 auto;
@@ -24,7 +25,7 @@
             text-align: center;
             /* Align the content in the center */
         }
-
+        
         #dialogsuccess {
             width: 350px;
             margin: 0 auto;
@@ -35,7 +36,7 @@
             text-align: center;
             display: none;
         }
-
+        
         #otp-container {
             width: 350px;
             margin: 0 auto;
@@ -48,7 +49,7 @@
             display: none;
             /* Align the content in the center */
         }
-
+        
         #kho-container {
             width: 350px;
             margin: 0 auto;
@@ -60,7 +61,7 @@
             text-align: center;
             display: none;
         }
-
+        
         .logo {
             margin-bottom: 20px;
             background-color: #2FF2FE;
@@ -68,12 +69,12 @@
             padding: 0px;
             /* Adjust the margin as needed */
         }
-
+        
         .logo img {
             max-width: 100%;
             height: auto;
         }
-
+        
         input[type="text"],
         input[type="password"] {
             width: calc(100% - 20px);
@@ -82,8 +83,8 @@
             border: 1px solid #ddd;
             border-radius: 5px;
         }
-
-        input[type="button"] {
+        
+        .btnn {
             width: 100%;
             padding: 10px;
             border: 0;
@@ -93,13 +94,30 @@
             cursor: pointer;
             margin-top: 10px;
         }
-
-        input[type="button"]:hover {
+        
+        .btnn:hover {
             background: #2c707f;
         }
-
+        
         .no {
             display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
@@ -108,8 +126,7 @@
 
     <div id="register-container">
         <div class="logo">
-            <h3
-                style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
                 BICRAFT</h3>
         </div>
         <h2>Register</h2>
@@ -121,35 +138,35 @@
         <div id="error-container" style="margin-top:5px">
 
         </div>
-        <input type="button" value="Register" onclick="registerUser()">
+        <button class="btnn" onclick="registerUser()" id="registerButton"><div class="loading-spinner" id="loadingSpinner"></div> Register</button>
+
 
     </div>
     <div id="otp-container">
         <div class="logo">
-            <h3
-                style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
                 BICRAFT</h3>
         </div>
         <h2>Nhập mã OTP</h2>
         <input type="text" placeholder="nhập mã OTP" id="otp" name="otp" required><br>
-        <input type="button" value="Verify" onclick="codeverify()">
+        <button class="btnn" onclick="codeverify()" id="codeverifyButton"><div class="loading-spinner" id="loadingSpinner1"></div> Verify</button>
         <div class="no alert alert-danger">OTP error</div>
+
+
     </div>
     <div id="kho-container">
         <div class="logo">
-            <h3
-                style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
                 BICRAFT</h3>
         </div>
         <h2>Tạo kho chứa của bạn</h2>
         <input type="text" placeholder="Tên kho chứa" id="namekho" name="name" required><br>
         <input type="text" placeholder="Địa chỉ" id="address" name="address" required><br>
-        <input type="button" value="Initialization" onclick="postdepot()">
+        <button class="btnn" onclick="postdepot()" id="postdepotButton"><div class="loading-spinner" id="loadingSpinner2"></div> Initialization</button>
     </div>
     <div id="dialogsuccess" class="dialog-overlay">
         <div class="dialog-xemthem">
-            <h2
-                style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+            <h2 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
                 Success!</h2>
             <div class="d-flex flex-column">
                 <div class="d-flex">

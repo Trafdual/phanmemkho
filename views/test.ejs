@@ -13,7 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         input[type="button"] {
-            margin-bottom: 10px;
+            float: left;
+            margin-bottom: 5px;
             border: 0;
             background: #2FF2FE;
             color: #fff;
@@ -25,26 +26,15 @@
             background: #2c707f;
         }
         
-        #form-input {
+        .form-input {
             border-radius: 20px;
             display: flex;
             align-items: center;
-            width: 270px;
-            height: 45px;
+            height: 36px;
+            float: right;
+            border: 1px solid #fff;
             background-color: #fff;
             padding: 15px;
-            margin-left: 620px;
-        }
-        
-        #form-input1 {
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            width: 270px;
-            height: 45px;
-            background-color: #fff;
-            padding: 15px;
-            margin-left: 720px;
         }
         
         input[type="search"]:focus {
@@ -60,35 +50,6 @@
             box-shadow: none;
             /* Remove the box shadow */
         }
-        
-        #loaisanpham {
-            margin-top: 2px;
-        }
-        
-        .loading-spinner-container {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            flex-direction: column;
-        }
-        
-        .loading-spinner {
-            margin-top: 50px;
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #000;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 525px;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
-        }
     </style>
 </head>
 
@@ -97,19 +58,15 @@
         <h1>Hàng Hóa</h1>
         <hr>
         <h2>Danh Sách Hàng Nhập Kho</h2>
-        <div style="display: flex;">
-            <input id="addloaisp" type="button" class="btn btn-danger" value="➕ Thêm loại sản phẩm" onclick="openaddloaimodal()">
-            <div class="form-input" id="form-input">
-                <input type="search" placeholder="Search..." style="border:none ">
-                <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
-            </div>
+        <input id="addloaisp" type="button" class="btn btn-danger" value="➕ Thêm loại sản phẩm" onclick="openaddloaimodal()">
+        <div class="form-input" id="form-input">
+            <input type="search" placeholder="Search..." style="border:none ">
+            <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
         </div>
-        <div style="display: flex;">
-            <input id="quaylai" type="button" class="btn btn-danger" value="⬅ Quay lại" onclick="quaylai()">
-            <div class="form-input" id="form-input1">
-                <input type="search" placeholder="Search imel..." style="border:none ">
-                <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
-            </div>
+        <input id="quaylai" type="button" class="btn btn-danger" value="⬅ Quay lại" onclick="quaylai()">
+        <div class="form-input" id="form-input1">
+            <input type="search" placeholder="Search imel..." style="border:none ">
+            <button type="submit" class="search-btn" style="border:none; background-color: #fff;"><i class='bx bx-search'></i></button>
         </div>
         <div id="loaisanpham" class="table-data">
             <div class="order">
@@ -130,7 +87,6 @@
 
                     </tbody>
                 </table>
-
             </div>
         </div>
 
@@ -153,10 +109,7 @@
                 </table>
             </div>
         </div>
-        <div class="loading-spinner-container" id="loadingspinnercontainer">
-            <div class="loading-spinner" id="loadingSpinnerkho"></div>
-            <p id="loadingtext">Đang tải dữ liệu</p>
-        </div>
+
         <div class="modal fade" id="addloaispmodal" tabindex="-1" role="dialog" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -230,9 +183,7 @@
             </div>
         </div>
     </div>
-    <script src="https://www.ansuataohanoi.com/nhapkho.js"></script>
+    <script src="http://localhost:8080/nhapkho.js"></script>
 </body>
-
-</html>
 
 </html>

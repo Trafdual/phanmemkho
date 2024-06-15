@@ -9,28 +9,38 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 render();
+
 function render() {
     window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recapcha')
     recaptchaVerifier.render()
 }
+
 function phoneAuth() {
     var number = document.getElementById('phone').value;
     if (number.startsWith('0')) {
         number = '+84' + number.slice(1);
     }
     firebase.auth().signInWithPhoneNumber(number,
-        window.recaptchaVerifier).then(function (confirmationResult) {
-            window.confirmationResult = confirmationResult;
-            coderesult = confirmationResult;
-            document.getElementById('otp-container').style.display = 'block';
-            document.getElementById('register-container').style.display = 'none';
-        }).catch(function (error) {
-            alert(error.message)
-        })
+        window.recaptchaVerifier).then(function(confirmationResult) {
+        window.confirmationResult = confirmationResult;
+        coderesult = confirmationResult;
+        document.getElementById('otp-container').style.display = 'block';
+        document.getElementById('register-container').style.display = 'none';
+    }).catch(function(error) {
+        alert(error.message)
+    })
 
 }
 var userId;
+
 function registerUser() {
+    var registerButton = document.getElementById('registerButton');
+    var loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Disable the button and show the loading spinner
+    registerButton.disabled = true;
+    loadingSpinner.style.display = 'inline-block';
+
     var name = document.getElementById('name').value;
     var phone = document.getElementById('phone').value;
     var email = document.getElementById('email').value;
@@ -46,16 +56,16 @@ function registerUser() {
             email: email,
             password: password
         }),
-        success: function (response) {
+        success: function(response) {
             if (response.data && response.data.user && response.data.user.length > 0) {
-                 userId = response.data.user[0]._id;
+                userId = response.data.user[0]._id;
                 phoneAuth();
             } else {
                 var errorContainer = document.getElementById('error-container');
                 errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
             }
         },
-        error: function (error) {
+        error: function(error) {
             var errorResponse;
             try {
                 errorResponse = JSON.parse(error.responseText);
@@ -67,53 +77,91 @@ function registerUser() {
             var errorContainer = document.getElementById('error-container');
             // Chèn thông báo lỗi vào container
             errorContainer.innerHTML = `<p class="alert alert-danger">${errorResponse.message}</p>`;
+        },
+        complete: function() {
+            // Re-enable the button and hide the loading spinner
+            setTimeout(function() {
+                registerButton.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }, 5000);
         }
     });
 }
+
 function codeverify() {
+    var codeverifyButton = document.getElementById('codeverifyButton');
+    var loadingSpinner1 = document.getElementById('loadingSpinner1');
+
+    // Disable the button and show the loading spinner
+    codeverifyButton.disabled = true;
+    loadingSpinner1.style.display = 'inline-block';
+
     var code = document.getElementById('otp').value;
-    coderesult.confirm(code).then(function () {
+    coderesult.confirm(code).then(function() {
         $.ajax({
             url: '/register/' + userId,
             type: 'POST',
-            success: function (response) {
+            success: function(response) {
                 document.getElementById('otp-container').style.display = 'none';
                 document.getElementById('kho-container').style.display = 'block';
             },
-            error: function (error) {
+            error: function(error) {
                 var errorResponse = JSON.parse(error.responseText);
                 console.log(errorResponse.error);
+            },
+            complete: function() {
+                // Re-enable the button and hide the loading spinner
+                setTimeout(function() {
+                    codeverifyButton.disabled = false;
+                    loadingSpinner1.style.display = 'none';
+                }, 5000);
             }
         });
 
-    }).catch(function () {
+    }).catch(function() {
         document.getElementsByClassName('no')[0].style.display = 'block';
     })
 }
+
 function postdepot() {
+
+    var postdepotButton = document.getElementById('postdepotButton');
+    var loadingSpinner2 = document.getElementById('loadingSpinner2');
+
+    // Disable the button and show the loading spinner
+    postdepotButton.disabled = true;
+    loadingSpinner2.style.display = 'inline-block';
+
     var name = document.getElementById('namekho').value;
     var address = document.getElementById('address').value;
 
-        $.ajax({
-            url: '/postdepot/' + userId,
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
+    $.ajax({
+        url: '/postdepot/' + userId,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
             name: name,
-            address:address
+            address: address
         }),
-            success: function (response) {
-                document.getElementById('dialogsuccess').style.display = 'block';
-                document.getElementById('kho-container').style.display = 'none';
-                setTimeout(function () {
-                    window.location.href = '/';
-                }, 5000);
-            },
-            error: function (error) {
-                var errorResponse = JSON.parse(error.responseText);
-                console.log(errorResponse.error);
-            }
-        }).catch(function () {
+        success: function(response) {
+            document.getElementById('dialogsuccess').style.display = 'block';
+            document.getElementById('kho-container').style.display = 'none';
+            setTimeout(function() {
+                window.location.href = '/';
+            }, 5000);
+        },
+        error: function(error) {
+            var errorResponse = JSON.parse(error.responseText);
+            console.log(errorResponse.error);
+        },
+        complete: function() {
+            // Re-enable the button and hide the loading spinner
+            setTimeout(function() {
+                postdepotButton.disabled = false;
+                loadingSpinner2.style.display = 'none';
+            }, 5000);
+        }
+    }).catch(function() {
         document.getElementsByClassName('no')[0].style.display = 'block';
     })
 }

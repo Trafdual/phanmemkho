@@ -31,11 +31,17 @@ router.post('/postsp/:idloaisanpham', async(req, res) => {
         const { imel, name, capacity, color } = req.body;
         const sp = await SanPham.findOne({ imel });
         if (sp) {
-            res.json({ message: 'sản phẩm đã có trên hệ thống' })
+            return res.json({ message: 'sản phẩm đã có trên hệ thống' })
         }
         const vietnamTime = momenttimezone().toDate();
         const loaisanpham = await LoaiSanPham.findById(idloai);
-        const sanpham = new SanPham({ name, capacity, color, imel, datenhap: vietnamTime });
+        const sanpham = new SanPham({
+            name,
+            capacity,
+            color,
+            imel,
+            datenhap: loaisanpham.date
+        });
         sanpham.datexuat = '';
         sanpham.loaisanpham = loaisanpham._id;
         await sanpham.save();
