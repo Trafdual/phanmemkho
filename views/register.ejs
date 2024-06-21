@@ -5,7 +5,15 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script>
+        // Your JavaScript code here
+        if (!Array.prototype.includes) {
+            console.log('Array.prototype.includes is not supported.');
+        } else {
+            console.log('Array.prototype.includes is supported.');
+        }
+    </script>
     <style>
         /* Your CSS styles here */
         
