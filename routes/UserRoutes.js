@@ -107,6 +107,7 @@ router.post('/register', async(req, res) => {
                     date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
                 }, ],
             },
+            message: 'thành công'
         };
 
         res.json(responseData);
@@ -179,7 +180,7 @@ router.post('/register/:id', async(req, res) => {
 
         user.isVerified = true;
         user.otp = undefined; // Xóa mã OTP sau khi xác minh
-        user.otpCreatedAt = null;
+        user.otpCreatedAt = undefined;
         await user.save();
 
         res.json({ message: 'thành công.' });

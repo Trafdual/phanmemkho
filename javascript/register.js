@@ -24,13 +24,23 @@ function registerUser() {
             password: password
         }),
         success: function(response) {
-            if (response.data && response.data.user && response.data.user.length > 0) {
+
+            if (response.message === 'Số điện thoại không hợp lệ') {
+                var errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+            }
+            if (response.message === 'email không hợp lệ') {
+                var errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+            }
+            if (response.message === 'email này đã được đăng kí') {
+                var errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+            }
+            if (response.message === 'thành công') {
                 userId = response.data.user[0]._id;
                 document.getElementById('otp-container').style.display = 'block';
                 document.getElementById('register-container').style.display = 'none';
-            } else {
-                var errorContainer = document.getElementById('error-container');
-                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
             }
         },
         error: function(error) {
