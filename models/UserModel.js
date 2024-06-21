@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     date: { type: Date },
     role: { type: String, enum: ['admin', 'staff', 'manager'], default: 'manager' },
     otp: { type: String }, // Thêm trường này để lưu mã OTP
+    otpCreatedAt: { type: Date },
     isVerified: { type: Boolean, default: false },
     isActivity: { type: Boolean, default: true },
 });

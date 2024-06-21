@@ -119,6 +119,18 @@
                 transform: rotate(360deg);
             }
         }
+        
+        #countdown {
+            display: none
+        }
+        
+        #codeverifyButton {
+            display: none
+        }
+        
+        #nhapma {
+            display: none
+        }
     </style>
 </head>
 
@@ -134,25 +146,25 @@
         <input type="text" placeholder="Số Điện Thoại" id="phone" name="phone" required><br>
         <input type="text" placeholder="Email" id="email" name="email" required><br>
         <input type="text" placeholder="Password" id="password" name="password" required><br>
-        <div id="recapcha" style="margin-top:5px"></div>
         <div id="error-container" style="margin-top:5px">
-
         </div>
         <button class="btnn" onclick="registerUser()" id="registerButton"><div class="loading-spinner" id="loadingSpinner"></div> Register</button>
-
-
     </div>
     <div id="otp-container">
         <div class="logo">
             <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
                 BICRAFT</h3>
         </div>
-        <h2>Nhập mã OTP</h2>
-        <input type="text" placeholder="nhập mã OTP" id="otp" name="otp" required><br>
+        <p id="clicknut">Click vào nút send email để nhận mã OTP</p>
+        <div id="nhapma">
+            <h2>Nhập mã OTP</h2>
+            <input type="text" placeholder="nhập mã OTP" id="otp" name="otp" required><br>
+        </div>
+        <p id="countdown"><span id="time">60</span></p>
+        <div id="error-container1"></div>
+        <button class="btnn" onclick="sendEmail()" id="sendemail"> Send Email</button>
         <button class="btnn" onclick="codeverify()" id="codeverifyButton"><div class="loading-spinner" id="loadingSpinner1"></div> Verify</button>
         <div class="no alert alert-danger">OTP error</div>
-
-
     </div>
     <div id="kho-container">
         <div class="logo">

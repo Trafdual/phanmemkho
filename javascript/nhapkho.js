@@ -112,7 +112,7 @@ function getAndDisplay(id) {
             data.forEach(sanpham => {
                 const newRow = document.createElement('tr');
                 newRow.innerHTML = `
-                    <td class="td-id" style="text-align:center; ">${sanpham._id}</td>
+                    <td class="td-id" style="text-align:center;">${sanpham._id}</td>
                     <td class="td-namesp" style="text-align:center">${sanpham.name}</td>
                     <td class="td-color" style="text-align:center">${sanpham.color}</td>
                     <td class="td-imel" style="text-align:center">${sanpham.imel}</td>

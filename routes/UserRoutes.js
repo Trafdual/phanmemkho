@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const momenttimezone = require('moment-timezone');
 const moment = require('moment');
 const firebase = require('firebase-admin')
+const nodemailer = require('nodemailer');
 firebase.initializeApp({
     credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
 })
@@ -17,6 +18,13 @@ AWS.config.update({
     region: 'ap-southeast-1'
 });
 const sns = new AWS.SNS();
+let transporter = nodemailer.createTransport({
+    service: 'gmail', // hoặc bất kỳ dịch vụ email nào bạn sử dụng
+    auth: {
+        user: 'your-email@gmail.com', // Email của bạn
+        pass: 'your-email-password' // Mật khẩu của bạn
+    }
+});
 
 
 const storage = multer.memoryStorage();
@@ -73,30 +81,17 @@ router.post('/register', async(req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP ngẫu nhiên
-        const phoneNumber = `+84${phone.slice(1)}`; // Chuyển đổi số điện thoại sang định dạng quốc tế
 
-        try {
-            // Gửi OTP qua Firebase
-            const userRecord = await firebase.auth().getUserByPhoneNumber(phoneNumber);
+        const user = new User({
+            name,
+            email,
+            password: hashedPassword,
+            role,
+            phone,
+            date: vietnamTime,
+            isVerified: false,
+        });
 
-            // Xử lý trường hợp số điện thoại đã tồn tại
-            if (userRecord && exitphone) {
-                return res.json({ message: 'Số điện thoại đã tồn tại trong hệ thống' });
-            }
-        } catch (error) {
-            if (error.code === 'auth/user-not-found') {
-                // Nếu số điện thoại chưa tồn tại, tạo mới người dùng với OTP
-                await firebase.auth().createUser({
-                    phoneNumber: phoneNumber,
-                    password: otp,
-                });
-            } else {
-                throw error;
-            }
-        }
-
-        const user = new User({ name, email, password: hashedPassword, role, phone, date: vietnamTime, otp, isVerified: false });
         await user.save();
 
         const responseData = {
@@ -120,6 +115,42 @@ router.post('/register', async(req, res) => {
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
 });
+
+router.post('/sendemail/:id', async(req, res) => {
+    try {
+        const id = req.params.id;
+        const user = await User.findById(id);
+        const otpCreatedAt = new Date();
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Tạo mã OTP ngẫu nhiên
+
+        if (!user) {
+            return res.status(400).json({ message: 'Người dùng không tồn tại.' });
+        }
+        user.otp = otp;
+        user.otpCreatedAt = otpCreatedAt;
+        await user.save();
+        let transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: 'trafdual0810@gmail.com',
+                pass: 'pjrg xxdq cyfs zosf'
+            }
+        });
+        const mailOptions = {
+            from: 'trafdual0810@gmail.com',
+            to: user.email,
+            subject: 'Mã OTP của bạn',
+            text: `Mã OTP của bạn là: ${user.otp}`
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.json({ message: 'gửi thành công' })
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' });
+    }
+})
+
 router.get('/getregister', async(req, res) => {
     res.render('register')
 })
@@ -127,17 +158,31 @@ router.get('/getregister', async(req, res) => {
 router.post('/register/:id', async(req, res) => {
     try {
         const id = req.params.id;
-
+        const { otp } = req.body;
         // Tìm người dùng bằng ID
         const user = await User.findById(id);
         if (!user) {
             return res.status(400).json({ message: 'Người dùng không tồn tại.' });
         }
+
+        const currentTime = new Date();
+        const otpCreationTime = new Date(user.otpCreatedAt);
+        const timeDifference = currentTime - otpCreationTime;
+
+        if (user.otp !== otp) {
+            return res.json({ message: 'Bạn đã nhập sai mã OTP.' });
+
+        }
+        if (timeDifference > 60 * 1000) {
+            return res.json({ message: 'Mã OTP đã hết hạn.' });
+        }
+
         user.isVerified = true;
         user.otp = undefined; // Xóa mã OTP sau khi xác minh
+        user.otpCreatedAt = null;
         await user.save();
 
-        res.redirect('/');
+        res.json({ message: 'thành công.' });
     } catch (error) {
         console.error('Error verifying OTP:', error);
         res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' });
@@ -329,6 +374,7 @@ router.post('/login', async(req, res) => {
 router.get('/manager', checkAuth, async(req, res) => {
     res.render('manager');
 })
+
 router.get('/', async(req, res) => {
     res.render('login')
 })

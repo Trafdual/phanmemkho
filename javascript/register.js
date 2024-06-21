@@ -1,36 +1,3 @@
-const firebaseConfig = {
-    apiKey: "AIzaSyAL6cp7X3vnIttif7XjWVZqnwomHdoxrRw",
-    authDomain: "appgiapha.firebaseapp.com",
-    projectId: "appgiapha",
-    storageBucket: "appgiapha.appspot.com",
-    messagingSenderId: "832803929271",
-    appId: "1:832803929271:web:1453609f2cb23819c8e132",
-    measurementId: "G-GLKHZPBEBY"
-};
-firebase.initializeApp(firebaseConfig);
-render();
-
-function render() {
-    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recapcha')
-    recaptchaVerifier.render()
-}
-
-function phoneAuth() {
-    var number = document.getElementById('phone').value;
-    if (number.startsWith('0')) {
-        number = '+84' + number.slice(1);
-    }
-    firebase.auth().signInWithPhoneNumber(number,
-        window.recaptchaVerifier).then(function(confirmationResult) {
-        window.confirmationResult = confirmationResult;
-        coderesult = confirmationResult;
-        document.getElementById('otp-container').style.display = 'block';
-        document.getElementById('register-container').style.display = 'none';
-    }).catch(function(error) {
-        alert(error.message)
-    })
-
-}
 var userId;
 
 function registerUser() {
@@ -59,7 +26,8 @@ function registerUser() {
         success: function(response) {
             if (response.data && response.data.user && response.data.user.length > 0) {
                 userId = response.data.user[0]._id;
-                phoneAuth();
+                document.getElementById('otp-container').style.display = 'block';
+                document.getElementById('register-container').style.display = 'none';
             } else {
                 var errorContainer = document.getElementById('error-container');
                 errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
@@ -88,36 +56,90 @@ function registerUser() {
     });
 }
 
+function sendEmail() {
+    // Code để gửi email OTP, ví dụ gọi API
+
+    // Hiển thị thẻ p và bắt đầu đếm ngược
+    const countdownElement = document.getElementById('countdown');
+    const sendemail = document.getElementById('sendemail');
+    const clicknut = document.getElementById('clicknut');
+    const nhapma = document.getElementById('nhapma');
+    const codeverifyButton = document.getElementById('codeverifyButton');
+    const timeElement = document.getElementById('time');
+    countdownElement.style.display = 'none';
+    let timeLeft = 60;
+    $.ajax({
+        url: '/sendemail/' + userId,
+        type: 'POST',
+        success: function(response) {
+            countdownElement.style.display = 'block';
+            sendemail.style.display = 'none'
+            clicknut.style.display = 'none'
+            nhapma.style.display = 'block'
+            codeverifyButton.style.display = 'block'
+            countdownElement.style.display = 'block';
+            timeElement.textContent = 'Mã OTP sẽ hết hạn sau ' + timeLeft + ' giây'; // Đặt lại thời gian ban đầu
+            const countdownInterval = setInterval(() => {
+                timeLeft--;
+                timeElement.textContent = 'Mã OTP sẽ hết hạn sau ' + timeLeft + ' giây';
+
+                if (timeLeft <= 0) {
+                    clearInterval(countdownInterval);
+                    timeElement.textContent = 'Mã OTP đã hết hạn';
+                    sendemail.style.display = 'block'
+                    codeverifyButton.style.display = 'none'
+
+                }
+            }, 1000);
+
+        },
+        error: function(error) {
+            var errorResponse = JSON.parse(error.responseText);
+            console.log(errorResponse.error);
+        }
+    }).catch(function() {
+        document.getElementsByClassName('no')[0].style.display = 'block';
+    })
+}
+
 function codeverify() {
     var codeverifyButton = document.getElementById('codeverifyButton');
     var loadingSpinner1 = document.getElementById('loadingSpinner1');
-
+    var errorContainer = document.getElementById('error-container1');
+    errorContainer.style.display = 'none';
     // Disable the button and show the loading spinner
     codeverifyButton.disabled = true;
     loadingSpinner1.style.display = 'inline-block';
 
-    var code = document.getElementById('otp').value;
-    coderesult.confirm(code).then(function() {
-        $.ajax({
-            url: '/register/' + userId,
-            type: 'POST',
-            success: function(response) {
+    var otp = document.getElementById('otp').value;
+    $.ajax({
+        url: '/register/' + userId,
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            otp: otp
+        }),
+        success: function(response) {
+            if (response.message === 'Bạn đã nhập sai mã OTP.') {
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+                errorContainer.style.display = 'block';
+            }
+            if (response.message === 'thành công.') {
                 document.getElementById('otp-container').style.display = 'none';
                 document.getElementById('kho-container').style.display = 'block';
-            },
-            error: function(error) {
-                var errorResponse = JSON.parse(error.responseText);
-                console.log(errorResponse.error);
-            },
-            complete: function() {
-                // Re-enable the button and hide the loading spinner
-                setTimeout(function() {
-                    codeverifyButton.disabled = false;
-                    loadingSpinner1.style.display = 'none';
-                }, 5000);
             }
-        });
-
+        },
+        error: function(error) {
+            var errorResponse = JSON.parse(error.responseText);
+            console.log(errorResponse.error);
+        },
+        complete: function() {
+            // Re-enable the button and hide the loading spinner
+            setTimeout(function() {
+                codeverifyButton.disabled = false;
+                loadingSpinner1.style.display = 'none';
+            }, 5000);
+        }
     }).catch(function() {
         document.getElementsByClassName('no')[0].style.display = 'block';
     })

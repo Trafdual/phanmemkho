@@ -5,6 +5,8 @@ const session = require('express-session');
 const methodOverride = require('method-override');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 const MongoStore = require('connect-mongo');
 const userRoutes = require('./routes/UserRoutes')
 const depotroutes = require('./routes/DepotRoutes');
@@ -63,8 +65,8 @@ app.use('/', khachhangRoutes);
 app.use('/', hoadonRoutes);
 app.use('/', nhanvienRoutes);
 
-
 const port = process.env.PORT || 8080
+
 app.listen(port, () => {
     try {
         console.log('kết nối thành công 8080')
