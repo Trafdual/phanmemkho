@@ -74,6 +74,11 @@ app.use('/', nhanvienRoutes);
 
 const port = process.env.PORT || 8080
 
+app.use((req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    next();
+});
+
 app.listen(port, () => {
     try {
         console.log('kết nối thành công 8080')
