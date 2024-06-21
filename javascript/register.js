@@ -197,3 +197,58 @@ function postdepot() {
         document.getElementsByClassName('no')[0].style.display = 'block';
     })
 }
+
+function registerUser1() {
+    var registerButton = document.getElementById('registerButton');
+    var loadingSpinner = document.getElementById('loadingSpinner');
+
+    // Disable the button and show the loading spinner
+    registerButton.disabled = true;
+    loadingSpinner.style.display = 'inline-block';
+
+    var name = document.getElementById('name').value;
+    var phone = document.getElementById('phone').value;
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+
+    fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name: name,
+                phone: phone,
+                email: email,
+                password: password
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(response => {
+            if (response.message === 'Số điện thoại không hợp lệ' || response.message === 'email không hợp lệ' || response.message === 'email này đã được đăng kí') {
+                var errorContainer = document.getElementById('error-container');
+                errorContainer.innerHTML = `<p class="alert alert-danger">${response.message}</p>`;
+            } else if (response.message === 'thành công') {
+                userId = response.data.user[0]._id;
+                document.getElementById('otp-container').style.display = 'block';
+                document.getElementById('register-container').style.display = 'none';
+            }
+        })
+        .catch(error => {
+            var errorMessage = error.message || 'Lỗi không xác định';
+            var errorContainer = document.getElementById('error-container');
+            errorContainer.innerHTML = `<p class="alert alert-danger">${errorMessage}</p>`;
+        })
+        .finally(() => {
+            // Re-enable the button and hide the loading spinner
+            setTimeout(function() {
+                registerButton.disabled = false;
+                loadingSpinner.style.display = 'none';
+            }, 5000);
+        });
+}
