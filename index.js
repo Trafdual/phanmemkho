@@ -41,7 +41,14 @@ app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, '/public')));
 app.use(express.static(path.join(__dirname, '/uploads')));
-app.use(express.static(path.join(__dirname, '/javascript'), { maxAge: '1s' }));
+app.use(express.static(path.join(__dirname, '/javascript'), {
+    maxAge: '1s',
+    setHeaders: function(res, path, stat) {
+        if (path.endsWith('.js')) {
+            res.setHeader('Cache-Control', 'no-cache');
+        }
+    }
+}));
 app.use(express.static(path.join(__dirname, '/style')));
 
 
