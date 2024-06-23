@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <style>
+        /* Your CSS styles here */
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        
+        .login-container {
+            width: 380px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            /* Align the content in the center */
+        }
+        
+        .logo {
+            margin-bottom: 20px;
+            background-color: #2FF2FE;
+            border-radius: 5px;
+            padding: 0px;
+            /* Adjust the margin as needed */
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            border: 0;
+            background: #2FF2FE;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        input[type="submit"]:hover {
+            background: #2c707f;
+        }
+        
+        .form-input {
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            /* Căn giữa theo chiều ngang */
+            justify-content: center;
+            text-align: center;
+            border: 1px solid #050505;
+            background-color: #fff;
+            padding: 10px;
+            margin-top: 10px;
+            /* Hiệu ứng đổ bóng */
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        
+        .form-input:hover {
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+            background-color: #c2faf5;
+        }
+        
+        #googleicon {
+            width: 25px;
+            height: 25px;
+            float: left;
+        }
+        
+        #googleicon:focus {
+            outline: none;
+            /* Remove the outline */
+            box-shadow: none;
+            /* Remove the box shadow */
+        }
+        
+        .note {
+            color: #888;
+            font-size: 12px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        .form-input p {
+            margin: 0;
+            flex: 1;
+            text-align: center;
+            margin-top: 3px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        
+        .foot a {
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+        <div class="logo">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
+        </div>
+        <h3 style="font-weight: bold;">Đăng nhập BiCraft</h3>
+        <div class="form-input">
+            <img src="http://localhost:8080/user.png" alt="" id="googleicon">
+            <p>Sử dụng tài khoản email</p>
+        </div>
+
+        <div class="form-input">
+            <img src="http://localhost:8080/google.png" alt="" id="googleicon">
+            <p>Tiếp tục với google</p>
+        </div>
+        <div class="form-input">
+            <img src="http://localhost:8080/facebook.png" alt="" id="googleicon">
+            <p>Tiếp tục với facebook</p>
+        </div>
+        <hr>
+        <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
+        <hr>
+        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn chưa có tài khoản? <a href="/getregister">Đăng ký</a></p>
+    </div>
+</body>
+
+</html>

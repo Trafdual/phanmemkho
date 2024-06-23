@@ -8,6 +8,8 @@ const momenttimezone = require('moment-timezone');
 const moment = require('moment');
 const firebase = require('firebase-admin')
 const nodemailer = require('nodemailer');
+const passport = require('passport');
+
 firebase.initializeApp({
     credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
 })
@@ -18,14 +20,6 @@ AWS.config.update({
     region: 'ap-southeast-1'
 });
 const sns = new AWS.SNS();
-let transporter = nodemailer.createTransport({
-    service: 'gmail', // hoặc bất kỳ dịch vụ email nào bạn sử dụng
-    auth: {
-        user: 'your-email@gmail.com', // Email của bạn
-        pass: 'your-email-password' // Mật khẩu của bạn
-    }
-});
-
 
 const storage = multer.memoryStorage();
 
@@ -58,6 +52,19 @@ function decrypt(encrypted) {
     decrypted += decipher.final('utf8');
     return decrypted;
 }
+router.get('/test', async(req, res) => {
+    res.render('logintest')
+})
+router.get('/auth/google',
+    passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+router.get('/auth/google/callback',
+    passport.authenticate('google', { failureRedirect: '/' }),
+    (req, res) => {
+        // Đăng nhập thành công, chuyển hướng đến trang mong muốn
+        res.redirect('/');
+    }
+);
 
 router.post('/register', async(req, res) => {
     try {
