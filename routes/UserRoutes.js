@@ -54,7 +54,7 @@ function decrypt(encrypted) {
     decrypted += decipher.final('utf8');
     return decrypted;
 }
-router.get('/test', async(req, res) => {
+router.get('/', async(req, res) => {
     res.render('logintest')
 })
 router.get('/auth/google',
@@ -426,7 +426,7 @@ router.get('/manager', checkAuth, async(req, res) => {
     res.render('manager');
 })
 
-router.get('/', async(req, res) => {
+router.get('/loginemail', async(req, res) => {
     res.render('login')
 })
 

@@ -125,10 +125,12 @@
             <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
         </div>
         <h3 style="font-weight: bold;">Đăng nhập BiCraft</h3>
-        <div class="form-input">
-            <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
-            <p>Sử dụng tài khoản email</p>
-        </div>
+        <form action="/loginemail" method="get" id="formemail">
+            <div class="form-input" id="btndangkyemail">
+                <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
+                <p>Sử dụng tài khoản email</p>
+            </div>
+        </form>
         <form action="/auth/google" method="get" id="formgoogle">
             <div class="form-input" id="btndangkygoogle">
                 <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
@@ -149,8 +151,8 @@
             <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
         </div>
         <h3 style="font-weight: bold;">Đăng Ký BiCraft</h3>
-        <form action="/getregister" method="get" id="formemail">
-            <div class="form-input" id="btndangkyemail">
+        <form action="/getregister" method="get" id="formemail1">
+            <div class="form-input" id="btndangkyemail1">
                 <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
                 <p>Sử dụng tài khoản email</p>
             </div>
@@ -190,6 +192,9 @@
         });
         document.getElementById('btndangkygoogle1').addEventListener('click', function() {
             document.getElementById('formgoogle1').submit();
+        });
+        document.getElementById('btndangkyemail1').addEventListener('click', function() {
+            document.getElementById('formemail1').submit();
         });
     </script>
 </body>
