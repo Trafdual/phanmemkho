@@ -111,12 +111,16 @@
         .foot a {
             text-decoration: none;
         }
+        
+        #dangky {
+            display: none;
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="login-container">
+    <div class="login-container" id="dangnhap">
         <div class="logo">
             <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
         </div>
@@ -137,8 +141,61 @@
         <hr>
         <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
         <hr>
-        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn chưa có tài khoản? <a href="/getregister">Đăng ký</a></p>
+        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn chưa có tài khoản? <a onclick="dangky()">Đăng ký</a></p>
     </div>
+    <div class="login-container" id="dangky">
+        <div class="logo">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
+        </div>
+        <h3 style="font-weight: bold;">Đăng Ký BiCraft</h3>
+        <form action="/getregister" method="get" id="formemail">
+            <div class="form-input" id="btndangkyemail">
+                <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
+                <p>Sử dụng tài khoản email</p>
+            </div>
+        </form>
+        <form action="/auth/google" method="get" id="formgoogle">
+            <div class="form-input" id="btndangkygoogle">
+                <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
+                <p>Tiếp tục với google</p>
+            </div>
+        </form>
+        <div class="form-input">
+            <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
+            <p>Tiếp tục với facebook</p>
+        </div>
+        <hr>
+        <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
+        <hr>
+        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn đã có tài khoản? <a onclick="dangnhap()">Đăng nhập</a></p>
+    </div>
+    <script>
+        function dangky() {
+            document.getElementById('dangnhap').style.display = 'none';
+            document.getElementById('dangky').style.display = 'block';
+
+        }
+
+        function dangnhap() {
+            document.getElementById('dangnhap').style.display = 'block';
+            document.getElementById('dangky').style.display = 'none';
+
+        }
+        document.getElementById('btndangkygoogle').addEventListener('click', function() {
+            document.getElementById('formgoogle').submit();
+        });
+        document.getElementById('btndangkyemail').addEventListener('click', function() {
+            document.getElementById('formemail').submit();
+        });
+    </script>
 </body>
+
+</html>
+
+</html>
+
+</html>
+
+</html>
 
 </html>

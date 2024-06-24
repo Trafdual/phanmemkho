@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const User = require('../models/UserModel')
+const Depot = require('../models/DepotModel');
 const bcrypt = require("bcryptjs");
 const multer = require('multer')
 const jwt = require('jsonwebtoken');
@@ -33,6 +34,7 @@ const checkAuth = (req, res, next) => {
         const decoded = jwt.verify(req.session.token, 'mysecretkey', { expiresIn: '1h' });
         req.userData = decoded;
         next();
+
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             req.session.destroy();
@@ -58,13 +60,49 @@ router.get('/test', async(req, res) => {
 router.get('/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
+
 router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
-        // Đăng nhập thành công, chuyển hướng đến trang mong muốn
-        res.redirect('/');
+        if (req.user.phone) {
+            const token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
+            req.session.userId = req.user._id;
+            req.session.token = token;
+            req.session.depotId = req.user.depot;
+            res.redirect('/manager');
+        } else {
+            res.redirect('/taokho'); // Chuyển hướng đến trang yêu cầu nhập số điện thoại
+        }
     }
 );
+router.get('/taokho', async(req, res) => {
+    res.render('khochua')
+})
+router.post('/taokho', async(req, res) => {
+    if (req.isAuthenticated()) {
+        const { phone } = req.body;
+        const { name, address } = req.body;
+        if (!/^\d{10}$/.test(phone)) {
+            return res.status(400).send('Số điện thoại không hợp lệ');
+        }
+        const depot = new Depot({
+            name,
+            address
+        })
+        req.user.phone = phone;
+        req.user.depot = depot._id;
+        depot.user.push(req.user._id);
+        await depot.save();
+        await req.user.save();
+        const token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
+        req.session.userId = req.user._id;
+        req.session.token = token;
+        req.session.depotId = req.user.depot;
+        res.redirect('/manager');
+    } else {
+        res.redirect('/');
+    }
+});
 
 router.post('/register', async(req, res) => {
     try {

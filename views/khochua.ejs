@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script>
+        // Your JavaScript code here
+        if (!Array.prototype.includes) {
+            console.log('Array.prototype.includes is not supported.');
+        } else {
+            console.log('Array.prototype.includes is supported.');
+        }
+    </script>
+    <style>
+        /* Your CSS styles here */
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+        
+        #register-container {
+            width: 350px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            /* Align the content in the center */
+        }
+        
+        #dialogsuccess {
+            width: 350px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: none;
+        }
+        
+        #otp-container {
+            width: 350px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: none;
+            /* Align the content in the center */
+        }
+        
+        #kho-container {
+            width: 350px;
+            margin: 0 auto;
+            margin-top: 100px;
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            display: none;
+        }
+        
+        .logo {
+            margin-bottom: 20px;
+            background-color: #2FF2FE;
+            border-radius: 5px;
+            padding: 0px;
+            /* Adjust the margin as needed */
+        }
+        
+        .logo img {
+            max-width: 100%;
+            height: auto;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        .btnn {
+            width: 100%;
+            padding: 10px;
+            border: 0;
+            background: #2FF2FE;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        
+        .btnn:hover {
+            background: #2c707f;
+        }
+        
+        .no {
+            display: none;
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #000;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        #countdown {
+            display: none
+        }
+        
+        #codeverifyButton {
+            display: none
+        }
+        
+        #nhapma {
+            display: none
+        }
+    </style>
+</head>
+
+<body>
+    <div id="kho-container">
+        <div class="logo">
+            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+                BICRAFT</h3>
+        </div>
+        <h2>Tạo kho chứa của bạn</h2>
+        <form action="/taokho" method="post">
+            <input type="text" placeholder="Số điện thoại" id="phone" name="phone" required><br>
+            <input type="text" placeholder="Tên kho chứa" id="namekho" name="name" required><br>
+            <input type="text" placeholder="Địa chỉ" id="address" name="address" required><br>
+            <button type="submit" class="btnn" id="postdepotButton">Initialization</button>
+        </form>
+    </div>
+    <script>
+    </script>
+</body>
+
+</html>

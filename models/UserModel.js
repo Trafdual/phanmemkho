@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     otp: { type: String }, // Thêm trường này để lưu mã OTP
     otpCreatedAt: { type: Date },
     isVerified: { type: Boolean, default: false },
-    isActivity: { type: Boolean, default: true },
+    isActivity: { type: Boolean, default: false },
 });
 
 const User = mongoose.model('user', userSchema);
