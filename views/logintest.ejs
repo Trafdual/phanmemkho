@@ -129,11 +129,12 @@
             <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
             <p>Sử dụng tài khoản email</p>
         </div>
-
-        <div class="form-input">
-            <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
-            <p>Tiếp tục với google</p>
-        </div>
+        <form action="/auth/google" method="get" id="formgoogle">
+            <div class="form-input" id="btndangkygoogle">
+                <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
+                <p>Tiếp tục với google</p>
+            </div>
+        </form>
         <div class="form-input">
             <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
             <p>Tiếp tục với facebook</p>
@@ -154,8 +155,8 @@
                 <p>Sử dụng tài khoản email</p>
             </div>
         </form>
-        <form action="/auth/google" method="get" id="formgoogle">
-            <div class="form-input" id="btndangkygoogle">
+        <form action="/auth/google" method="get" id="formgoogle1">
+            <div class="form-input" id="btndangkygoogle1">
                 <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
                 <p>Tiếp tục với google</p>
             </div>
@@ -186,6 +187,9 @@
         });
         document.getElementById('btndangkyemail').addEventListener('click', function() {
             document.getElementById('formemail').submit();
+        });
+        document.getElementById('btndangkygoogle1').addEventListener('click', function() {
+            document.getElementById('formgoogle1').submit();
         });
     </script>
 </body>

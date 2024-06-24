@@ -219,7 +219,7 @@ router.get('/getnhanvienjson', async(req, res) => {
         await Promise.all(depot.user.map(async(nv) => {
             const staff = await User.findById(nv._id);
 
-            if (staff && staff.role === 'staff' && staff.isActivity === true) {
+            if (staff && staff.role === 'staff') {
                 const encryptedPassword = JSON.parse(staff.password);
                 nhanvien.push({
                     _id: staff._id,

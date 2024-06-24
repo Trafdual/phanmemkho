@@ -64,11 +64,10 @@ router.get('/auth/google',
 router.get('/auth/google/callback',
     passport.authenticate('google', { failureRedirect: '/' }),
     (req, res) => {
+        req.session.userId = req.user._id; // Lưu user ID vào session
+        req.session.token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
+        req.session.depotId = req.user.depot; // Lưu depot ID vào session (nếu có)
         if (req.user.phone) {
-            const token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
-            req.session.userId = req.user._id;
-            req.session.token = token;
-            req.session.depotId = req.user.depot;
             res.redirect('/manager');
         } else {
             res.redirect('/taokho'); // Chuyển hướng đến trang yêu cầu nhập số điện thoại
@@ -79,29 +78,35 @@ router.get('/taokho', async(req, res) => {
     res.render('khochua')
 })
 router.post('/taokho', async(req, res) => {
-    if (req.isAuthenticated()) {
-        const { phone } = req.body;
-        const { name, address } = req.body;
-        if (!/^\d{10}$/.test(phone)) {
-            return res.status(400).send('Số điện thoại không hợp lệ');
+    try {
+        if (req.isAuthenticated()) {
+            const { phone } = req.body;
+            const { name, address } = req.body;
+            if (!/^\d{10}$/.test(phone)) {
+                return res.status(400).send('Số điện thoại không hợp lệ');
+            }
+            const depot = new Depot({
+                name,
+                address
+            })
+            req.user.phone = phone;
+            req.user.depot = depot._id;
+            depot.user.push(req.user._id);
+            await depot.save();
+            await req.user.save();
+            const token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
+            req.session.userId = req.user._id;
+            req.session.token = token;
+            req.session.depotId = req.user.depot;
+            res.redirect('/manager');
+        } else {
+            res.redirect('/test');
         }
-        const depot = new Depot({
-            name,
-            address
-        })
-        req.user.phone = phone;
-        req.user.depot = depot._id;
-        depot.user.push(req.user._id);
-        await depot.save();
-        await req.user.save();
-        const token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
-        req.session.userId = req.user._id;
-        req.session.token = token;
-        req.session.depotId = req.user.depot;
-        res.redirect('/manager');
-    } else {
-        res.redirect('/');
+    } catch (error) {
+        console.error('Error verifying OTP:', error);
+        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
     }
+
 });
 
 router.post('/register', async(req, res) => {
