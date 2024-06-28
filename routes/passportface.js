@@ -7,7 +7,7 @@ const User = require('../models/UserModel'); // Model User của bạn
 passport.use(new FacebookStrategy({
         clientID: '1227133001630218',
         clientSecret: '32804f589e55e3fed4fd48d9f5e633c0',
-        callbackURL: 'https://ansuataohanoi.com/auth/facebook/callback',
+        callbackURL: 'https://www.ansuataohanoi.com/auth/facebook/callback',
         profileFields: ['id', 'emails', 'name']
     },
     async(accessToken, refreshToken, profile, done) => {
