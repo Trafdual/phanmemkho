@@ -79,7 +79,7 @@ router.get('/auth/google/callback',
 
 router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
 
-router.get('/auth/google/callback',
+router.get('/auth/facebook/callback',
     passport.authenticate('facebook', { failureRedirect: '/' }),
     (req, res) => {
         req.session.userId = req.user._id; // Lưu user ID vào session
