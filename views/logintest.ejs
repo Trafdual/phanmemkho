@@ -137,10 +137,12 @@
                 <p>Tiếp tục với google</p>
             </div>
         </form>
-        <div class="form-input">
-            <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
-            <p>Tiếp tục với facebook</p>
-        </div>
+        <form action="/auth/facebook" method="get" id="formfacebook">
+            <div class="form-input" id="btnfacebook">
+                <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
+                <p>Tiếp tục với facebook</p>
+            </div>
+        </form>
         <hr>
         <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
         <hr>
@@ -163,10 +165,12 @@
                 <p>Tiếp tục với google</p>
             </div>
         </form>
-        <div class="form-input">
-            <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
-            <p>Tiếp tục với facebook</p>
-        </div>
+        <form action="/auth/facebook" method="get" id="formfacebook1">
+            <div class="form-input" id="btnfacebook1">
+                <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
+                <p>Tiếp tục với facebook</p>
+            </div>
+        </form>
         <hr>
         <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
         <hr>
@@ -195,6 +199,13 @@
         });
         document.getElementById('btndangkyemail1').addEventListener('click', function() {
             document.getElementById('formemail1').submit();
+        });
+
+        document.getElementById('btnfacebook1').addEventListener('click', function() {
+            document.getElementById('formfacebook1').submit();
+        });
+        document.getElementById('btnfacebook').addEventListener('click', function() {
+            document.getElementById('formfacebook').submit();
         });
     </script>
 </body>

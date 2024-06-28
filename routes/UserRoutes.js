@@ -54,9 +54,11 @@ function decrypt(encrypted) {
     decrypted += decipher.final('utf8');
     return decrypted;
 }
+
 router.get('/', async(req, res) => {
     res.render('logintest')
 })
+
 router.get('/auth/google',
     passport.authenticate('google', { scope: ['profile', 'email'] })
 );
@@ -74,9 +76,27 @@ router.get('/auth/google/callback',
         }
     }
 );
+
+router.get('/auth/facebook', passport.authenticate('facebook', { scope: ['email'] }));
+
+router.get('/auth/google/callback',
+    passport.authenticate('facebook', { failureRedirect: '/' }),
+    (req, res) => {
+        req.session.userId = req.user._id; // Lưu user ID vào session
+        req.session.token = jwt.sign({ userId: req.user._id, role: req.user.role }, 'mysecretkey', { expiresIn: '1h' });
+        req.session.depotId = req.user.depot; // Lưu depot ID vào session (nếu có)
+        if (req.user.phone) {
+            res.redirect('/manager');
+        } else {
+            res.redirect('/taokho'); // Chuyển hướng đến trang yêu cầu nhập số điện thoại
+        }
+    }
+);
+
 router.get('/taokho', async(req, res) => {
     res.render('khochua')
 })
+
 router.post('/taokho', async(req, res) => {
     try {
         if (req.isAuthenticated()) {
@@ -429,6 +449,4 @@ router.get('/manager', checkAuth, async(req, res) => {
 router.get('/loginemail', async(req, res) => {
     res.render('login')
 })
-
-
 module.exports = router;

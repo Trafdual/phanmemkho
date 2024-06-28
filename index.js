@@ -19,6 +19,7 @@ const khachhangRoutes = require('./routes/KhachHangRoutes');
 const hoadonRoutes = require('./routes/HoaDonRoutes');
 const nhanvienRoutes = require('./routes/NhanvienRoutes');
 require('./routes/passport');
+require('./routes/passportface');
 var path = require('path');
 
 var app = express();
