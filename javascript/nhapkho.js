@@ -18,6 +18,8 @@ function getloaisanpham() {
     document.getElementById('sanpham').style.display = 'none';
     document.getElementById('quaylai').style.display = 'none'
     document.getElementById('form-input1').style.display = 'none';
+    document.getElementById('addsp').style.display = 'none';
+
 
     fetch(`/getloaisanphamweb`)
         .then(response => response.json())
@@ -77,6 +79,7 @@ function openchitietloaimodal(id) {
     document.getElementById('form-input').style.display = 'none';
     document.getElementById('quaylai').style.display = 'block'
     document.getElementById('form-input1').style.display = 'block';
+    document.getElementById('addsp').style.display = 'block';
     getAndDisplay(id);
     intersp = setInterval(() => getAndDisplay(id), 5000)
     modalElement.style.display = 'none'
@@ -98,8 +101,14 @@ function openchitietloaimodal(id) {
         document.getElementById('sanpham').style.display = 'none';
         document.getElementById('quaylai').style.display = 'none'
         document.getElementById('form-input1').style.display = 'none';
+        document.getElementById('addsp').style.display = 'none';
+
 
     };
+    document.getElementById('addsp').onclick = function() {
+        addsanpham(id)
+    };
+
 }
 
 function getAndDisplay(id) {
@@ -127,6 +136,65 @@ function getAndDisplay(id) {
             console.error('Lỗi khi lấy danh sách sản phẩm:', error);
             alert('Đã xảy ra lỗi khi lấy danh sách sản phẩm.');
         });
+}
+
+function addsanpham(id) {
+    document.getElementById('reader').style.display = 'block';
+    const qrCodeSuccessCallback = (decodedText, decodedResult) => {
+
+        console.log(`Code matched = ${decodedText}`, decodedResult);
+        fetch(`/postloaisanpham/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    imel: decodedText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                intersp = setInterval(() => getAndDisplay(id), 5000)
+                setTimeout(() => {
+                    clearInterval(intersp);
+                    console.error('Interval cleared');
+                }, 1000)
+                document.getElementById('reader').style.display = 'none';
+
+            })
+            .catch(error => {
+                console.error(error.message)
+
+            });
+
+
+    };
+
+    const qrCodeFailureCallback = (error) => {
+        // Xử lý khi quét thất bại
+        console.warn(`Code scan error = ${error}`);
+    };
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    const config = {
+        fps: 10,
+        qrbox: {
+            width: 300,
+            height: 100
+        }
+    };
+
+    html5QrCode.start({
+            facingMode: "environment"
+        }, config, (text, result) => qrCodeSuccessCallback(text, result))
+        .catch(err => {
+            // Start failed, handle it.
+            console.error("Failed to start scanning: ", err);
+        });
+
+    html5QrCode.onScanFailure = qrCodeFailureCallback;
+
 }
 
 
