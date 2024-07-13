@@ -160,7 +160,7 @@ function addsanpham(id) {
                     clearInterval(intersp);
                     console.error('Interval cleared');
                 }, 1000)
-                document.getElementById('reader').style.display = 'none';
+                $('#myModal').modal('hide');
 
             })
             .catch(error => {
