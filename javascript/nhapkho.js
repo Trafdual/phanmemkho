@@ -140,7 +140,7 @@ function getAndDisplay(id) {
 }
 
 function addsanpham(id) {
-    document.getElementById('reader').style.display = 'block';
+    $('#myModal').modal('show');
     const qrCodeSuccessCallback = (decodedText, decodedResult) => {
 
         console.log(`Code matched = ${decodedText}`, decodedResult);
