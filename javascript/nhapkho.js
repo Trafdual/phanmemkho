@@ -105,9 +105,11 @@ function openchitietloaimodal(id) {
 
 
     };
-    document.getElementById('addsp').onclick = function() {
-        addsanpham(id)
-    };
+    document.addEventListener("DOMContentLoaded", function() {
+        document.getElementById('addsp').onclick = function() {
+            addsanpham(id)
+        };
+    });
 
 }
 
