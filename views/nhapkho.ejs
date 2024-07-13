@@ -12,91 +12,92 @@
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        input[type="button"] {
-            margin-bottom: 10px;
-            border: 0;
-            background: #2FF2FE;
-            color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        
-        input[type="button"]:hover {
-            background: #2c707f;
-        }
-        
-        #form-input {
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            width: 270px;
-            height: 45px;
-            background-color: #fff;
-            padding: 15px;
-            margin-left: 620px;
-        }
-        
-        #form-input1 {
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            width: 270px;
-            height: 45px;
-            background-color: #fff;
-            padding: 15px;
-            margin-left: 720px;
-        }
-        
-        input[type="search"]:focus {
-            outline: none;
-            /* Remove the outline */
-            box-shadow: none;
-            /* Remove the box shadow */
-        }
-        
-        button[type="submit"]:focus {
-            outline: none;
-            /* Remove the outline */
-            box-shadow: none;
-            /* Remove the box shadow */
-        }
-        
-        #loaisanpham {
-            margin-top: 2px;
-        }
-        
-        .loading-spinner-container {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            flex-direction: column;
-        }
-        
-        .loading-spinner {
-            margin-top: 50px;
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-top-color: #000;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 525px;
-        }
-        
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
+        @media only screen and (max-width: 700px) {
+            body {
+                font-size: 10px;
             }
         }
         
-        #reader {
-            width: 100%;
-            /* Điều chỉnh kích thước theo ý muốn */
-            height: 300px;
-            /* Kích thước tối thiểu */
-            margin: auto;
-            /* Căn giữa */
+        @media only screen and (min-width: 701px) {
+            input[type="button"] {
+                margin-bottom: 10px;
+                border: 0;
+                background: #2FF2FE;
+                color: #fff;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            input[type="button"]:hover {
+                background: #2c707f;
+            }
+            #form-input {
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                width: 270px;
+                height: 45px;
+                background-color: #fff;
+                padding: 15px;
+                margin-left: 620px;
+            }
+            #form-input1 {
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                width: 270px;
+                height: 45px;
+                background-color: #fff;
+                padding: 15px;
+                margin-left: 720px;
+            }
+            input[type="search"]:focus {
+                outline: none;
+                /* Remove the outline */
+                box-shadow: none;
+                /* Remove the box shadow */
+            }
+            button[type="submit"]:focus {
+                outline: none;
+                /* Remove the outline */
+                box-shadow: none;
+                /* Remove the box shadow */
+            }
+            #loaisanpham {
+                margin-top: 2px;
+            }
+            .loading-spinner-container {
+                display: none;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                flex-direction: column;
+            }
+            .loading-spinner {
+                margin-top: 50px;
+                width: 50px;
+                height: 50px;
+                border: 5px solid rgba(0, 0, 0, 0.1);
+                border-radius: 50%;
+                border-top-color: #000;
+                animation: spin 1s ease-in-out infinite;
+                margin-left: 48%;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            #reader {
+                width: 100%;
+                /* Điều chỉnh kích thước theo ý muốn */
+                height: 300px;
+                /* Kích thước tối thiểu */
+                margin: auto;
+                /* Căn giữa */
+            }
+            #quaylai {
+                margin-right: 2%;
+            }
         }
     </style>
 </head>
