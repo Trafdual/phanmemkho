@@ -143,7 +143,7 @@ function addsanpham(id) {
     const qrCodeSuccessCallback = (decodedText, decodedResult) => {
 
         console.log(`Code matched = ${decodedText}`, decodedResult);
-        fetch(`/postloaisanpham/${id}`, {
+        fetch(`/postsp/${id}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -175,7 +175,7 @@ function addsanpham(id) {
         console.warn(`Code scan error = ${error}`);
     };
 
-    const html5QrCode = new Html5Qrcode("reader");
+    const html5QrCode = new Html5QrCode("reader");
 
     const config = {
         fps: 10,
