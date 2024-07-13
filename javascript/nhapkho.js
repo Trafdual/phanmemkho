@@ -175,7 +175,6 @@ function addsanpham(id) {
         console.warn(`Code scan error = ${error}`);
     };
 
-    const html5QrCode = new Html5QrCode("reader");
 
     const config = {
         fps: 10,
