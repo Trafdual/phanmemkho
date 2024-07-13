@@ -16,6 +16,43 @@
             body {
                 font-size: 10px;
             }
+            h1 {
+                display: none;
+            }
+            h2 {
+                display: none
+            }
+            input[type="button"] {
+                margin-bottom: 10px;
+                border: 0;
+                background: #2FF2FE;
+                color: #fff;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+            input[type="button"]:hover {
+                background: #2c707f;
+            }
+            #form-input {
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                width: 270px;
+                height: 45px;
+                background-color: #fff;
+                padding: 15px;
+                margin-left: 620px;
+            }
+            #form-input1 {
+                border-radius: 20px;
+                display: flex;
+                align-items: center;
+                width: 270px;
+                height: 45px;
+                background-color: #fff;
+                padding: 15px;
+                margin-left: 720px;
+            }
         }
         
         @media only screen and (min-width: 701px) {
@@ -125,7 +162,7 @@
         </div>
         <div id="loaisanpham" class="table-data">
             <div class="order">
-                <table class="table">
+                <table class="table table-hover table-striped table-bordered">
                     <thead class="thead-dark">
                         <tr>
                             <th>ID</th>
@@ -148,7 +185,7 @@
 
         <div id="sanpham" class="table-data">
             <div class="order">
-                <table class="table">
+                <table class="table table-hover table-striped table-bordered">
                     <thead class="thead-dark">
                         <tr>
                             <th>ID</th>
