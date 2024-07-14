@@ -225,6 +225,7 @@
         const productManagerLink = document.getElementById('productManagerLink');
         productManagerLink.addEventListener("click", function(event) {
             event.preventDefault();
+            sidebar.classList.add('hide');
             fetch('/getloaisanpham')
                 .then(response => response.text())
                 .then(data => {
@@ -237,6 +238,7 @@
         const khachhangManagerLink = document.getElementById('khachhangManagerLink');
         khachhangManagerLink.addEventListener("click", function(event) {
             event.preventDefault();
+            sidebar.classList.add('hide');
             fetch('/khachhang')
                 .then(response => response.text())
                 .then(data => {
@@ -250,6 +252,7 @@
         const DanhsachNhanvien = document.getElementById('DanhsachNhanvien');
         DanhsachNhanvien.addEventListener("click", function(event) {
             event.preventDefault();
+            sidebar.classList.add('hide');
             fetch('/nhanvienweb')
                 .then(response => response.text())
                 .then(data => {

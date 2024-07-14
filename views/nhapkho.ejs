@@ -34,8 +34,7 @@
                 background: #2c707f;
             }
             #form-input {
-                border-radius: 20px;
-                display: flex;
+                display: none;
                 align-items: center;
                 width: 270px;
                 height: 45px;
@@ -44,14 +43,63 @@
                 margin-left: 620px;
             }
             #form-input1 {
+                display: none;
                 border-radius: 20px;
-                display: flex;
                 align-items: center;
                 width: 270px;
                 height: 45px;
                 background-color: #fff;
                 padding: 15px;
                 margin-left: 720px;
+            }
+            .loading-spinner-container {
+                display: none;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+                flex-direction: column;
+            }
+            .form-input {
+                display: none;
+            }
+            th {
+                text-align: center;
+                font-size: 10px;
+            }
+            #btncapnhatloai {
+                width: 90px;
+                height: 30px;
+                margin-top: 5px;
+                background-color: #F89007;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 10px
+            }
+            #btnchitietloai {
+                width: 90px;
+                height: 30px;
+                margin-top: 5px;
+                background-color: #FA0303;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 10px
+            }
+            #addloaispmodal {
+                width: 80%;
+                margin-left: 15%;
+            }
+            #putloaispmodal {
+                width: 80%;
+                margin-left: 15%;
+            }
+            #myModal {
+                width: 80%;
+                margin-left: 15%;
+            }
+            #quaylai {
+                margin-right: 2%;
             }
         }
         
@@ -135,6 +183,29 @@
             #quaylai {
                 margin-right: 2%;
             }
+            th {
+                text-align: center;
+            }
+            #btncapnhatloai {
+                width: 120px;
+                height: 50px;
+                margin-top: 5px;
+                background-color: #F89007;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 13px
+            }
+            #btnchitietloai {
+                width: 120px;
+                height: 50px;
+                margin-top: 5px;
+                background-color: #FA0303;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                font-size: 13px
+            }
         }
     </style>
 </head>
@@ -165,13 +236,12 @@
                 <table class="table table-hover table-striped table-bordered">
                     <thead class="thead-dark">
                         <tr>
-                            <th>ID</th>
-                            <th style="text-align:center">Tên</th>
-                            <th style="text-align:center">Số lượng máy</th>
-                            <th style="text-align:center">Ngày nhập</th>
-                            <th style="text-align:center">Tổng tiền</th>
-                            <th style="text-align:center">Trung bình máy</th>
-                            <th style="text-align:center">Chức năng</th>
+                            <th>Tên</th>
+                            <th>Số lượng máy</th>
+                            <th>Ngày nhập</th>
+                            <th>Tổng tiền</th>
+                            <th>Trung bình máy</th>
+                            <th>Chức năng</th>
                         </tr>
                     </thead>
 
@@ -188,12 +258,11 @@
                 <table class="table table-hover table-striped table-bordered">
                     <thead class="thead-dark">
                         <tr>
-                            <th>ID</th>
-                            <th style="text-align:center">Tên</th>
-                            <th style="text-align:center">Màu sắc</th>
-                            <th style="text-align:center">Imel</th>
-                            <th style="text-align:center">Dung lượng</th>
-                            <th style="text-align:center">Chức năng</th>
+                            <th>Tên</th>
+                            <th>Màu sắc</th>
+                            <th>Imel</th>
+                            <th>Dung lượng</th>
+                            <th>Chức năng</th>
                         </tr>
                     </thead>
                     <tbody id="sanphamTableBody">

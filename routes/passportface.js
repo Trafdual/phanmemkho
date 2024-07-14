@@ -24,10 +24,8 @@ passport.use(new FacebookStrategy({
                     date: moment().tz('Asia/Ho_Chi_Minh').toDate(),
                     isVerified: true // Mặc định là true vì đã xác thực qua Facebook
                 });
-
                 await user.save();
             }
-
             done(null, user);
         } catch (error) {
             done(error, false);

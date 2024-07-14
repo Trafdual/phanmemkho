@@ -14,7 +14,6 @@ function getloaisanpham() {
     const commentsTableBody = document.getElementById('loaiTableBody');
     document.getElementById('loaisanpham').style.display = 'block'
     document.getElementById('addloaisp').style.display = 'block'
-    document.getElementById('form-input').style.display = 'block';
     document.getElementById('sanpham').style.display = 'none';
     document.getElementById('quaylai').style.display = 'none'
     document.getElementById('form-input1').style.display = 'none';
@@ -29,9 +28,6 @@ function getloaisanpham() {
                 loaiDataMap[loaisanpham._id] = loaisanpham;
                 const newCommentDiv = document.createElement('tr');
                 newCommentDiv.innerHTML = `
-                                    <td class="td-name" style="margin-right:5px; padding:10px">
-                        ${loaisanpham._id}
-                    </td>
                     <td class="td-name" style="margin-right:5px; padding:10px">
                         ${loaisanpham.name}
                     </td>
@@ -49,10 +45,10 @@ function getloaisanpham() {
                     </td>
                     <td style="margin-right:5px; padding:10px">
                       <button
-                            style="width: 120px; height: 50px; margin-top: 5px; background-color: #F89007; border: none; border-radius: 5px; color: white;font-size:13px"
+                            id="btncapnhatloai"
                             type="button" onclick="editloai('${loaisanpham._id}')">Cập nhật</button>
                             <button
-                            style="width: 120px; height: 50px; margin-top: 5px; background-color: #FA0303; border: none; border-radius: 5px; color: white;font-size:13px"
+                            id="btnchitietloai"
                             type="button" onclick="openchitietloaimodal('${loaisanpham._id}')">Chi tiết</button>
                     </td>
             `;
@@ -78,7 +74,7 @@ function openchitietloaimodal(id) {
     document.getElementById('addloaisp').style.display = 'none'
     document.getElementById('form-input').style.display = 'none';
     document.getElementById('quaylai').style.display = 'block'
-    document.getElementById('form-input1').style.display = 'block';
+    document.getElementById('form-input1').style.display = window.innerWidth <= 700 ? 'none' : 'block';;
     document.getElementById('addsp').style.display = 'block';
     getAndDisplay(id);
     intersp = setInterval(() => getAndDisplay(id), 5000)
@@ -97,7 +93,7 @@ function openchitietloaimodal(id) {
         sanpham.id = 'sanphamTableBody'
         document.getElementById('loaisanpham').style.display = 'block'
         document.getElementById('addloaisp').style.display = 'block'
-        document.getElementById('form-input').style.display = 'block';
+        document.getElementById('form-input').style.display = window.innerWidth >= 701 ? 'block' : 'none';
         document.getElementById('sanpham').style.display = 'none';
         document.getElementById('quaylai').style.display = 'none'
         document.getElementById('form-input1').style.display = 'none';
@@ -122,7 +118,6 @@ function getAndDisplay(id) {
             data.forEach(sanpham => {
                 const newRow = document.createElement('tr');
                 newRow.innerHTML = `
-                    <td class="td-id" style="text-align:center;">${sanpham._id}</td>
                     <td class="td-namesp" style="text-align:center">${sanpham.name}</td>
                     <td class="td-color" style="text-align:center">${sanpham.color}</td>
                     <td class="td-imel" style="text-align:center">${sanpham.imel}</td>

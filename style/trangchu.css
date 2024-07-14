@@ -569,7 +569,7 @@ body {
 
 @media screen and (max-width: 700px) {
     #sidebar {
-        width: 45%;
+        width: 50%;
     }
     #content {
         width: calc(100% - 60px);
@@ -577,6 +577,25 @@ body {
     }
     #content nav .nav-link {
         display: none;
+    }
+    #content main .table-data .order table th {
+        padding-bottom: 12px;
+        font-size: 10px;
+        text-align: left;
+        border-bottom: 1px solid var(--grey);
+        text-align: center;
+    }
+    #sidebar.hide+#content {
+        margin-left: 60px;
+        /* Điều chỉnh chiều rộng của content khi sidebar bị thu gọn */
+        transition: margin-left .3s ease;
+        /* Thêm transition cho hiệu ứng mượt mà */
+    }
+    #sidebar+#content {
+        transition: margin-left .3s ease;
+        /* Thêm transition cho hiệu ứng mượt mà */
+        margin-left: 50%;
+        /* Điều chỉnh margin-left để content co vào khi sidebar được mở rộng */
     }
 }
 
