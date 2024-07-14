@@ -162,8 +162,6 @@ function addsanpham(id) {
                 console.error(error.message)
 
             });
-
-
     };
 
     const qrCodeFailureCallback = (error) => {
