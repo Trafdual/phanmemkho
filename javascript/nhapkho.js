@@ -155,6 +155,7 @@ function addsanpham(id) {
                     clearInterval(intersp);
                     console.error('Interval cleared');
                 }, 1000)
+                html5QrCode.stop();
                 $('#myModal').modal('hide');
 
             })
@@ -188,6 +189,9 @@ function addsanpham(id) {
         });
 
     html5QrCode.onScanFailure = qrCodeFailureCallback;
+    document.getElementById('closeqr').onclick = function() {
+        html5QrCode.stop()
+    };
 
 }
 
