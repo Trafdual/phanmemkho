@@ -156,7 +156,6 @@ function addsanpham(id) {
                     console.error('Interval cleared');
                 }, 1000)
                 $('#myModal').modal('hide');
-
             })
             .catch(error => {
                 console.error(error.message)
