@@ -28,7 +28,7 @@ const upload = multer({ storage: storage });
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const checkAuth = (req, res, next) => {
     if (!req.session.token) {
-        return res.redirect('/');
+        return res.json({ message: 'hết hạn' });
     }
     try {
         const decoded = jwt.verify(req.session.token, 'mysecretkey', { expiresIn: '1h' });
@@ -38,7 +38,7 @@ const checkAuth = (req, res, next) => {
     } catch (error) {
         if (error.name === 'TokenExpiredError') {
             req.session.destroy();
-            return res.redirect('/');
+           return res.json({ message: 'lỗi' })
         } else {
             console.error(error);
             return res.status(500).json({ message: 'Đã xảy ra lỗi.' });
@@ -266,7 +266,7 @@ router.post('/login', async(req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) {
-            return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
+            return res.json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
         }
 
         const isPasswordValid = await bcrypt.compare(password, user.password);
@@ -275,7 +275,7 @@ router.post('/login', async(req, res) => {
             const isPasswordValidCrypto = decrypt(encryptedPassword) === password;
 
             if (!isPasswordValidCrypto) {
-                return res.status(401).json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
+                return res.json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' });
             }
         }
         const accountCreationTime = moment(user.date);
@@ -284,7 +284,7 @@ router.post('/login', async(req, res) => {
 
         // Kiểm tra nếu khoảng thời gian lớn hơn 10 phút
         if (differenceInMinutes > 8) {
-            return res.status(401).json({ message: 'Tài khoản bạn đã hết hạn.' });
+            return res.json({ message: 'Tài khoản bạn đã hết hạn.' });
         }
         const responseData = {
             success: user.success,
@@ -301,7 +301,7 @@ router.post('/login', async(req, res) => {
 
         const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey');
         responseData.token = token;
-        res.status(200).json(responseData);
+        res.json(responseData);
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Đã xảy ra lỗi.' });
@@ -403,44 +403,7 @@ router.post('/loginadmin', async(req, res) => {
     }
 });
 
-router.post('/login', async(req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await User.findOne({ email });
 
-        if (!user) {
-            return res.json({ message: 'Email không đúng.' });
-        }
-
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-
-        if (!isPasswordValid) {
-            return res.json({ message: 'Mật khẩu không đúng.' });
-        }
-
-        const responseData = {
-            success: user.success,
-            data: {
-                user: [{
-                    _id: user._id,
-                    email: user.email,
-                    phone: user.phone,
-                    password: user.password,
-                    role: user.role,
-                    depotId: user.depot,
-                    date: user.date
-                }, ],
-            },
-        };
-
-        const token = jwt.sign({ userId: user._id, role: user.role }, 'mysecretkey');
-        responseData.token = token;
-        res.status(200).json(responseData);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Đã xảy ra lỗi.' });
-    }
-});
 
 router.get('/manager', checkAuth, async(req, res) => {
     res.render('manager');
