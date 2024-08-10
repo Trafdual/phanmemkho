@@ -151,7 +151,7 @@ router.post('/taokho', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, role, phone } = req.body
+    const { name, email, password, phone } = req.body
     const vietnamTime = momenttimezone().toDate()
     // Kiểm tra số điện thoại
     if (!phone || !/^\d{10}$/.test(phone)) {
@@ -163,6 +163,10 @@ router.post('/register', async (req, res) => {
     }
 
     const exitphone = await User.findOne({ phone })
+    if(exitphone) {
+      return res.json({ message: 'số điện thoại này đã được đăng kí' })
+
+    }
 
     const existingemail = await User.findOne({ email })
     if (existingemail) {
@@ -175,10 +179,9 @@ router.post('/register', async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role,
       phone,
       date: vietnamTime,
-      isVerified: false
+      isVerified: true
     })
 
     await user.save()
