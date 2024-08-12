@@ -5,7 +5,7 @@ const userSchema = new mongoose.Schema({
     password: { type: String },
     email: { type: String },
     phone: { type: String },
-    depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
+    depot: [{ type: mongoose.Schema.Types.ObjectId, ref: 'depot' }],
     birthday: { type: Date },
     date: { type: Date },
     role: { type: String, enum: ['admin', 'staff', 'manager'], default: 'manager' },

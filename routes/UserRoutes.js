@@ -314,7 +314,7 @@ router.post('/login', async (req, res) => {
         user: [
           {
             _id: user._id,
-            username: user.username,
+            name: user.name,
             password: user.password,
             role: user.role,
             date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
