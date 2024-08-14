@@ -291,9 +291,6 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.json({ message: 'Tên đăng nhập hoặc mật khẩu không đúng.' })
     }
-    if(user.isVerified === false){
-      return res.json({ message: 'tài khoản đang chờ duyệt vui lòng đợi một lát' })
-    }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
@@ -320,6 +317,7 @@ router.post('/login', async (req, res) => {
             name: user.name,
             password: user.password,
             role: user.role,
+            isVerified: user.isVerified,
             date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
           }
         ]

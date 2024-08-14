@@ -8,6 +8,7 @@ const loaisanphamSchema = new mongoose.Schema({
     date: { type: Date },
     average: { type: Number },
     soluong: { type: Number },
+    nhacungcap: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' }],
 });
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema);
 module.exports = LoaiSanPham;

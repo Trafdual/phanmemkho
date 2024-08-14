@@ -5,7 +5,8 @@ const depotSchema = new mongoose.Schema({
     address: { type: String },
     user: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     loaisanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'loaisanpham' }],
-    khachang: [{ type: mongoose.Schema.Types.ObjectId, ref: 'khachhang' }]
+    khachang: [{ type: mongoose.Schema.Types.ObjectId, ref: 'khachhang' }],
+    nhacungcap: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' }]
 });
 const DePot = mongoose.model('depot', depotSchema);
 module.exports = DePot;
