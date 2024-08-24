@@ -66,7 +66,71 @@ router.post('/postloaisanpham/:nccId', async (req, res) => {
       depot: depot._id,
       tongtien,
       soluong,
-      date:formattedDate,
+      date: formattedDate,
+      nhacungcap: nhacungcap._id
+    })
+    loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
+    const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
+    loaisanpham.malsp = malsp
+    await loaisanpham.save()
+    depot.loaisanpham.push(loaisanpham._id)
+    nhacungcap.loaisanpham.push(loaisanpham._id)
+    await nhacungcap.save()
+    await depot.save()
+    const ncc = {
+      _id: loaisanpham._id,
+      malsp: loaisanpham.malsp,
+      name: loaisanpham.name,
+      soluong: loaisanpham.soluong,
+      tongtien: loaisanpham.tongtien,
+      date: moment(loaisanpham.date).format('DD/MM/YYYY'),
+      average: loaisanpham.average
+    }
+    res.json(ncc)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getloaisanpham2/:depotID', async (req, res) => {
+  try {
+    const depotID = req.params.depotID
+    const depot = await Depot.findById(depotID)
+    const loaisanpham = await Promise.all(
+      depot.loaisanpham.map(async loaisanpham => {
+        const loaisp = await LoaiSanPham.findById(loaisanpham._id)
+        return {
+          _id: loaisp._id,
+          malsp: loaisp.malsp,
+          name: loaisp.name,
+          soluong: loaisp.soluong,
+          tongtien: loaisp.tongtien,
+          date: moment(loaisp.date).format('DD/MM/YYYY'),
+          average: loaisp.average
+        }
+      })
+    )
+    res.json(loaisanpham)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/postloaisanpham2', async (req, res) => {
+  try {
+    const { name, tongtien, soluong, date, mancc } = req.body
+    const nhacungcap = await NhanCungCap.findOne({ mancc })
+    const depot = await Depot.findById(nhacungcap.depotId)
+    const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+
+    const loaisanpham = new LoaiSanPham({
+      name,
+      depot: depot._id,
+      tongtien,
+      soluong,
+      date: formattedDate,
       nhacungcap: nhacungcap._id
     })
     loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
