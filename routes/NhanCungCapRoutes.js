@@ -13,17 +13,18 @@ router.post('/postnhacungcap/:depotId', async (req, res) => {
       phone,
       address
     })
-
+    const mancc = 'NCC' + nhaCungCap._id.toString().slice(-4)
+    nhaCungCap.mancc = mancc
     nhaCungCap.depotId = depotId
     const depot = await Depot.findById(depotId)
     depot.nhacungcap.push(nhaCungCap._id)
 
     await depot.save()
     await nhaCungCap.save()
-    res.json({ message: 'Thêm nhà cung cấp thành công' })
+    res.json(nhaCungCap)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra l��i' })
+    res.status(500).json({ message: 'Đã xảy ra lỗi' })
   }
 })
 
@@ -36,6 +37,7 @@ router.get('/getnhacungcap/:depotId', async (req, res) => {
         const nhaCungCap = await NhanCungCap.findById(nhacungcap._id)
         return {
           _id: nhaCungCap._id,
+          mancc: nhaCungCap.mancc || '',
           name: nhaCungCap.name,
           email: nhaCungCap.email,
           phone: nhaCungCap.phone,
