@@ -52,6 +52,24 @@ router.get('/getnhacungcap/:depotId', async (req, res) => {
   }
 })
 
+router.get('/getncc/:depotId', async (req, res) => {
+  try {
+    const depotId = req.params.depotId
+    const depot = await Depot.findById(depotId)
+    const nhacungcap = await Promise.all(
+      depot.nhacungcap.map(async nhacungcap => {
+        const nhaCungCap = await NhanCungCap.findById(nhacungcap._id)
+        return {
+          mancc: nhaCungCap.mancc || '',
+        }
+      })
+    )
+    res.json(nhacungcap)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 
 
 module.exports = router

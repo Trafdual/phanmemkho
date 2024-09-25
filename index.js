@@ -123,7 +123,7 @@ app.use((req, res, next) => {
 //         console.log('The file was obfuscated and saved as', outputPath);
 //     });
 // });
-
+// 
 
 
 // async function fetchLinks (url) {
@@ -164,7 +164,7 @@ app.use((req, res, next) => {
 //   fs.writeFileSync(filePath, sitemap)
 // }
 
-// const websiteUrl = 'http://localhost:3000/'
+// const websiteUrl = 'https://baominhmobile.com/'
 // fetchLinks(websiteUrl).then(links => {
 //   createSitemap(links, 'sitemap.xml')
 //   console.log('Sitemap created')
