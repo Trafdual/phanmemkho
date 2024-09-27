@@ -8,8 +8,7 @@ const loaisanphamSchema = new mongoose.Schema({
     date: { type: Date },
     average: { type: Number },
     soluong: { type: Number },
-    loaisanpham:[{ type: mongoose.Schema.Types.ObjectId, ref: 'loaisanpham' }],
-    nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
+        nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
     depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
 });
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema);

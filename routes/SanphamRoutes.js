@@ -18,7 +18,7 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
           name: sp1.name,
           capacity: sp1.capacity,
           color: sp1.color,
-          xuatStatus: sp1.xuat ? 'Đã xuất' : 'tồn kho'
+          xuat:sp1.xuat
         }
       })
     )
@@ -45,7 +45,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
       imel,
       datenhap: loaisanpham.date
     })
-    const masp = 'SP' + loaisanpham._id.toString().slice(-5)
+    const masp = 'SP' + sanpham._id.toString().slice(-5)
     sanpham.masp = masp
     sanpham.datexuat = ''
     sanpham.xuat = false
@@ -181,6 +181,47 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/chuyenkho/:idsanpham', async (req, res) => {
+  try {
+    const idsanpham = req.params.idsanpham
+    const { tenkho } = req.body
+    const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
+    const sanpham = await SanPham.findById(idsanpham)
+    const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
+    loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
+    const isLoaiSPInKho = kho.loaisanpham.find(
+      item => item.malsp === loaisp.malsp
+    )
+    if (!isLoaiSPInKho) {
+      const lsp = new LoaiSanPham({
+        name: loaisp.name,
+        depot: kho._id,
+        date: moment(loaisp.date).format('YYYY-MM-DD'),
+        malsp: loaisp.malsp,
+        nhacungcap: loaisp.nhacungcap
+      })
+      lsp.sanpham.push(sanpham._id)
+      lsp.soluong = lsp.sanpham.length
+      lsp.tongtien = loaisp.tongtien / loaisp.soluong
+      kho.loaisanpham.push(lsp._id)
+      await lsp.save()
+      await kho.save()
+    } else {
+      const loaiSPInKho = await LoaiSanPham.findById(isLoaiSPInKho._id)
+      console.log(isLoaiSPInKho._id)
+      loaiSPInKho.sanpham.push(sanpham._id)
+      loaiSPInKho.soluong = loaiSPInKho.sanpham.length
+      loaiSPInKho.tongtien = parseFloat((loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2))
+      await loaiSPInKho.save()
+    }
+    await loaisp.save()
+    res.json({ message: 'Chuyển kho thành công!' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Có lỗi xảy ra.' })
   }
 })
 router.get('/getxuatkho/:khoid', async (req, res) => {
