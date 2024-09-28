@@ -18,7 +18,7 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
           name: sp1.name,
           capacity: sp1.capacity,
           color: sp1.color,
-          xuat:sp1.xuat
+          xuat: sp1.xuat
         }
       })
     )
@@ -205,7 +205,8 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
       })
       lsp.sanpham.push(sanpham._id)
       lsp.soluong = lsp.sanpham.length
-      lsp.tongtien = loaisp.tongtien / loaisp.soluong
+      lsp.tongtien = parseFloat((loaisp.tongtien / loaisp.soluong).toFixed(1))
+      lsp.average = parseFloat((loaisp.tongtien / loaisp.soluong).toFixed(1))
       kho.loaisanpham.push(lsp._id)
       await lsp.save()
       await kho.save()
@@ -214,7 +215,10 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
       console.log(isLoaiSPInKho._id)
       loaiSPInKho.sanpham.push(sanpham._id)
       loaiSPInKho.soluong = loaiSPInKho.sanpham.length
-      loaiSPInKho.tongtien = parseFloat((loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2))
+      loaiSPInKho.tongtien = parseFloat(
+        (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
+      )
+      loaiSPInKho.average= parseFloat((loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1))
       await loaiSPInKho.save()
     }
     await loaisp.save()
