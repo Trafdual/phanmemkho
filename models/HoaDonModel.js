@@ -9,7 +9,7 @@ loaisanpham: [
       soluong: { type: Number }
     }
   ],
-  date:{type:Date},
+date:{type:Date},
 tongtien:{type:Number}
 });
 

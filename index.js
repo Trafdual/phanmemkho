@@ -20,6 +20,7 @@ const khachhangRoutes = require('./routes/KhachHangRoutes')
 const hoadonRoutes = require('./routes/HoaDonRoutes')
 const nhanvienRoutes = require('./routes/NhanvienRoutes')
 const nhacungcapRoutes = require('./routes/NhanCungCapRoutes')
+const dieuchuyenRoutes=require('./routes/DieuChuyenRoutes')
 require('./routes/passport')
 require('./routes/passportface')
 var path = require('path')
@@ -87,6 +88,7 @@ app.use('/', khachhangRoutes)
 app.use('/', hoadonRoutes)
 app.use('/', nhanvienRoutes)
 app.use('/', nhacungcapRoutes)
+app.use('/',dieuchuyenRoutes)
 
 const port = process.env.PORT || 8080
 

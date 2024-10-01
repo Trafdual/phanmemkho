@@ -4,6 +4,7 @@ const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const Depot = require('../models/DepotModel')
 const momenttimezone = require('moment-timezone')
 const moment = require('moment')
+const DieuChuyen = require('../models/DieuChuyenModel')
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
@@ -191,10 +192,23 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
     const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
     const sanpham = await SanPham.findById(idsanpham)
     const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
+    const kho1 = await Depot.findById(loaisp.depot)
     loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
     const isLoaiSPInKho = kho.loaisanpham.find(
       item => item.malsp === loaisp.malsp
     )
+
+    const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
+    const dieuchuyen = new DieuChuyen({
+      sanpham: sanpham._id,
+      loaisanpham: loaisp._id,
+      nhacungcap: loaisp.nhacungcap,
+      depot: kho1._id,
+      trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
+      date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
+    })
+    kho1.dieuchuyen.push(dieuchuyen._id)
+
     if (!isLoaiSPInKho) {
       const lsp = new LoaiSanPham({
         name: loaisp.name,
@@ -208,6 +222,7 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
       lsp.tongtien = parseFloat((loaisp.tongtien / loaisp.soluong).toFixed(1))
       lsp.average = parseFloat((loaisp.tongtien / loaisp.soluong).toFixed(1))
       kho.loaisanpham.push(lsp._id)
+
       await lsp.save()
       await kho.save()
     } else {
@@ -218,10 +233,14 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
       loaiSPInKho.tongtien = parseFloat(
         (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
       )
-      loaiSPInKho.average= parseFloat((loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1))
+      loaiSPInKho.average = parseFloat(
+        (loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1)
+      )
       await loaiSPInKho.save()
     }
     await loaisp.save()
+    await dieuchuyen.save()
+    await kho1.save()
     res.json({ message: 'Chuyển kho thành công!' })
   } catch (error) {
     console.error(error)

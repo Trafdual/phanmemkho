@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 
 const khachhangSchema = new mongoose.Schema({
     name: { type: String },
+    makh: { type: String },
     email: { type: String },
     phone: { type: String },
     address: { type: String },
