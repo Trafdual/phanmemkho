@@ -5,6 +5,8 @@ const Depot = require('../models/DepotModel')
 const momenttimezone = require('moment-timezone')
 const moment = require('moment')
 const DieuChuyen = require('../models/DieuChuyenModel')
+const mongoose = require('mongoose')
+
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
@@ -185,6 +187,51 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
   }
 })
 
+router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
+  try {
+    const { idsanpham1 } = req.body
+    const idloaisp = req.params.idloaisp
+    const khoid = req.params.khoid
+    const sanphamList = []
+    for (const idsanpham of idsanpham1) {
+      const sanpham1 = await SanPham.findById(idsanpham)
+      const loaisanpham = await LoaiSanPham.findById(idloaisp)
+      const kho = await Depot.findById(khoid)
+      const sanpham = await Promise.all(
+        loaisanpham.sanpham.map(async sp => {
+          const sp1 = await SanPham.findById(sp._id)
+          return {
+            masp: sp1.masp,
+            _id: sp1._id,
+            imel: sp1.imel,
+            name: sp1.name,
+            capacity: sp1.capacity,
+            color: sp1.color,
+            xuatStatus: sp1.xuat ? 'Đã xuất' : 'tồn kho'
+          }
+        })
+      )
+      loaisanpham.sanpham = loaisanpham.sanpham.filter(sp => sp._id != idsanpham)
+
+      const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
+
+      sanpham1.xuat = true
+      sanpham1.datexuat = moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
+      kho.xuatkho.push(sanpham1._id)
+      await sanpham1.save()
+      await kho.save()
+      await loaisanpham.save()
+      sanphamList.push(...sanpham)
+    }
+    res.json(sanphamList)
+
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
 router.post('/chuyenkho/:idsanpham', async (req, res) => {
   try {
     const idsanpham = req.params.idsanpham
@@ -247,6 +294,108 @@ router.post('/chuyenkho/:idsanpham', async (req, res) => {
     res.status(500).json({ error: 'Có lỗi xảy ra.' })
   }
 })
+
+router.post('/chuyenkho1', async (req, res) => {
+  try {
+    const { idsanpham1, tenkho } = req.body
+    const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
+    const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
+
+    // Biến lưu lại loại sản phẩm vừa tạo để sử dụng lại trong vòng lặp
+    let createdLoaiSP = {}
+
+    for (const idsanpham of idsanpham1) {
+      const sanpham = await SanPham.findById(idsanpham)
+      const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
+      const kho1 = await Depot.findById(loaisp.depot)
+
+      // Cập nhật điều chuyển
+      const dieuchuyen = new DieuChuyen({
+        sanpham: sanpham._id,
+        loaisanpham: loaisp._id,
+        nhacungcap: loaisp.nhacungcap,
+        depot: kho1._id,
+        trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
+        date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
+      })
+      kho1.dieuchuyen.push(dieuchuyen._id)
+
+      loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
+
+      // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
+      let loaiSPInKho = kho.loaisanpham.find(
+        item => item.malsp === loaisp.malsp
+      )
+
+      if (!loaiSPInKho) {
+        // Nếu chưa tồn tại, kiểm tra trong biến createdLoaiSP để tránh tạo mới nhiều lần
+        if (!createdLoaiSP[loaisp.malsp]) {
+          // Nếu loại sản phẩm chưa có, tạo mới và lưu vào createdLoaiSP
+          const newLoaiSP = new LoaiSanPham({
+            name: loaisp.name,
+            depot: kho._id,
+            date: moment(loaisp.date).format('YYYY-MM-DD'),
+            malsp: loaisp.malsp,
+            nhacungcap: loaisp.nhacungcap
+          })
+          newLoaiSP.sanpham.push(sanpham._id)
+          newLoaiSP.soluong = newLoaiSP.sanpham.length
+          newLoaiSP.tongtien = parseFloat(
+            (loaisp.tongtien / loaisp.soluong).toFixed(1)
+          )
+          newLoaiSP.average = parseFloat(
+            (loaisp.tongtien / loaisp.soluong).toFixed(1)
+          )
+          kho.loaisanpham.push(newLoaiSP._id)
+
+          await newLoaiSP.save()
+          await kho.save()
+
+          // Lưu lại loại sản phẩm vừa tạo trong biến createdLoaiSP
+          createdLoaiSP[loaisp.malsp] = newLoaiSP
+        } else {
+          // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
+          const existingLoaiSP = createdLoaiSP[loaisp.malsp]
+          existingLoaiSP.sanpham.push(sanpham._id)
+          existingLoaiSP.soluong = existingLoaiSP.sanpham.length
+          existingLoaiSP.tongtien = parseFloat(
+            (
+              existingLoaiSP.tongtien +
+              loaisp.tongtien / loaisp.soluong
+            ).toFixed(2)
+          )
+          existingLoaiSP.average = parseFloat(
+            (existingLoaiSP.tongtien / existingLoaiSP.soluong).toFixed(1)
+          )
+          await existingLoaiSP.save()
+        }
+      } else {
+        // Nếu loại sản phẩm đã tồn tại trong kho đích, chỉ cần cập nhật thông tin sản phẩm
+        loaiSPInKho = await LoaiSanPham.findById(loaiSPInKho._id)
+        loaiSPInKho.sanpham.push(sanpham._id)
+        loaiSPInKho.soluong = loaiSPInKho.sanpham.length
+        loaiSPInKho.tongtien = parseFloat(
+          (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
+        )
+        loaiSPInKho.average = parseFloat(
+          (loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1)
+        )
+        await loaiSPInKho.save()
+      }
+
+      await loaisp.save()
+      await dieuchuyen.save()
+      await kho1.save()
+    }
+
+    res.json({ message: 'Chuyển kho hàng loạt thành công!' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Có lỗi xảy ra.' })
+  }
+})
+
+
 router.get('/getxuatkho/:khoid', async (req, res) => {
   try {
     const khoid = req.params.khoid
