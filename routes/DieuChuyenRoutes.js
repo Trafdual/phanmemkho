@@ -23,11 +23,28 @@ router.get('/getdieuchuyen/:khoID', async (req, res) => {
           masp: sanpham.masp,
           tenmay: sanpham.name,
           date: moment(dieuchuyen1.date).format('DD-MM-YYYY'),
-          trangthai:dieuchuyen1.trangthai
+          trangthai: dieuchuyen1.trangthai
         }
       })
     )
     res.json(dieuchuyen)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+router.post('/deletedieuchuyen/:khoid', async (req, res) => {
+  try {
+    const {iddieuchuyen}=req.body
+    const khoid=req.params.khoid;
+    const kho=await Depot.findById(khoid)
+    for(const iddieuchuyendetail of iddieuchuyen){
+      const dieuchuyen= await DieuChuyen.findById(iddieuchuyendetail)
+      kho.dieuchuyen = kho.dieuchuyen.filter(item => item._id.toString() !== dieuchuyen._id.toString())
+      await DieuChuyen.findByIdAndDelete(iddieuchuyendetail)
+      await kho.save()
+    }
+    res.json({message:'xóa điều chuyển thành công'})
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

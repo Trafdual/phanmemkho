@@ -172,6 +172,7 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
         }
       })
     )
+    loaisanpham.sanpham = loaisanpham.sanpham.filter(sp => sp._id != idsanpham)
 
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
@@ -179,6 +180,7 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
     sanpham1.datexuat = moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
     kho.xuatkho.push(sanpham1._id)
     await sanpham1.save()
+    await loaisanpham.save()
     await kho.save()
     res.json(sanpham)
   } catch (error) {
@@ -211,7 +213,9 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
           }
         })
       )
-      loaisanpham.sanpham = loaisanpham.sanpham.filter(sp => sp._id != idsanpham)
+      loaisanpham.sanpham = loaisanpham.sanpham.filter(
+        sp => sp._id != idsanpham
+      )
 
       const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
@@ -224,13 +228,11 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
       sanphamList.push(...sanpham)
     }
     res.json(sanphamList)
-
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 router.post('/chuyenkho/:idsanpham', async (req, res) => {
   try {
@@ -395,7 +397,6 @@ router.post('/chuyenkho1', async (req, res) => {
   }
 })
 
-
 router.get('/getxuatkho/:khoid', async (req, res) => {
   try {
     const khoid = req.params.khoid
@@ -405,6 +406,7 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
         const sp1 = await SanPham.findById(sp)
         const loaisp = await LoaiSanPham.findById(sp1.loaisanpham)
         return {
+          _id: sp1._id,
           malohang: loaisp.malsp,
           masp: sp1.masp,
           tenmay: sp1.name,
@@ -414,6 +416,23 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
       })
     )
     res.json(sp1)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+router.post('/deletexuatkho/:idkho', async (req, res) => {
+  try {
+    const {idsp} = req.body
+    const idkho = req.params.idkho
+    const kho = await Depot.findById(idkho)
+    for (const idsp1 of idsp) {
+      const sanpham= await SanPham.findById(idsp1)
+      kho.xuatkho = kho.xuatkho.filter(sp => sp._id.toString() !== sanpham._id.toString())
+      await SanPham.findByIdAndDelete(sanpham._id)
+      await kho.save()
+    }
+    res.json({ message: 'xóa thành công' })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
