@@ -53,6 +53,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
     sanpham.datexuat = ''
     sanpham.xuat = false
     sanpham.loaisanpham = loaisanpham._id
+    sanpham.price = loaisanpham.average
     await sanpham.save()
     loaisanpham.sanpham.push(sanpham._id)
     await loaisanpham.save()
@@ -423,12 +424,14 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
 })
 router.post('/deletexuatkho/:idkho', async (req, res) => {
   try {
-    const {idsp} = req.body
+    const { idsp } = req.body
     const idkho = req.params.idkho
     const kho = await Depot.findById(idkho)
     for (const idsp1 of idsp) {
-      const sanpham= await SanPham.findById(idsp1)
-      kho.xuatkho = kho.xuatkho.filter(sp => sp._id.toString() !== sanpham._id.toString())
+      const sanpham = await SanPham.findById(idsp1)
+      kho.xuatkho = kho.xuatkho.filter(
+        sp => sp._id.toString() !== sanpham._id.toString()
+      )
       await SanPham.findByIdAndDelete(sanpham._id)
       await kho.save()
     }
