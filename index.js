@@ -129,49 +129,49 @@ app.use((req, res, next) => {
 
 
 
-// async function fetchLinks (url) {
-//   const browser = await puppeteer.launch()
-//   const page = await browser.newPage()
+async function fetchLinks (url) {
+  const browser = await puppeteer.launch()
+  const page = await browser.newPage()
 
-//   await page.goto(url, { waitUntil: 'networkidle2' })
+  await page.goto(url, { waitUntil: 'networkidle2' })
 
-//   const links = await page.evaluate(() => {
-//     const anchors = Array.from(document.querySelectorAll('a'))
-//     return anchors
-//       .map(anchor => anchor.href)
-//       .filter(href => href.startsWith('http'))
-//   })
+  const links = await page.evaluate(() => {
+    const anchors = Array.from(document.querySelectorAll('a'))
+    return anchors
+      .map(anchor => anchor.href)
+      .filter(href => href.startsWith('http'))
+  })
 
-//   await browser.close()
-//   return links
-// }
+  await browser.close()
+  return links
+}
 
-// function createSitemap (links, filePath) {
-//   const urlSet = links
-//     .map(
-//       link => `
-//     <url>
-//       <loc>${link}</loc>
-//       <changefreq>daily</changefreq>
-//       <priority>0.7</priority>
-//     </url>
-//   `
-//     )
-//     .join('\n')
+function createSitemap (links, filePath) {
+  const urlSet = links
+    .map(
+      link => `
+    <url>
+      <loc>${link}</loc>
+      <changefreq>daily</changefreq>
+      <priority>0.7</priority>
+    </url>
+  `
+    )
+    .join('\n')
 
-//   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-//   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-//     ${urlSet}
-//   </urlset>`
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+  <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    ${urlSet}
+  </urlset>`
 
-//   fs.writeFileSync(filePath, sitemap)
-// }
+  fs.writeFileSync(filePath, sitemap)
+}
 
-// const websiteUrl = 'http://localhost:3000/'
-// fetchLinks(websiteUrl).then(links => {
-//   createSitemap(links, 'sitemap.xml')
-//   console.log('Sitemap created')
-// })
+const websiteUrl = 'https://baominhmobile.com/'
+fetchLinks(websiteUrl).then(links => {
+  createSitemap(links, 'sitemap.xml')
+  console.log('Sitemap created')
+})
 
 app.listen(port, () => {
   try {
