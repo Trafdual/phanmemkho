@@ -25,7 +25,7 @@ router.get('/hoadon/:khoId', async (req, res) => {
               tenmay: sp1.name,
               price: sp1.price,
               mausac: sp1.color,
-              dungluong: sp1.dungluong
+              dungluong: sp1.capacity
             }
           })
         )
