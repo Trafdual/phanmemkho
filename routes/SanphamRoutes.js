@@ -466,7 +466,7 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
 
     const kho = await Depot.findById(khoid)
     if (!kho) {
-      return res.status(404).json({ message: 'Kho không tồn tại.' })
+      return res.json({ message: 'Kho không tồn tại.' })
     }
 
     let query = {}
