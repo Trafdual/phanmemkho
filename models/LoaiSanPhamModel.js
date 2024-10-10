@@ -9,7 +9,8 @@ const loaisanphamSchema = new mongoose.Schema({
   average: { type: Number },
   soluong: { type: Number },
   nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
-  depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' }
+  depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
+  ghino: { type: Boolean, default: false }
 })
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema)
 module.exports = LoaiSanPham
