@@ -4,7 +4,7 @@ const LoaiSanPham = require('../models/LoaiSanPhamModel')
 
 router.post('/posttranno/:idtrano', async (req, res) => {
   try {
-    const { tiendatra, ngaytra } = req.body 
+    const { tiendatra, ngaytra, iddonno } = req.body
     const idtrano = req.params.idtrano
 
     const trano = await TraNo.findById(idtrano)
@@ -16,23 +16,27 @@ router.post('/posttranno/:idtrano', async (req, res) => {
     if (!Array.isArray(tiendatra) || tiendatra.length !== trano.donno.length) {
       return res.status(400).json({ message: 'Mảng tiendatra không hợp lệ.' })
     }
+    const index = trano.donno.findIndex(item => item._id.toString() === iddonno)
 
-    trano.donno.forEach((item, index) => {
-      item.tiendatra = tiendatra[index] 
-    })
+    if (index !== -1) {
+      trano.donno[index].tiendatra=tiendatra
+    } else {
+      return res
+        .status(404)
+        .json({ message: 'Không tìm thấy id trong danh sách đơn nợ' })
+    }
+
     trano.tongtra = trano.donno.reduce((sum, item) => sum + item.tiendatra, 0)
-
 
     trano.ngaytra = ngaytra
 
     await trano.save()
 
-    res.status(200).json({ message: 'Cập nhật thành công.', trano })
+    res.json(trano)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 module.exports = router
