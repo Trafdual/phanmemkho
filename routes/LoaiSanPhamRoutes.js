@@ -3,6 +3,7 @@ const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const Depot = require('../models/DepotModel')
 const NhanCungCap = require('../models/NhanCungCapModel')
 const TraNo = require('../models/TraNoModel')
+const NganHang = require('../models/NganHangKhoModel')
 
 const moment = require('moment')
 
@@ -121,11 +122,20 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
 
 router.post('/postloaisanpham2', async (req, res) => {
   try {
-    const { name, tongtien, soluong, date, mancc, ghino } = req.body
+    const {
+      name,
+      tongtien,
+      soluong,
+      date,
+      mancc,
+      ghino,
+      method,
+      manganhangkho
+    } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
     const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
-
+    const nganhangkho = await NganHang.findOne({ manganhangkho })
     const loaisanpham = new LoaiSanPham({
       name,
       depot: depot._id,
@@ -134,7 +144,7 @@ router.post('/postloaisanpham2', async (req, res) => {
       date: formattedDate,
       nhacungcap: nhacungcap._id
     })
-    if (ghino) {
+    if (ghino === 'ghino') {
       loaisanpham.ghino = true
       const trano = new TraNo({ nhacungcap: nhacungcap._id })
       let tienno = 0
@@ -153,6 +163,12 @@ router.post('/postloaisanpham2', async (req, res) => {
       await loaisanpham.save()
     } else {
       loaisanpham.ghino = false
+      if (method === 'tienmat') {
+        loaisanpham.method = 'tienmat'
+      } else {
+        loaisanpham.method = 'chuyenkhoan'
+        loaisanpham.nganhang=nganhangkho._id
+      }
     }
     loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
     const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
