@@ -163,11 +163,12 @@ router.post('/postloaisanpham2', async (req, res) => {
       await loaisanpham.save()
     } else {
       loaisanpham.ghino = false
-      if (method === 'tienmat') {
+      if (method === 'Tiền mặt') {
         loaisanpham.method = 'tienmat'
-      } else {
+      }
+      if (method === 'Chuyển khoản') {
         loaisanpham.method = 'chuyenkhoan'
-        loaisanpham.nganhang=nganhangkho._id
+        loaisanpham.nganhang = nganhangkho._id
       }
     }
     loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
