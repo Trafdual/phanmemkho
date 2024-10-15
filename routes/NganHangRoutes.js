@@ -31,7 +31,7 @@ router.get('/getnganhang/:userId', async (req, res) => {
         const nganHangkho = await NganHang.findById(nganhang._id)
         return {
             _id:nganHangkho._id,
-            manganhangkho:nganHangkho,
+            manganhangkho:nganHangkho.manganhangkho,
             name:nganHangkho.name,
             sotaikhoan:nganHangkho.sotaikhoan,
             chusohuu:nganHangkho.chusohuu
