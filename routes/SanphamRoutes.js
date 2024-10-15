@@ -41,6 +41,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
       return res.json({ message: 'sản phẩm đã có trên hệ thống' })
     }
     const loaisanpham = await LoaiSanPham.findById(idloai)
+    const kho = await Depot.findById(loaisanpham.depot)
     const sanpham = new SanPham({
       name,
       capacity,
@@ -49,6 +50,8 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
       datenhap: loaisanpham.date
     })
     const masp = 'SP' + sanpham._id.toString().slice(-5)
+    kho.sanpham.push(sanpham._id)
+    sanpham.kho = kho._id
     sanpham.masp = masp
     sanpham.datexuat = ''
     sanpham.xuat = false
@@ -57,6 +60,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
     await sanpham.save()
     loaisanpham.sanpham.push(sanpham._id)
     await loaisanpham.save()
+    await kho.save()
     res.json(sanpham)
   } catch (error) {
     console.error(error)
@@ -350,7 +354,9 @@ router.post('/chuyenkho1', async (req, res) => {
             (loaisp.tongtien / loaisp.soluong).toFixed(1)
           )
           kho.loaisanpham.push(newLoaiSP._id)
-
+          kho.sanpham.push(sanpham._id)
+          sanpham.kho = kho._id
+          await sanpham.save()
           await newLoaiSP.save()
           await kho.save()
 
@@ -360,6 +366,9 @@ router.post('/chuyenkho1', async (req, res) => {
           // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
           const existingLoaiSP = createdLoaiSP[loaisp.malsp]
           existingLoaiSP.sanpham.push(sanpham._id)
+          kho.sanpham.push(sanpham._id)
+          sanpham.kho = kho._id
+
           existingLoaiSP.soluong = existingLoaiSP.sanpham.length
           existingLoaiSP.tongtien = parseFloat(
             (
@@ -370,12 +379,18 @@ router.post('/chuyenkho1', async (req, res) => {
           existingLoaiSP.average = parseFloat(
             (existingLoaiSP.tongtien / existingLoaiSP.soluong).toFixed(1)
           )
+          await sanpham.save()
+          await kho.save()
+
           await existingLoaiSP.save()
         }
       } else {
         // Nếu loại sản phẩm đã tồn tại trong kho đích, chỉ cần cập nhật thông tin sản phẩm
         loaiSPInKho = await LoaiSanPham.findById(loaiSPInKho._id)
         loaiSPInKho.sanpham.push(sanpham._id)
+        kho.sanpham.push(sanpham._id)
+        sanpham.kho = kho._id
+
         loaiSPInKho.soluong = loaiSPInKho.sanpham.length
         loaiSPInKho.tongtien = parseFloat(
           (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
@@ -383,6 +398,8 @@ router.post('/chuyenkho1', async (req, res) => {
         loaiSPInKho.average = parseFloat(
           (loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1)
         )
+        await sanpham.save()
+        await kho.save()
         await loaiSPInKho.save()
       }
 
@@ -436,6 +453,48 @@ router.post('/deletexuatkho/:idkho', async (req, res) => {
       await kho.save()
     }
     res.json({ message: 'xóa thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/searchsanpham/:khoid', async (req, res) => {
+  try {
+    const { keyword, searchType } = req.body
+    const khoid = req.params.khoid
+
+    const kho = await Depot.findById(khoid)
+    if (!kho) {
+      return res.json({ message: 'Kho không tồn tại.' })
+    }
+
+    let query = {}
+    if (searchType === '3 số đầu imel') {
+      query = { imel: { $regex: `^${keyword}`, $options: 'i' } }
+    } else if (searchType === '3 số cuối imel') {
+      query = { imel: { $regex: `${keyword}$`, $options: 'i' } }
+    } else {
+      query = {
+        $or: [{ name: { $regex: keyword, $options: 'i' } }]
+      }
+    }
+    query.kho = khoid
+    const products = await SanPham.find(query)
+    const product = await Promise.all(products.map(async product => {
+      const loaisp= await LoaiSanPham.findById(product.loaisanpham)
+      return{
+        _id: product._id,
+        malohang: loaisp.malsp,
+        masp: product.masp,
+        name: product.name,
+        imel:product.imel,
+        capacity:product.capacity,
+        color:product.color,
+        xuat:product.xuat,
+      }
+    }))
+    res.json(product)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

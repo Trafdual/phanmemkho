@@ -8,6 +8,8 @@ const nhacungcapSchema = new mongoose.Schema({
   address: { type: String },
   depotId: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   loaisanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'loaisanpham' }],
+  trano:[{ type: mongoose.Schema.Types.ObjectId, ref: 'trano' }],
+
 })
 const NhanCungCap = mongoose.model('nhacungcap', nhacungcapSchema)
 module.exports = NhanCungCap

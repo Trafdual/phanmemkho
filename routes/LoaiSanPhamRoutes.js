@@ -2,6 +2,8 @@ const router = require('express').Router()
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const Depot = require('../models/DepotModel')
 const NhanCungCap = require('../models/NhanCungCapModel')
+const TraNo = require('../models/TraNoModel')
+const NganHang = require('../models/NganHangKhoModel')
 
 const moment = require('moment')
 
@@ -120,11 +122,20 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
 
 router.post('/postloaisanpham2', async (req, res) => {
   try {
-    const { name, tongtien, soluong, date, mancc } = req.body
+    const {
+      name,
+      tongtien,
+      soluong,
+      date,
+      mancc,
+      ghino,
+      method,
+      manganhangkho
+    } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
     const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
-
+    const nganhangkho = await NganHang.findOne({ manganhangkho })
     const loaisanpham = new LoaiSanPham({
       name,
       depot: depot._id,
@@ -133,6 +144,33 @@ router.post('/postloaisanpham2', async (req, res) => {
       date: formattedDate,
       nhacungcap: nhacungcap._id
     })
+    if (ghino === 'ghino') {
+      loaisanpham.ghino = true
+      const trano = new TraNo({ nhacungcap: nhacungcap._id })
+      let tienno = 0
+      tienno += loaisanpham.tongtien
+      trano.donno.push({
+        loaisanpham: loaisanpham._id,
+        tienno: tienno,
+        tienphaitra: tienno,
+        tiendatra: 0
+      })
+      trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
+      trano.tongtra = trano.donno.reduce((sum, item) => sum + item.tiendatra, 0)
+      nhacungcap.trano.push(trano._id)
+      await nhacungcap.save()
+      await trano.save()
+      await loaisanpham.save()
+    } else {
+      loaisanpham.ghino = false
+      if (method === 'Tiền mặt') {
+        loaisanpham.method = 'tienmat'
+      }
+      if (method === 'Chuyển khoản') {
+        loaisanpham.method = 'chuyenkhoan'
+        loaisanpham.nganhang = nganhangkho._id
+      }
+    }
     loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
     const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
     loaisanpham.malsp = malsp
