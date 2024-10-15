@@ -1,17 +1,12 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const hoadonSchema = new mongoose.Schema({
-nhanvien:{type: mongoose.Schema.Types.ObjectId, ref: 'user'},
-khachhang:{type: mongoose.Schema.Types.ObjectId, ref: 'khachhang'},
-loaisanpham: [
-    {
-      id: { type: mongoose.Schema.Types.ObjectId, ref: "loaisanpham" },
-      soluong: { type: Number }
-    }
-  ],
-  date:{type:Date},
-tongtien:{type:Number}
-});
+  mahoadon: { type: String },
+  khachhang: { type: mongoose.Schema.Types.ObjectId, ref: 'khachhang' },
+  sanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
+  date: { type: Date },
+  tongtien: { type: Number }
+})
 
-const HoaDon = mongoose.model('hoadon', hoadonSchema);
-module.exports = HoaDon;
+const HoaDon = mongoose.model('hoadon', hoadonSchema)
+module.exports = HoaDon

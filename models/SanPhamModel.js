@@ -9,7 +9,8 @@ const sanphamSchema = new mongoose.Schema({
   price: { type: Number },
   loaisanpham: { type: mongoose.Schema.Types.ObjectId, ref: 'loaisanpham' },
   datenhap: { type: Date },
-  datexuat: { type: Date }
+  datexuat: { type: Date },
+  xuat: { type: Boolean, default: false }
 })
 
 const SanPham = mongoose.model('sanpham', sanphamSchema)
