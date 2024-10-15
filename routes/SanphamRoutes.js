@@ -481,13 +481,24 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
     }
     query.kho = khoid
     const products = await SanPham.find(query)
-    res.json(products)
+    const product = await Promise.all(products.map(async product => {
+      const loaisp= await LoaiSanPham.findById(product.loaisanpham)
+      return{
+        _id: product._id,
+        malohang: loaisp.malsp,
+        masp: product.masp,
+        name: product.name,
+        imel:product.imel,
+        capacity:product.capacity,
+        color:product.color,
+        xuat:product.xuat,
+      }
+    }))
+    res.json(product)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
-
 
 module.exports = router
