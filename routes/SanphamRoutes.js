@@ -328,6 +328,7 @@ router.post('/chuyenkho1', async (req, res) => {
       kho1.dieuchuyen.push(dieuchuyen._id)
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
+      loaisp.conlai=loaisp.sanpham.length
 
       // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
       let loaiSPInKho = kho.loaisanpham.find(
@@ -346,21 +347,18 @@ router.post('/chuyenkho1', async (req, res) => {
             nhacungcap: loaisp.nhacungcap
           })
           newLoaiSP.sanpham.push(sanpham._id)
-          newLoaiSP.soluong = newLoaiSP.sanpham.length
-          newLoaiSP.tongtien = parseFloat(
-            (loaisp.tongtien / loaisp.soluong).toFixed(1)
-          )
-          newLoaiSP.average = parseFloat(
-            (loaisp.tongtien / loaisp.soluong).toFixed(1)
-          )
+          newLoaiSP.soluong = loaisp.soluong
+          newLoaiSP.conlai=newLoaiSP.sanpham.length
+          newLoaiSP.tongtien = loaisp.tongtien
+          newLoaiSP.average = loaisp.average
           kho.loaisanpham.push(newLoaiSP._id)
           kho.sanpham.push(sanpham._id)
           sanpham.kho = kho._id
+          sanpham.loaisanpham = newLoaiSP._id
           await sanpham.save()
           await newLoaiSP.save()
           await kho.save()
 
-          // Lưu lại loại sản phẩm vừa tạo trong biến createdLoaiSP
           createdLoaiSP[loaisp.malsp] = newLoaiSP
         } else {
           // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
@@ -368,17 +366,8 @@ router.post('/chuyenkho1', async (req, res) => {
           existingLoaiSP.sanpham.push(sanpham._id)
           kho.sanpham.push(sanpham._id)
           sanpham.kho = kho._id
-
-          existingLoaiSP.soluong = existingLoaiSP.sanpham.length
-          existingLoaiSP.tongtien = parseFloat(
-            (
-              existingLoaiSP.tongtien +
-              loaisp.tongtien / loaisp.soluong
-            ).toFixed(2)
-          )
-          existingLoaiSP.average = parseFloat(
-            (existingLoaiSP.tongtien / existingLoaiSP.soluong).toFixed(1)
-          )
+          sanpham.loaisanpham = existingLoaiSP._id
+          existingLoaiSP.conlai = existingLoaiSP.sanpham.length
           await sanpham.save()
           await kho.save()
 
@@ -390,14 +379,8 @@ router.post('/chuyenkho1', async (req, res) => {
         loaiSPInKho.sanpham.push(sanpham._id)
         kho.sanpham.push(sanpham._id)
         sanpham.kho = kho._id
-
-        loaiSPInKho.soluong = loaiSPInKho.sanpham.length
-        loaiSPInKho.tongtien = parseFloat(
-          (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
-        )
-        loaiSPInKho.average = parseFloat(
-          (loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1)
-        )
+        sanpham.loaisanpham = loaiSPInKho._id
+        loaiSPInKho.conlai =loaiSPInKho.sanpham.length
         await sanpham.save()
         await kho.save()
         await loaiSPInKho.save()
@@ -481,19 +464,21 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
     }
     query.kho = khoid
     const products = await SanPham.find(query)
-    const product = await Promise.all(products.map(async product => {
-      const loaisp= await LoaiSanPham.findById(product.loaisanpham)
-      return{
-        _id: product._id,
-        malohang: loaisp.malsp,
-        masp: product.masp,
-        name: product.name,
-        imel:product.imel,
-        capacity:product.capacity,
-        color:product.color,
-        xuat:product.xuat,
-      }
-    }))
+    const product = await Promise.all(
+      products.map(async product => {
+        const loaisp = await LoaiSanPham.findById(product.loaisanpham)
+        return {
+          _id: product._id,
+          malohang: loaisp.malsp,
+          masp: product.masp,
+          name: product.name,
+          imel: product.imel,
+          capacity: product.capacity,
+          color: product.color,
+          xuat: product.xuat
+        }
+      })
+    )
     res.json(product)
   } catch (error) {
     console.error(error)

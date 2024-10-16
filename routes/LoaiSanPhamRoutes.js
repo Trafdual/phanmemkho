@@ -134,7 +134,11 @@ router.post('/postloaisanpham2', async (req, res) => {
     } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
-    const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+    const formattedDate = moment(date).isValid() ? moment(date).toDate() : null
+    if (!formattedDate) {
+      return res.json({ message: 'Ngày không hợp lệ.' })
+    }
+
     const nganhangkho = await NganHang.findOne({ manganhangkho })
     const loaisanpham = new LoaiSanPham({
       name,
