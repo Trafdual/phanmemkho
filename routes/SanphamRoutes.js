@@ -128,6 +128,25 @@ router.post('/putsp/:idsanpham', async (req, res) => {
   }
 })
 
+router.get('/getchitietsp/:idsanpham', async (req, res) => {
+  try {
+    const idsanpham = req.params.idsanpham
+    const sanpham = await SanPham.findById(idsanpham)
+    const sanphamjson = {
+      _id: sanpham._id,
+      imel: sanpham.imel,
+      name: sanpham.name,
+      capacity: sanpham.capacity,
+      color: sanpham.color,
+      xuat: sanpham.xuat
+    }
+    res.json(sanphamjson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/deletesp/:idsanpham', async (req, res) => {
   try {
     const idsanpham = req.params.idsanpham
@@ -328,7 +347,7 @@ router.post('/chuyenkho1', async (req, res) => {
       kho1.dieuchuyen.push(dieuchuyen._id)
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
-      loaisp.conlai=loaisp.sanpham.length
+      loaisp.conlai = loaisp.sanpham.length
 
       // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
       let loaiSPInKho = kho.loaisanpham.find(
@@ -348,7 +367,7 @@ router.post('/chuyenkho1', async (req, res) => {
           })
           newLoaiSP.sanpham.push(sanpham._id)
           newLoaiSP.soluong = loaisp.soluong
-          newLoaiSP.conlai=newLoaiSP.sanpham.length
+          newLoaiSP.conlai = newLoaiSP.sanpham.length
           newLoaiSP.tongtien = loaisp.tongtien
           newLoaiSP.average = loaisp.average
           kho.loaisanpham.push(newLoaiSP._id)
@@ -380,7 +399,7 @@ router.post('/chuyenkho1', async (req, res) => {
         kho.sanpham.push(sanpham._id)
         sanpham.kho = kho._id
         sanpham.loaisanpham = loaiSPInKho._id
-        loaiSPInKho.conlai =loaiSPInKho.sanpham.length
+        loaiSPInKho.conlai = loaiSPInKho.sanpham.length
         await sanpham.save()
         await kho.save()
         await loaiSPInKho.save()

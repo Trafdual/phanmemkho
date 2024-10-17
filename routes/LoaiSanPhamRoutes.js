@@ -20,7 +20,8 @@ router.get('/getloaisanphamweb', async (req, res) => {
           soluong: loaisp.soluong,
           tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
-          average: loaisp.average
+          average: loaisp.average,
+          conlai: loaisp.conlai
         }
       })
     )
@@ -44,7 +45,8 @@ router.get('/getloaisanpham/:nccId', async (req, res) => {
           soluong: loaisp.soluong,
           tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
-          average: loaisp.average
+          average: loaisp.average,
+          conlai: loaisp.sanpham.length
         }
       })
     )
@@ -74,6 +76,7 @@ router.post('/postloaisanpham/:nccId', async (req, res) => {
     loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
     const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
     loaisanpham.malsp = malsp
+
     await loaisanpham.save()
     depot.loaisanpham.push(loaisanpham._id)
     nhacungcap.loaisanpham.push(loaisanpham._id)
@@ -109,7 +112,8 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
           soluong: loaisp.soluong,
           tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
-          average: loaisp.average
+          average: loaisp.average,
+          conlai: loaisp.sanpham.length
         }
       })
     )
@@ -232,4 +236,49 @@ router.post('deletesanpham/:idloai', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
+  try {
+    const idloai = req.params.idloai
+    const loaisanpham = await LoaiSanPham.findById(idloai)
+
+    if (!loaisanpham) {
+      return res.status(404).json({ message: 'Loại sản phẩm không tìm thấy.' })
+    }
+
+    // Tìm nhà cung cấp
+    const nhacungcap = await NhanCungCap.findById(loaisanpham.nhacungcap)
+
+    // Kiểm tra xem loaisanpham có thuộc tính nganhang hay không
+    let manganhang = ''
+    if (loaisanpham.nganhang) {
+      const nganhangkho = await NganHang.findById(loaisanpham.nganhang)
+      if (nganhangkho) {
+        manganhang = nganhangkho.manganhangkho // Lấy mã ngân hàng nếu tìm thấy
+      }
+    }
+
+    // Tạo đối tượng JSON cho phản hồi
+    const loaisanphamjson = {
+      _id: loaisanpham._id,
+      name: loaisanpham.name,
+      soluong: loaisanpham.soluong,
+      tongtien: loaisanpham.tongtien,
+      date: loaisanpham.date,
+      average: loaisanpham.average,
+      method: loaisanpham.method,
+      manganhang: manganhang, // Mặc định rỗng nếu không có nganhang
+      malsp: loaisanpham.malsp,
+      manhacungcap: nhacungcap ? nhacungcap.mancc : '', // Đảm bảo nếu nhà cung cấp không tồn tại
+      ghino: loaisanpham.ghino
+    }
+
+    // Trả về dữ liệu JSON
+    res.json(loaisanphamjson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 module.exports = router
