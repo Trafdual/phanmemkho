@@ -13,7 +13,8 @@ const loaisanphamSchema = new mongoose.Schema({
   ghino: { type: Boolean, default: false },
   method:{type:String},
   nganhang:{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'},
-  conlai:{type:Number}
+  conlai:{type:Number},
+  trano:{type: mongoose.Schema.Types.ObjectId, ref: 'trano'}
 })
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema)
 module.exports = LoaiSanPham

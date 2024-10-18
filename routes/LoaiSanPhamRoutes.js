@@ -206,15 +206,57 @@ router.post('/postloaisanpham2', async (req, res) => {
 router.post('/putloaisanpham/:idloai', async (req, res) => {
   try {
     const idloai = req.params.idloai
-    const { name, tongtien, soluong, date } = req.body
-    const average = parseFloat((tongtien / soluong).toFixed(1))
-    const loaisanpham = await LoaiSanPham.findByIdAndUpdate(idloai, {
+    const {
       name,
       tongtien,
       soluong,
       date,
-      average
-    })
+      mancc,
+      ghino,
+      method,
+      manganhangkho
+    } = req.body
+    const average = parseFloat((tongtien / soluong).toFixed(1))
+    const loaisanpham = await LoaiSanPham.findById(idloai)
+    const nganhang= await NganHang.findOne({manganhangkho})
+    const nhacungcap = await NhanCungCap.findOne({ mancc })
+    const nhacungcap1 = await NhanCungCap.findById(loaisanpham.nhacungcap)
+    loaisanpham.name = name
+    loaisanpham.tongtien = tongtien
+    loaisanpham.soluong = soluong
+    loaisanpham.date = date
+    loaisanpham.average = average
+
+    if (ghino === 'ghino') {
+      loaisanpham.ghino = true
+    } else {
+      loaisanpham.ghino = false
+      if (method === 'Tiền mặt') {
+        loaisanpham.method = 'tienmat'
+      }
+      if (method === 'Chuyển khoán') {
+        loaisanpham.method = 'chuyenkhoan'
+        loaisanpham.nganhang = nganhang._id
+      }
+    }
+    if (loaisanpham.nhacungcap !== nhacungcap._id) {
+      loaisanpham.nhacungcap = nhacungcap._id
+      nhacungcap1.loaisanpham = nhacungcap1.loaisanpham.filter(
+        id => id.toString() !== loaisanpham._id.toString()
+      )
+      nhacungcap.loaisanpham.push(loaisanpham._id)
+      const tranoList = await TraNo.findOne({
+        'donno.loaisanpham': loaisanpham._id
+      })
+      nhacungcap1.trano=nhacungcap1.trano.filter(id=>id.toString() !== tranoList._id.toString())
+      nhacungcap.trano.push(tranoList._id)
+      tranoList.nhacungcap=nhacungcap._id
+      await tranoList.save()
+
+    }
+    await loaisanpham.save()
+    await nhacungcap1.save()
+    await nhacungcap.save()
     res.json(loaisanpham)
   } catch (error) {
     console.error(error)
