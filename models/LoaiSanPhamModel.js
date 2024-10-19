@@ -6,6 +6,7 @@ const loaisanphamSchema = new mongoose.Schema({
   sanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
   tongtien: { type: Number },
   date: { type: Date },
+  hour:{type:Date},
   average: { type: Number },
   soluong: { type: Number },
   nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
