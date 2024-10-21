@@ -25,10 +25,6 @@ const nganhangRoutes=require('./routes/NganHangRoutes')
 require('./routes/passport')
 require('./routes/passportface')
 var path = require('path')
-const WebSocket = require('ws')
-const http = require('http')
-
-
 
 var app = express()
 app.use(methodOverride('_method'))
@@ -96,7 +92,7 @@ app.use('/', nhacungcapRoutes)
 app.use('/',dieuchuyenRoutes)
 app.use('/',nganhangRoutes)
 
-const port = process.env.PORT || 8081
+const port = process.env.PORT || 8080
 
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
@@ -178,34 +174,10 @@ app.use((req, res, next) => {
 //   console.log('Sitemap created')
 // })
 
-const server = http.createServer(app)
-const wss = new WebSocket.Server({ server })
-
-wss.on('connection', ws => {
-  console.log('Client connected')
-
-  ws.on('message', message => {
-    console.log('received:', message)
-    // Gửi lại dữ liệu cho tất cả client khác
-    wss.clients.forEach(client => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(message)
-      }
-    })
-  })
-
-  ws.on('close', () => {
-    console.log('Client disconnected')
-  })
-})
-
-console.log('WebSocket server is running on ws://localhost:8080')
-
-
 app.listen(port, () => {
   try {
-    console.log('kết nối thành công 8081')
+    console.log('kết nối thành công 8080')
   } catch (error) {
-    console.log('kết nối thất bại 8081', error)
+    console.log('kết nối thất bại 8080', error)
   }
 })
