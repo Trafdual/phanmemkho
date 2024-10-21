@@ -7,6 +7,7 @@ const moment = require('moment')
 const DieuChuyen = require('../models/DieuChuyenModel')
 const mongoose = require('mongoose')
 let clients = []
+let hasSentMessage = false
 
 router.get('/events', (req, res) => {
   console.log('Client connected to events API') // Thông báo khi có client kết nối
@@ -24,12 +25,17 @@ router.get('/events', (req, res) => {
     req.on('close', () => {
       clients = clients.filter(client => client !== res)
     })
+    if (!hasSentMessage) {
+      res.write(
+        `data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`
+      )
+      hasSentMessage = true // Đánh dấu là đã gửi thông điệp
+    }
   } catch (error) {
     console.error('Error in events API:', error)
     res.status(500).send('Internal Server Error')
   }
 })
-
 
 // Hàm gửi sự kiện cho tất cả client
 const sendEvent = data => {
