@@ -84,7 +84,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
     loaisanpham.sanpham.push(sanpham._id)
     await loaisanpham.save()
     await kho.save()
-    sendEvent({ message: `Sản phẩm mới đã được thêm: ${result}` })
+    sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
     res.json(sanpham)
   } catch (error) {
     console.error(error)
