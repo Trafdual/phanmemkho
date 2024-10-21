@@ -21,6 +21,7 @@ router.get('/events', (req, res) => {
     // Dọn dẹp khi client ngắt kết nối
     req.on('close', () => {
       clients = clients.filter(client => client !== res)
+      console.log('Client disconnected from events API')
     })
    
   } catch (error) {
