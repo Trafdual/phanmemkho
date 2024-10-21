@@ -14,23 +14,15 @@ router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
-
+  res.flushHeaders()
   try {
-    res.write(`data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`)
-
-    // Lưu client để gửi sự kiện sau này
     clients.push(res)
 
     // Dọn dẹp khi client ngắt kết nối
     req.on('close', () => {
       clients = clients.filter(client => client !== res)
     })
-    if (!hasSentMessage) {
-      res.write(
-        `data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`
-      )
-      hasSentMessage = true // Đánh dấu là đã gửi thông điệp
-    }
+   
   } catch (error) {
     console.error('Error in events API:', error)
     res.status(500).send('Internal Server Error')
