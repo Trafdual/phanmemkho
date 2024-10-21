@@ -6,6 +6,29 @@ const momenttimezone = require('moment-timezone')
 const moment = require('moment')
 const DieuChuyen = require('../models/DieuChuyenModel')
 const mongoose = require('mongoose')
+let clients = []
+
+router.get('/events', (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+
+  // Lưu client để gửi sự kiện sau này
+  clients.push(res)
+
+  // Dọn dẹp khi client ngắt kết nối
+  req.on('close', () => {
+    clients = clients.filter(client => client !== res)
+  })
+})
+
+// Hàm gửi sự kiện cho tất cả client
+const sendEvent = data => {
+  clients.forEach(client => {
+    client.write(`data: ${JSON.stringify(data)}\n\n`)
+  })
+}
+
 
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
@@ -61,6 +84,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
     loaisanpham.sanpham.push(sanpham._id)
     await loaisanpham.save()
     await kho.save()
+    sendEvent({ message: `Sản phẩm mới đã được thêm: ${result}` })
     res.json(sanpham)
   } catch (error) {
     console.error(error)
