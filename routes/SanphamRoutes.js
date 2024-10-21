@@ -9,19 +9,27 @@ const mongoose = require('mongoose')
 let clients = []
 
 router.get('/events', (req, res) => {
+  console.log('Client connected to events API') // Thông báo khi có client kết nối
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
-  res.write(`data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`)
 
-  // Lưu client để gửi sự kiện sau này
-  clients.push(res)
+  try {
+    res.write(`data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`)
 
-  // Dọn dẹp khi client ngắt kết nối
-  req.on('close', () => {
-    clients = clients.filter(client => client !== res)
-  })
+    // Lưu client để gửi sự kiện sau này
+    clients.push(res)
+
+    // Dọn dẹp khi client ngắt kết nối
+    req.on('close', () => {
+      clients = clients.filter(client => client !== res)
+    })
+  } catch (error) {
+    console.error('Error in events API:', error)
+    res.status(500).send('Internal Server Error')
+  }
 })
+
 
 // Hàm gửi sự kiện cho tất cả client
 const sendEvent = data => {
