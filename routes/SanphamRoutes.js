@@ -12,6 +12,7 @@ router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
+  res.write(`data: ${JSON.stringify({ message: 'Kết nối thành công!' })}\n\n`)
 
   // Lưu client để gửi sự kiện sau này
   clients.push(res)
@@ -28,7 +29,6 @@ const sendEvent = data => {
     client.write(`data: ${JSON.stringify(data)}\n\n`)
   })
 }
-
 
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
