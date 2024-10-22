@@ -135,7 +135,8 @@ router.post('/postloaisanpham2', async (req, res) => {
       ghino,
       hour,
       method,
-      manganhangkho
+      manganhangkho,
+      diengiai
     } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
@@ -156,7 +157,8 @@ router.post('/postloaisanpham2', async (req, res) => {
       soluong,
       date: formattedDate,
       hour: formattedHour,
-      nhacungcap: nhacungcap._id
+      nhacungcap: nhacungcap._id,
+      diengiai
     })
     if (ghino === 'ghino') {
       loaisanpham.ghino = true

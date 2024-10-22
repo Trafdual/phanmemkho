@@ -15,7 +15,8 @@ const loaisanphamSchema = new mongoose.Schema({
   method:{type:String},
   nganhang:{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'},
   conlai:{type:Number},
-  trano:{type: mongoose.Schema.Types.ObjectId, ref: 'trano'}
+  trano:{type: mongoose.Schema.Types.ObjectId, ref: 'trano'},
+  diengiai:{type:String}
 })
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema)
 module.exports = LoaiSanPham

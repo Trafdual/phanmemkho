@@ -375,6 +375,7 @@ router.post('/chuyenkho1', async (req, res) => {
         trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
         date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
       })
+      
       kho1.dieuchuyen.push(dieuchuyen._id)
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
