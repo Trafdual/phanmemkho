@@ -42,10 +42,8 @@ router.get('/getloaisanpham/:nccId', async (req, res) => {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          soluong: loaisp.soluong,
           tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
-          average: loaisp.average,
           conlai: loaisp.sanpham.length || 0
         }
       })
@@ -109,10 +107,8 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          soluong: loaisp.soluong,
           tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
-          average: loaisp.average,
           conlai: loaisp.sanpham.length
         }
       })
@@ -129,14 +125,13 @@ router.post('/postloaisanpham2', async (req, res) => {
     const {
       name,
       tongtien,
-      soluong,
       date,
       mancc,
       ghino,
       hour,
       method,
       manganhangkho,
-      diengiai
+      loaihanghoa
     } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
@@ -154,11 +149,10 @@ router.post('/postloaisanpham2', async (req, res) => {
       name,
       depot: depot._id,
       tongtien,
-      soluong,
       date: formattedDate,
       hour: formattedHour,
       nhacungcap: nhacungcap._id,
-      diengiai
+      loaihanghoa
     })
     if (ghino === 'ghino') {
       loaisanpham.ghino = true
@@ -188,7 +182,6 @@ router.post('/postloaisanpham2', async (req, res) => {
       }
       await loaisanpham.save()
     }
-    loaisanpham.average = parseFloat((tongtien / soluong).toFixed(1))
     const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
     loaisanpham.malsp = malsp
     await loaisanpham.save()
@@ -200,10 +193,8 @@ router.post('/postloaisanpham2', async (req, res) => {
       _id: loaisanpham._id,
       malsp: loaisanpham.malsp,
       name: loaisanpham.name,
-      soluong: loaisanpham.soluong,
       tongtien: loaisanpham.tongtien,
       date: moment(loaisanpham.date).format('DD/MM/YYYY'),
-      average: loaisanpham.average
     }
     res.json(ncc)
   } catch (error) {
@@ -387,7 +378,8 @@ router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
       manganhang: manganhang, // Mặc định rỗng nếu không có nganhang
       malsp: loaisanpham.malsp,
       manhacungcap: nhacungcap ? nhacungcap.mancc : '', // Đảm bảo nếu nhà cung cấp không tồn tại
-      ghino: loaisanpham.ghino
+      ghino: loaisanpham.ghino,
+      loaihanghoa:loaisanpham.loaihanghoa
     }
 
     // Trả về dữ liệu JSON

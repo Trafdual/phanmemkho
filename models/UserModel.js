@@ -13,7 +13,7 @@ const userSchema = new mongoose.Schema({
     otpCreatedAt: { type: Date },
     isVerified: { type: Boolean, default: false },
     isActivity: { type: Boolean, default: true },
-    nganhangkho:[{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'}]
+    nganhangkho:[{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'}],
 });
 
 const User = mongoose.model('user', userSchema);
