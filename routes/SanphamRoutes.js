@@ -8,6 +8,7 @@ const DieuChuyen = require('../models/DieuChuyenModel')
 const mongoose = require('mongoose')
 let clients = []
 let hasSentMessage = false
+const DungLuongSku = require('../models/DungluongSkuModel')
 
 router.get('/events', (req, res) => {
   console.log('Client connected to events API') // Thông báo khi có client kết nối
@@ -23,7 +24,6 @@ router.get('/events', (req, res) => {
       clients = clients.filter(client => client !== res)
       console.log('Client disconnected from events API')
     })
-   
   } catch (error) {
     console.error('Error in events API:', error)
     res.status(500).send('Internal Server Error')
@@ -44,60 +44,110 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
     const sanpham = await Promise.all(
       loaisanpham.sanpham.map(async sp => {
         const sp1 = await SanPham.findById(sp._id)
+        const sku = await DungLuongSku.findById(sp1.dungluongsku)
         return {
           masp: sp1.masp,
+          masku: sku.madungluong,
           _id: sp1._id,
           imel: sp1.imel,
           name: sp1.name,
-          capacity: sp1.capacity,
-          color: sp1.color,
+          price: sp1.price,
+          quantity: 1, // Khởi tạo số lượng mặc định là 1
           xuat: sp1.xuat
         }
       })
     )
-    res.json(sanpham)
+
+    // Gộp thông tin theo mã SKU
+    const groupedProducts = sanpham.reduce((acc, product) => {
+      const { masku, imel, price,name } = product
+
+      if (!acc[masku]) {
+        acc[masku] = {
+          ...product,
+          imel: new Set([imel]), // Bắt đầu với Set để lưu các imel duy nhất
+          quantity: 0, // Tổng số lượng
+          total: 0 // Tổng thành tiền
+        }
+      }
+
+      acc[masku].imel.add(imel) // Thêm imel vào Set
+      acc[masku].quantity += product.quantity // Cộng dồn số lượng
+      acc[masku].total += price * product.quantity // Tính thành tiền
+
+      return acc
+    }, {})
+
+    // Chuyển đổi đối tượng gộp về mảng
+    const result = Object.values(groupedProducts).map(product => ({
+      masku: product.masku,
+      name:product.name,
+      imel: Array.from(product.imel).join(','), // Chuyển Set thành mảng và kết hợp imel thành chuỗi
+      quantity: product.quantity,
+      price: product.price,
+      total: product.total
+    }))
+
+    res.json(result)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 
+
 router.post('/postsp/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
-    const { imel, name, capacity, color } = req.body
-    const sp = await SanPham.findOne({ imel })
-    if (sp) {
-      return res.json({ message: 'sản phẩm đã có trên hệ thống' })
-    }
+    const { imelList, name, price, madungluongsku } = req.body // imelList là danh sách imel
     const loaisanpham = await LoaiSanPham.findById(idloai)
     const kho = await Depot.findById(loaisanpham.depot)
-    const sanpham = new SanPham({
-      name,
-      capacity,
-      color,
-      imel,
-      datenhap: loaisanpham.date
+    const dungluongsku = await DungLuongSku.findOne({
+      madungluong: madungluongsku
     })
-    const masp = 'SP' + sanpham._id.toString().slice(-5)
-    kho.sanpham.push(sanpham._id)
-    sanpham.kho = kho._id
-    sanpham.masp = masp
-    sanpham.datexuat = ''
-    sanpham.xuat = false
-    sanpham.loaisanpham = loaisanpham._id
-    sanpham.price = loaisanpham.average
-    await sanpham.save()
-    loaisanpham.sanpham.push(sanpham._id)
-    await loaisanpham.save()
-    await kho.save()
-    sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
-    res.json(sanpham)
+
+    const addedProducts = []
+
+    for (const imel of imelList) {
+      const sp = await SanPham.findOne({ imel })
+      if (sp) {
+        continue
+      }
+
+      const sanpham = new SanPham({
+        name,
+        imel,
+        datenhap: loaisanpham.date,
+        price
+      })
+
+      const masp = 'SP' + sanpham._id.toString().slice(-5)
+      kho.sanpham.push(sanpham._id)
+      sanpham.kho = kho._id
+      sanpham.masp = masp
+      sanpham.datexuat = ''
+      sanpham.xuat = false
+      sanpham.loaisanpham = loaisanpham._id
+      dungluongsku.sanpham.push(sanpham._id)
+      sanpham.dungluongsku = dungluongsku._id
+      await sanpham.save()
+      loaisanpham.sanpham.push(sanpham._id)
+      await loaisanpham.save()
+      await kho.save()
+      await dungluongsku.save()
+
+      sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
+
+      addedProducts.push(sanpham)
+    }
+
+    res.json(addedProducts)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
 router.post('/postsp', async (req, res) => {
   try {
     const { imel, name, capacity, color, tenloai } = req.body
@@ -375,7 +425,7 @@ router.post('/chuyenkho1', async (req, res) => {
         trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
         date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
       })
-      
+
       kho1.dieuchuyen.push(dieuchuyen._id)
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)

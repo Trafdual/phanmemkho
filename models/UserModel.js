@@ -14,6 +14,7 @@ const userSchema = new mongoose.Schema({
     isVerified: { type: Boolean, default: false },
     isActivity: { type: Boolean, default: true },
     nganhangkho:[{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'}],
+    sku:[{type: mongoose.Schema.Types.ObjectId, ref: 'sku'}],
 });
 
 const User = mongoose.model('user', userSchema);
