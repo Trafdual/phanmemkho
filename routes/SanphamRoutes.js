@@ -6,6 +6,36 @@ const momenttimezone = require('moment-timezone')
 const moment = require('moment')
 const DieuChuyen = require('../models/DieuChuyenModel')
 const mongoose = require('mongoose')
+let clients = []
+let hasSentMessage = false
+const DungLuongSku = require('../models/DungluongSkuModel')
+
+router.get('/events', (req, res) => {
+  console.log('Client connected to events API') // Thông báo khi có client kết nối
+  res.setHeader('Content-Type', 'text/event-stream')
+  res.setHeader('Cache-Control', 'no-cache')
+  res.setHeader('Connection', 'keep-alive')
+  res.flushHeaders()
+  try {
+    clients.push(res)
+
+    // Dọn dẹp khi client ngắt kết nối
+    req.on('close', () => {
+      clients = clients.filter(client => client !== res)
+      console.log('Client disconnected from events API')
+    })
+  } catch (error) {
+    console.error('Error in events API:', error)
+    res.status(500).send('Internal Server Error')
+  }
+})
+
+// Hàm gửi sự kiện cho tất cả client
+const sendEvent = data => {
+  clients.forEach(client => {
+    client.write(`data: ${JSON.stringify(data)}\n\n`)
+  })
+}
 
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
@@ -14,59 +44,167 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
     const sanpham = await Promise.all(
       loaisanpham.sanpham.map(async sp => {
         const sp1 = await SanPham.findById(sp._id)
+        const sku = await DungLuongSku.findById(sp1.dungluongsku)
         return {
           masp: sp1.masp,
+          masku: sku.madungluong,
           _id: sp1._id,
           imel: sp1.imel,
           name: sp1.name,
-          capacity: sp1.capacity,
-          color: sp1.color,
+          price: sp1.price,
+          quantity: 1, // Khởi tạo số lượng mặc định là 1
           xuat: sp1.xuat
         }
       })
     )
-    res.json(sanpham)
+
+    // Gộp thông tin theo mã SKU
+    const groupedProducts = sanpham.reduce((acc, product) => {
+      const { masku, imel, price,name } = product
+
+      if (!acc[masku]) {
+        acc[masku] = {
+          ...product,
+          imel: new Set([imel]), // Bắt đầu với Set để lưu các imel duy nhất
+          quantity: 0, // Tổng số lượng
+          total: 0 // Tổng thành tiền
+        }
+      }
+
+      acc[masku].imel.add(imel) // Thêm imel vào Set
+      acc[masku].quantity += product.quantity // Cộng dồn số lượng
+      acc[masku].total += price * product.quantity // Tính thành tiền
+
+      return acc
+    }, {})
+
+    // Chuyển đổi đối tượng gộp về mảng
+    const result = Object.values(groupedProducts).map(product => ({
+      masku: product.masku,
+      name:product.name,
+      imel: Array.from(product.imel).join(','), // Chuyển Set thành mảng và kết hợp imel thành chuỗi
+      quantity: product.quantity,
+      price: product.price,
+      total: product.total
+    }))
+
+    res.json(result)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 
+
 router.post('/postsp/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
-    const { imel, name, capacity, color } = req.body
-    const sp = await SanPham.findOne({ imel })
-    if (sp) {
-      return res.json({ message: 'sản phẩm đã có trên hệ thống' })
-    }
+    const { imelList, name, price, madungluongsku } = req.body // imelList là danh sách imel
     const loaisanpham = await LoaiSanPham.findById(idloai)
     const kho = await Depot.findById(loaisanpham.depot)
-    const sanpham = new SanPham({
-      name,
-      capacity,
-      color,
-      imel,
-      datenhap: loaisanpham.date
+    const dungluongsku = await DungLuongSku.findOne({
+      madungluong: madungluongsku
     })
-    const masp = 'SP' + sanpham._id.toString().slice(-5)
-    kho.sanpham.push(sanpham._id)
-    sanpham.kho = kho._id
-    sanpham.masp = masp
-    sanpham.datexuat = ''
-    sanpham.xuat = false
-    sanpham.loaisanpham = loaisanpham._id
-    sanpham.price = loaisanpham.average
-    await sanpham.save()
-    loaisanpham.sanpham.push(sanpham._id)
-    await loaisanpham.save()
-    await kho.save()
-    res.json(sanpham)
+
+    const addedProducts = []
+
+    for (const imel of imelList) {
+      const sp = await SanPham.findOne({ imel })
+      if (sp) {
+        continue
+      }
+
+      const sanpham = new SanPham({
+        name,
+        imel,
+        datenhap: loaisanpham.date,
+        price
+      })
+
+      const masp = 'SP' + sanpham._id.toString().slice(-5)
+      kho.sanpham.push(sanpham._id)
+      sanpham.kho = kho._id
+      sanpham.masp = masp
+      sanpham.datexuat = ''
+      sanpham.xuat = false
+      sanpham.loaisanpham = loaisanpham._id
+      dungluongsku.sanpham.push(sanpham._id)
+      sanpham.dungluongsku = dungluongsku._id
+      await sanpham.save()
+      loaisanpham.sanpham.push(sanpham._id)
+      await loaisanpham.save()
+      await kho.save()
+      await dungluongsku.save()
+
+      sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
+
+      addedProducts.push(sanpham)
+    }
+
+    res.json(addedProducts)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+router.post('/postsp1/:idloaisanpham', async (req, res) => {
+  try {
+    const idloai = req.params.idloaisanpham
+    const { products, name, price } = req.body // products là danh sách chứa từng madungluongsku và imelList tương ứng
+    const loaisanpham = await LoaiSanPham.findById(idloai)
+    const kho = await Depot.findById(loaisanpham.depot)
+    const addedProducts = []
+
+    for (const product of products) {
+      const { madungluongsku, imelList } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) {
+          continue
+        }
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price
+        })
+
+        const masp = 'SP' + sanpham._id.toString().slice(-5)
+        kho.sanpham.push(sanpham._id)
+        sanpham.kho = kho._id
+        sanpham.masp = masp
+        sanpham.datexuat = ''
+        sanpham.xuat = false
+        sanpham.loaisanpham = loaisanpham._id
+        dungluongsku.sanpham.push(sanpham._id)
+        sanpham.dungluongsku = dungluongsku._id
+
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        await loaisanpham.save()
+        await kho.save()
+        await dungluongsku.save()
+
+        sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
+
+        addedProducts.push(sanpham)
+      }
+    }
+
+    res.json(addedProducts)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
 router.post('/postsp', async (req, res) => {
   try {
     const { imel, name, capacity, color, tenloai } = req.body
@@ -122,6 +260,25 @@ router.post('/putsp/:idsanpham', async (req, res) => {
     })
     await sanpham.save()
     res.json(sanpham)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchitietsp/:idsanpham', async (req, res) => {
+  try {
+    const idsanpham = req.params.idsanpham
+    const sanpham = await SanPham.findById(idsanpham)
+    const sanphamjson = {
+      _id: sanpham._id,
+      imel: sanpham.imel,
+      name: sanpham.name,
+      capacity: sanpham.capacity,
+      color: sanpham.color,
+      xuat: sanpham.xuat
+    }
+    res.json(sanphamjson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
@@ -325,9 +482,11 @@ router.post('/chuyenkho1', async (req, res) => {
         trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
         date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
       })
+
       kho1.dieuchuyen.push(dieuchuyen._id)
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
+      loaisp.conlai = loaisp.sanpham.length
 
       // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
       let loaiSPInKho = kho.loaisanpham.find(
@@ -346,21 +505,18 @@ router.post('/chuyenkho1', async (req, res) => {
             nhacungcap: loaisp.nhacungcap
           })
           newLoaiSP.sanpham.push(sanpham._id)
-          newLoaiSP.soluong = newLoaiSP.sanpham.length
-          newLoaiSP.tongtien = parseFloat(
-            (loaisp.tongtien / loaisp.soluong).toFixed(1)
-          )
-          newLoaiSP.average = parseFloat(
-            (loaisp.tongtien / loaisp.soluong).toFixed(1)
-          )
+          newLoaiSP.soluong = loaisp.soluong
+          newLoaiSP.conlai = newLoaiSP.sanpham.length
+          newLoaiSP.tongtien = loaisp.tongtien
+          newLoaiSP.average = loaisp.average
           kho.loaisanpham.push(newLoaiSP._id)
           kho.sanpham.push(sanpham._id)
           sanpham.kho = kho._id
+          sanpham.loaisanpham = newLoaiSP._id
           await sanpham.save()
           await newLoaiSP.save()
           await kho.save()
 
-          // Lưu lại loại sản phẩm vừa tạo trong biến createdLoaiSP
           createdLoaiSP[loaisp.malsp] = newLoaiSP
         } else {
           // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
@@ -368,17 +524,8 @@ router.post('/chuyenkho1', async (req, res) => {
           existingLoaiSP.sanpham.push(sanpham._id)
           kho.sanpham.push(sanpham._id)
           sanpham.kho = kho._id
-
-          existingLoaiSP.soluong = existingLoaiSP.sanpham.length
-          existingLoaiSP.tongtien = parseFloat(
-            (
-              existingLoaiSP.tongtien +
-              loaisp.tongtien / loaisp.soluong
-            ).toFixed(2)
-          )
-          existingLoaiSP.average = parseFloat(
-            (existingLoaiSP.tongtien / existingLoaiSP.soluong).toFixed(1)
-          )
+          sanpham.loaisanpham = existingLoaiSP._id
+          existingLoaiSP.conlai = existingLoaiSP.sanpham.length
           await sanpham.save()
           await kho.save()
 
@@ -390,14 +537,8 @@ router.post('/chuyenkho1', async (req, res) => {
         loaiSPInKho.sanpham.push(sanpham._id)
         kho.sanpham.push(sanpham._id)
         sanpham.kho = kho._id
-
-        loaiSPInKho.soluong = loaiSPInKho.sanpham.length
-        loaiSPInKho.tongtien = parseFloat(
-          (loaiSPInKho.tongtien + loaisp.tongtien / loaisp.soluong).toFixed(2)
-        )
-        loaiSPInKho.average = parseFloat(
-          (loaiSPInKho.tongtien / loaiSPInKho.soluong).toFixed(1)
-        )
+        sanpham.loaisanpham = loaiSPInKho._id
+        loaiSPInKho.conlai = loaiSPInKho.sanpham.length
         await sanpham.save()
         await kho.save()
         await loaiSPInKho.save()
@@ -481,19 +622,21 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
     }
     query.kho = khoid
     const products = await SanPham.find(query)
-    const product = await Promise.all(products.map(async product => {
-      const loaisp= await LoaiSanPham.findById(product.loaisanpham)
-      return{
-        _id: product._id,
-        malohang: loaisp.malsp,
-        masp: product.masp,
-        name: product.name,
-        imel:product.imel,
-        capacity:product.capacity,
-        color:product.color,
-        xuat:product.xuat,
-      }
-    }))
+    const product = await Promise.all(
+      products.map(async product => {
+        const loaisp = await LoaiSanPham.findById(product.loaisanpham)
+        return {
+          _id: product._id,
+          malohang: loaisp.malsp,
+          masp: product.masp,
+          name: product.name,
+          imel: product.imel,
+          capacity: product.capacity,
+          color: product.color,
+          xuat: product.xuat
+        }
+      })
+    )
     res.json(product)
   } catch (error) {
     console.error(error)
