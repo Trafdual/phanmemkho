@@ -148,6 +148,63 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
   }
 })
 
+router.post('/postsp1/:idloaisanpham', async (req, res) => {
+  try {
+    const idloai = req.params.idloaisanpham
+    const { products, name, price } = req.body // products là danh sách chứa từng madungluongsku và imelList tương ứng
+    const loaisanpham = await LoaiSanPham.findById(idloai)
+    const kho = await Depot.findById(loaisanpham.depot)
+    const addedProducts = []
+
+    for (const product of products) {
+      const { madungluongsku, imelList } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) {
+          continue
+        }
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price
+        })
+
+        const masp = 'SP' + sanpham._id.toString().slice(-5)
+        kho.sanpham.push(sanpham._id)
+        sanpham.kho = kho._id
+        sanpham.masp = masp
+        sanpham.datexuat = ''
+        sanpham.xuat = false
+        sanpham.loaisanpham = loaisanpham._id
+        dungluongsku.sanpham.push(sanpham._id)
+        sanpham.dungluongsku = dungluongsku._id
+
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        await loaisanpham.save()
+        await kho.save()
+        await dungluongsku.save()
+
+        sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
+
+        addedProducts.push(sanpham)
+      }
+    }
+
+    res.json(addedProducts)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
 router.post('/postsp', async (req, res) => {
   try {
     const { imel, name, capacity, color, tenloai } = req.body
