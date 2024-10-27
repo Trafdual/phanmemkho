@@ -4,6 +4,9 @@ const Depot = require('../models/DepotModel')
 const NhanCungCap = require('../models/NhanCungCapModel')
 const TraNo = require('../models/TraNoModel')
 const NganHang = require('../models/NganHangKhoModel')
+const SanPham = require('../models/SanPhamModel')
+const DungLuongSku = require('../models/DungluongSkuModel')
+
 
 const moment = require('moment')
 
@@ -402,10 +405,7 @@ router.post('/postloaisanpham3', async (req, res) => {
       method,
       manganhangkho,
       loaihanghoa,
-      imelList,
-      namesp,
-      pricesp,
-      madungluongsku
+      products
     } = req.body
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
@@ -458,6 +458,47 @@ router.post('/postloaisanpham3', async (req, res) => {
     }
     const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
     loaisanpham.malsp = malsp
+    const addedProducts = []
+
+    for (const product of products) {
+      const { madungluongsku, imelList, name, price } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) continue
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price
+        })
+
+        const masp = 'SP' + sanpham._id.toString().slice(-5)
+        depot.sanpham.push(sanpham._id)
+        sanpham.kho = depot._id
+        sanpham.masp = masp
+        sanpham.datexuat = ''
+        sanpham.xuat = false
+        sanpham.loaisanpham = loaisanpham._id
+        dungluongsku.sanpham.push(sanpham._id)
+        sanpham.dungluongsku = dungluongsku._id
+
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        await loaisanpham.save()
+        await kho.save()
+        await dungluongsku.save()
+
+        sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
+
+        addedProducts.push(sanpham)
+      }
+    }
+
     await loaisanpham.save()
     depot.loaisanpham.push(loaisanpham._id)
     nhacungcap.loaisanpham.push(loaisanpham._id)
@@ -468,9 +509,9 @@ router.post('/postloaisanpham3', async (req, res) => {
       malsp: loaisanpham.malsp,
       name: loaisanpham.name,
       tongtien: loaisanpham.tongtien,
-      date: moment(loaisanpham.date).format('DD/MM/YYYY'),
-      conlai:loaisanpham.sanpham.length
+      date: moment(loaisanpham.date).format('DD/MM/YYYY')
     }
+
     res.json(ncc)
   } catch (error) {
     console.error(error)

@@ -151,22 +151,21 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
 router.post('/postsp1/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
-    const { products, name, price } = req.body // products là danh sách chứa từng madungluongsku và imelList tương ứng
+    const { products } = req.body // `name` và `price` được gửi trong từng sản phẩm trong `products`
+
     const loaisanpham = await LoaiSanPham.findById(idloai)
     const kho = await Depot.findById(loaisanpham.depot)
     const addedProducts = []
 
     for (const product of products) {
-      const { madungluongsku, imelList } = product
+      const { madungluongsku, imelList, name, price } = product
       const dungluongsku = await DungLuongSku.findOne({
         madungluong: madungluongsku
       })
 
       for (const imel of imelList) {
         const sp = await SanPham.findOne({ imel })
-        if (sp) {
-          continue
-        }
+        if (sp) continue
 
         const sanpham = new SanPham({
           name,
@@ -203,7 +202,6 @@ router.post('/postsp1/:idloaisanpham', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 router.post('/postsp', async (req, res) => {
   try {
