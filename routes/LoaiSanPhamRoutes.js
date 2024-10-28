@@ -7,7 +7,6 @@ const NganHang = require('../models/NganHangKhoModel')
 const SanPham = require('../models/SanPhamModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
 
-
 const moment = require('moment')
 
 router.get('/getloaisanphamweb', async (req, res) => {
@@ -397,7 +396,6 @@ router.post('/postloaisanpham3', async (req, res) => {
   try {
     const {
       name,
-      tongtien,
       date,
       mancc,
       ghino,
@@ -410,56 +408,23 @@ router.post('/postloaisanpham3', async (req, res) => {
     const nhacungcap = await NhanCungCap.findOne({ mancc })
     const depot = await Depot.findById(nhacungcap.depotId)
     const formattedDate = moment(date).isValid() ? moment(date).toDate() : null
-    if (!formattedDate) {
-      return res.json({ message: 'Ngày không hợp lệ.' })
-    }
+    if (!formattedDate) return res.json({ message: 'Ngày không hợp lệ.' })
     const formattedHour = moment(hour).isValid() ? moment(hour).toDate() : null
-    if (!formattedHour) {
-      return res.json({ message: 'Giờ không hợp lệ.' })
-    }
+    if (!formattedHour) return res.json({ message: 'Giờ không hợp lệ.' })
 
-    const nganhangkho = await NganHang.findOne({ manganhangkho: manganhangkho })
+    const nganhangkho = await NganHang.findOne({ manganhangkho })
     const loaisanpham = new LoaiSanPham({
       name,
       depot: depot._id,
-      tongtien,
       date: formattedDate,
       hour: formattedHour,
       nhacungcap: nhacungcap._id,
       loaihanghoa
     })
-    if (ghino === 'ghino') {
-      loaisanpham.ghino = true
-      const trano = new TraNo({ nhacungcap: nhacungcap._id })
-      let tienno = 0
-      tienno += loaisanpham.tongtien
-      trano.donno.push({
-        loaisanpham: loaisanpham._id,
-        tienno: tienno,
-        tienphaitra: tienno,
-        tiendatra: 0
-      })
-      trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
-      trano.tongtra = trano.donno.reduce((sum, item) => sum + item.tiendatra, 0)
-      nhacungcap.trano.push(trano._id)
-      await nhacungcap.save()
-      await trano.save()
-      await loaisanpham.save()
-    } else {
-      loaisanpham.ghino = false
-      if (method === 'Tiền mặt') {
-        loaisanpham.method = 'tienmat'
-      }
-      if (method === 'Chuyển khoản') {
-        loaisanpham.method = 'chuyenkhoan'
-        loaisanpham.nganhang = nganhangkho._id
-      }
-      await loaisanpham.save()
-    }
-    const malsp = 'LH' + loaisanpham._id.toString().slice(-5)
-    loaisanpham.malsp = malsp
-    const addedProducts = []
 
+    loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
+    const addedProducts = []
+    let tongtien = 0
     for (const product of products) {
       const { madungluongsku, imelList, name, price } = product
       const dungluongsku = await DungLuongSku.findOne({
@@ -477,25 +442,41 @@ router.post('/postloaisanpham3', async (req, res) => {
           price
         })
 
-        const masp = 'SP' + sanpham._id.toString().slice(-5)
-        depot.sanpham.push(sanpham._id)
+        sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
         sanpham.kho = depot._id
-        sanpham.masp = masp
-        sanpham.datexuat = ''
-        sanpham.xuat = false
         sanpham.loaisanpham = loaisanpham._id
-        dungluongsku.sanpham.push(sanpham._id)
         sanpham.dungluongsku = dungluongsku._id
-
+        tongtien += Number(price)
         await sanpham.save()
         loaisanpham.sanpham.push(sanpham._id)
-        await loaisanpham.save()
-        await kho.save()
+        depot.sanpham.push(sanpham._id)
+        dungluongsku.sanpham.push(sanpham._id)
         await dungluongsku.save()
-
-        sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
-
         addedProducts.push(sanpham)
+      }
+    }
+
+    loaisanpham.tongtien = tongtien
+
+    if (ghino === 'ghino') {
+      loaisanpham.ghino = true
+      const trano = new TraNo({ nhacungcap: nhacungcap._id })
+      trano.donno.push({
+        loaisanpham: loaisanpham._id,
+        tienno: loaisanpham.tongtien,
+        tienphaitra: loaisanpham.tongtien,
+        tiendatra: 0
+      })
+      trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
+      trano.tongtra = trano.donno.reduce((sum, item) => sum + item.tiendatra, 0)
+      nhacungcap.trano.push(trano._id)
+      await trano.save()
+    } else {
+      loaisanpham.ghino = false
+      if (method === 'Tiền mặt') loaisanpham.method = 'tienmat'
+      if (method === 'Chuyển khoản') {
+        loaisanpham.method = 'chuyenkhoan'
+        loaisanpham.nganhang = nganhangkho._id
       }
     }
 
@@ -504,6 +485,7 @@ router.post('/postloaisanpham3', async (req, res) => {
     nhacungcap.loaisanpham.push(loaisanpham._id)
     await nhacungcap.save()
     await depot.save()
+
     const ncc = {
       _id: loaisanpham._id,
       malsp: loaisanpham.malsp,
