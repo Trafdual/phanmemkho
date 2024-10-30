@@ -60,7 +60,7 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
 
     // Gộp thông tin theo mã SKU
     const groupedProducts = sanpham.reduce((acc, product) => {
-      const { masku, imel, price,name } = product
+      const { masku, imel, price, name } = product
 
       if (!acc[masku]) {
         acc[masku] = {
@@ -81,10 +81,10 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
     // Chuyển đổi đối tượng gộp về mảng
     const result = Object.values(groupedProducts).map(product => ({
       masku: product.masku,
-      name:product.name,
+      name: product.name,
       imel: Array.from(product.imel).join(','), // Chuyển Set thành mảng và kết hợp imel thành chuỗi
       quantity: product.quantity,
-      price: product.price,
+      price: parseFloat(product.total/product.quantity),
       total: product.total
     }))
 
@@ -95,6 +95,58 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   }
 })
 
+router.get('/getsanphambySKU/:sku/:idloaisanpham', async (req, res) => {
+  try {
+    const skuCode = req.params.sku
+    const idloaisanpham = req.params.idloaisanpham
+
+    // Lấy loại sản phẩm và kiểm tra tồn tại
+    const loaisanpham = await LoaiSanPham.findById(idloaisanpham).populate(
+      'sanpham'
+    )
+
+    if (!loaisanpham) {
+      return res.status(404).json({ message: 'Không tìm thấy loại sản phẩm.' })
+    }
+
+    // Lọc sản phẩm trong loại sản phẩm với mã SKU
+    const matchingProducts = await Promise.all(
+      loaisanpham.sanpham.map(async sp => {
+        const spDetails = await SanPham.findById(sp._id).populate(
+          'dungluongsku'
+        )
+
+        // Kiểm tra SKU
+        if (spDetails.dungluongsku.madungluong === skuCode) {
+          return {
+            _id: spDetails._id,
+            masp: spDetails.masp,
+            imel: spDetails.imel,
+            name: spDetails.name,
+            price: spDetails.price,
+            xuat: spDetails.xuat
+          }
+        }
+      })
+    )
+
+    // Loại bỏ các giá trị không hợp lệ
+    const result = matchingProducts.filter(product => product !== undefined)
+
+    if (result.length === 0) {
+      return res.status(404).json({
+        message: 'Không có sản phẩm nào với SKU này trong loại sản phẩm.'
+      })
+    }
+
+    res.json(result)
+  } catch (error) {
+    console.error(error)
+    res
+      .status(500)
+      .json({ message: 'Đã xảy ra lỗi khi lấy sản phẩm theo SKU.' })
+  }
+})
 
 router.post('/postsp/:idloaisanpham', async (req, res) => {
   try {
@@ -639,6 +691,33 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/putsomeproduct', async (req, res) => {
+  try {
+    const { products } = req.body
+
+    const updatePromises = products.map(async product => {
+      return await SanPham.findByIdAndUpdate(
+        product._id,
+        {
+          imel: product.imel,
+          price: product.price
+        },
+        { new: true }
+      )
+    })
+
+    const updatedProducts = await Promise.all(updatePromises)
+
+    res.status(200).json({
+      message: 'Cập nhật sản phẩm thành công',
+      data: updatedProducts
+    })
+  } catch (error) {
+    console.error('Lỗi khi cập nhật sản phẩm:', error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật sản phẩm.' })
   }
 })
 

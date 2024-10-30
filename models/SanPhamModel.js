@@ -10,7 +10,8 @@ const sanphamSchema = new mongoose.Schema({
   datexuat: { type: Date },
   xuat: { type: Boolean, default: false },
   kho: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
-  dungluongsku: { type: mongoose.Schema.Types.ObjectId, ref: 'dungluong' }
+  dungluongsku: { type: mongoose.Schema.Types.ObjectId, ref: 'dungluong' },
+  diengiai:{type:String}
 })
 
 const SanPham = mongoose.model('sanpham', sanphamSchema)
