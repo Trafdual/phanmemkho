@@ -10,7 +10,8 @@ const depotSchema = new mongoose.Schema({
   xuatkho: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
   dieuchuyen:[{ type: mongoose.Schema.Types.ObjectId, ref: 'dieuchuyen' }],
   hoadon:[{ type: mongoose.Schema.Types.ObjectId, ref: 'hoadon' }],
-  sanpham:[{type:mongoose.Schema.Types.ObjectId,ref:'sanpham'}]
+  sanpham:[{type:mongoose.Schema.Types.ObjectId,ref:'sanpham'}],
+  trahang:[{ type:mongoose.Schema.Types.ObjectId,ref:'trahang'}]
 })
 const DePot = mongoose.model('depot', depotSchema)
 module.exports = DePot

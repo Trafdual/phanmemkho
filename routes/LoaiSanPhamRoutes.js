@@ -40,11 +40,16 @@ router.get('/getloaisanpham/:nccId', async (req, res) => {
     const loaisanpham = await Promise.all(
       nhacungcap.loaisanpham.map(async loai => {
         const loaisp = await LoaiSanPham.findById(loai._id)
+        const tongtien = loaisp.sanpham.reduce(
+          (sum, product) => sum + (product.price || 0),
+          0
+        )
+
         return {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          tongtien: loaisp.tongtien,
+          tongtien: tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
           conlai: loaisp.sanpham.length || 0
         }
@@ -104,12 +109,17 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
     const depot = await Depot.findById(depotID)
     const loaisanpham = await Promise.all(
       depot.loaisanpham.map(async loaisanpham => {
-        const loaisp = await LoaiSanPham.findById(loaisanpham._id)
+        const loaisp = await LoaiSanPham.findById(loaisanpham._id).populate('sanpham')
+        const tongtien = loaisp.sanpham.reduce(
+  (sum, product) => sum + (product.price || 0),
+  0
+)
+
         return {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          tongtien: loaisp.tongtien,
+          tongtien: tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
           conlai: loaisp.sanpham.length
         }
