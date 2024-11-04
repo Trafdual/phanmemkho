@@ -84,7 +84,7 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
       name: product.name,
       imel: Array.from(product.imel).join(','), // Chuyển Set thành mảng và kết hợp imel thành chuỗi
       quantity: product.quantity,
-      price: parseFloat(product.total/product.quantity),
+      price: parseFloat(product.total / product.quantity),
       total: product.total
     }))
 
@@ -606,6 +606,46 @@ router.post('/chuyenkho1', async (req, res) => {
   }
 })
 
+router.post('/chuyenkho2/:khoId', async (req, res) => {
+  try {
+    const { idsanpham1, tenkho, diengiai } = req.body
+    const khoId = req.params.khoId
+    const kho1 = await Depot.findById(khoId)
+    const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
+    const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
+
+    const loaisp1 = new LoaiSanPham({
+      diengiai: diengiai,
+      date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
+      hour: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
+      depot: kho._id,
+      makhodiechuyen: kho1._id
+    })
+    const malsp = 'LH' + loaisp1._id.toString().slice(-5)
+    loaisp1.malsp = malsp
+
+    const dieuchuyen = new DieuChuyen({
+      depot: kho1._id,
+      trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
+      date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
+    })
+
+    for (const idsanpham of idsanpham1) {
+      const sanpham = await SanPham.findById(idsanpham)
+      const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
+
+      kho1.dieuchuyen.push(dieuchuyen._id)
+
+      loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
+      loaisp.conlai = loaisp.sanpham.length
+    }
+    res.json({ message: 'Chuyển kho hàng loạt thành công!' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Có lỗi xảy ra.' })
+  }
+})
+
 router.get('/getxuatkho/:khoid', async (req, res) => {
   try {
     const khoid = req.params.khoid
@@ -683,7 +723,8 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
           imel: product.imel,
           capacity: product.capacity,
           color: product.color,
-          xuat: product.xuat
+          xuat: product.xuat,
+          tralai: product.tralai
         }
       })
     )

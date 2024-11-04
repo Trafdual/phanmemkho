@@ -50,17 +50,21 @@ router.post('/posttrahang/:khoID', async (req, res) => {
     const { imelist, manhacungcap, ngaynhap, hour, diengiai, method, congno } =
       req.body
     const kho = await Depot.findById(khoID)
+    const trahang = new TraHang({
+      diengiai,
+      ngaynhap,
+      hour
+    })
 
     for (const imel of imelist) {
       const sanpham = await SanPham.findOne({ imel })
+      console.error(sanpham)
+      if (!sanpham) {
+        console.error(`Sản phẩm với imel ${imel} không tồn tại.`)
+      }
       const nhacungcap = await NhanCungCap.findOne({ mancc: manhacungcap })
       const loaisanpham = await LoaiSanPham.findById(sanpham.loaisanpham)
-      const trahang = new TraHang({
-        diengiai,
-        ngaynhap,
-        hour,
-        nhacungcap: nhacungcap._id
-      })
+
       trahang.sanpham.push(sanpham._id)
       trahang.kho = kho._id
       if (congno === 'congno') {
@@ -73,14 +77,17 @@ router.post('/posttrahang/:khoID', async (req, res) => {
       loaisanpham.sanpham = loaisanpham.sanpham.filter(
         sp => sp._id.toString() !== sanpham._id.toString()
       )
-      await trahang.save()
+      trahang.nhacungcap = nhacungcap._id
+
       await kho.save()
       await sanpham.save()
       await loaisanpham.save()
     }
+    await trahang.save()
+    res.json(trahang)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+    res.json({ message: `Đã xảy ra lỗi: ${error}` })
   }
 })
 

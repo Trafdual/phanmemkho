@@ -8,6 +8,7 @@ const loaisanphamSchema = new mongoose.Schema({
   date: { type: Date },
   hour:{type:Date},
   nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
+  makhodiechuyen:{type:mongoose.Schema.Types.ObjectId, ref:'depot'},
   depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   ghino: { type: Boolean, default: false },
   method:{type:String},
