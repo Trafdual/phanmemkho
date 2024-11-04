@@ -761,5 +761,9 @@ router.post('/putsomeproduct', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật sản phẩm.' })
   }
 })
+router.get('/getsanpham',async(req,res)=>{
+  const sanpham = await SanPham.find().lean()
+  res.json(sanpham)
+})
 
 module.exports = router

@@ -23,7 +23,7 @@ router.get('/getbaocaokho/:khoID', async (req, res) => {
       {
         $match: {
           kho: new mongoose.Types.ObjectId(khoID),
-          datenhap: dateFilter
+          datenhap: { $gte: startDate, $lte: endDate } 
         }
       },
       {
@@ -192,7 +192,7 @@ router.get('/getbaocaokho/:khoID', async (req, res) => {
       data['tồn_cuối_kỳ'].số_lượng =
         data['tồn_đầu_kỳ'].số_lượng +
         data['nhập_trong_kỳ'].số_lượng -
-        data['xuất_trong_kỳ'].số_lượng
+        data['xuất_trong_kỳ'].số_lượng;
       data['tồn_cuối_kỳ'].giá_trị =
         data['tồn_đầu_kỳ'].giá_trị +
         data['nhập_trong_kỳ'].giá_trị -
