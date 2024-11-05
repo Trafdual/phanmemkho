@@ -2,270 +2,220 @@ const router = require('express').Router()
 const SanPham = require('../models/SanPhamModel')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const mongoose = require('mongoose')
+const DePot = require('../models/DepotModel')
+const DungLuongSku = require('../models/DungluongSkuModel')
+const Sku = require('../models/SkuModel')
 
-router.get('/getbaocaokho/:khoID', async (req, res) => {
+router.get('/getsptest/:khoID', async (req, res) => {
   try {
-    const { khoID } = req.params
-    const { fromDate, toDate } = req.query // Lấy ngày từ yêu cầu
+    const khoId = req.params.khoID
+    const { fromDate, endDate } = req.query // Nhận `fromDate` và `endDate` từ query
 
-    // Tạo điều kiện lọc ngày từ fromDate đến toDate
-    const startDate = new Date(`${fromDate}T00:00:00.000Z`)
-    const endDate = new Date(`${toDate}T23:59:59.999Z`)
+    const from = new Date(fromDate)
+    const end = new Date(endDate)
 
-    const dateFilter = {
-      $gte: startDate,
-      $lte: endDate
-    }
-    console.log(dateFilter)
+    const depot = await DePot.findById(khoId)
+    const sanphamtest = await Promise.all(
+      depot.sanpham.map(async sanpham => {
+        const sanpham1 = await SanPham.findById(sanpham._id)
+        const dungluongsku = await DungLuongSku.findById(sanpham1.dungluongsku)
+        const sku = await Sku.findById(dungluongsku.sku)
 
-    // Tìm ngày nhập đầu tiên cho từng SKU trong khoảng thời gian
-    const firstEntries = await SanPham.aggregate([
-      {
-        $match: {
-          kho: new mongoose.Types.ObjectId(khoID),
-          datenhap: { $gte: startDate, $lte: endDate } 
+        const sanphamjson = {
+          madungluongsku: dungluongsku.madungluong,
+          name: sanpham1.name,
+          datenhap: sanpham1.datenhap,
+          price: sanpham1.price,
+          datexuat: sanpham1.datexuat,
+          xuat: sanpham1.xuat
         }
-      },
-      {
-        $group: {
-          _id: '$dungluongsku', // Nhóm theo dungluongsku
-          firstEntryDate: { $min: '$datenhap' } // Lấy ngày nhập đầu tiên
-        }
-      }
-    ])
 
-    // Nếu không có SKU nào, trả về thông báo
-    if (firstEntries.length === 0) {
-      return res.json({
-        báo_cáo: [],
-        message: 'Không có dữ liệu trong khoảng thời gian đã chọn'
+        return {
+          masku: sku.masku,
+          namesku: sku.name,
+          sanpham: sanphamjson
+        }
       })
-    }
+    )
 
-    // Lấy dữ liệu tồn đầu kỳ cho từng SKU
-    const initialDataPromises = firstEntries.map(async entry => {
-      return await SanPham.aggregate([
-        {
-          $match: {
-            kho: new mongoose.Types.ObjectId(khoID),
-            datenhap: { $eq: entry.firstEntryDate }, // Lấy dữ liệu của ngày nhập đầu tiên cho SKU
-            dungluongsku: entry._id // Chỉ lấy dữ liệu cho SKU này
-          }
-        },
-        {
-          $lookup: {
-            from: 'loaisanphams',
-            localField: 'loaisanpham',
-            foreignField: '_id',
-            as: 'loaisanpham'
-          }
-        },
-        { $unwind: '$loaisanpham' },
-        {
-          $lookup: {
-            from: 'dungluongs',
-            localField: 'dungluongsku',
-            foreignField: '_id',
-            as: 'dungluongsku'
-          }
-        },
-        { $unwind: '$dungluongsku' },
-        {
-          $project: {
-            masp: 1,
-            price: 1,
-            xuat: 1,
-            'loaisanpham.name': 1,
-            'dungluongsku.madungluong': 1
-          }
-        }
-      ])
-    })
-
-    const initialDataResults = await Promise.all(initialDataPromises)
-
-    // Lấy dữ liệu nhập trong kỳ từ ngày tiếp theo đến toDate
-    const reportData = await SanPham.aggregate([
-      {
-        $match: {
-          kho: new mongoose.Types.ObjectId(khoID),
-          datenhap: {
-            $gt: firstEntries[0].firstEntryDate,
-            $lte: new Date(toDate)
-          } // Lấy dữ liệu sau ngày nhập đầu tiên
-        }
-      },
-      {
-        $lookup: {
-          from: 'loaisanphams',
-          localField: 'loaisanpham',
-          foreignField: '_id',
-          as: 'loaisanpham'
-        }
-      },
-      { $unwind: '$loaisanpham' },
-      {
-        $lookup: {
-          from: 'dungluongs',
-          localField: 'dungluongsku',
-          foreignField: '_id',
-          as: 'dungluongsku'
-        }
-      },
-      { $unwind: '$dungluongsku' },
-      {
-        $project: {
-          masp: 1,
-          name: 1,
-          imel: 1,
-          price: 1,
-          datenhap: 1,
-          datexuat: 1,
-          xuat: 1,
-          tralai: 1,
-          'loaisanpham.name': 1,
-          'dungluongsku.madungluong': 1
-        }
-      },
-      { $sort: { datenhap: 1 } }
-    ])
-
-    const summarizedData = {}
-
-    // Cập nhật dữ liệu tồn đầu kỳ
-    for (const initialData of initialDataResults) {
-      for (const item of initialData) {
-        const sku = item.dungluongsku.madungluong
-        const productName = item.loaisanpham.name
-        const value = item.price
-
-        if (!summarizedData[sku]) {
-          summarizedData[sku] = {
-            mã_sku: sku,
-            tên_hàng_hóa: productName,
-            đơn_vị_tính: 'Chiếc',
-            tồn_đầu_kỳ: { số_lượng: 1, giá_trị: value },
-            nhập_trong_kỳ: { số_lượng: 0, giá_trị: 0 },
-            xuất_trong_kỳ: { số_lượng: 0, giá_trị: 0 },
-            tồn_cuối_kỳ: { số_lượng: 0, giá_trị: 0 }
-          }
-        } else {
-          summarizedData[sku]['tồn_đầu_kỳ'].số_lượng += 1
-          summarizedData[sku]['tồn_đầu_kỳ'].giá_trị += value
-        }
-      }
-    }
-
-    // Duyệt qua từng sản phẩm trong reportData và cập nhật dữ liệu
-    for (const item of reportData) {
-      const sku = item.dungluongsku.madungluong
-      const productName = item.loaisanpham.name
-      const value = item.price
-
-      if (!summarizedData[sku]) {
-        summarizedData[sku] = {
-          mã_sku: sku,
-          tên_hàng_hóa: productName,
-          đơn_vị_tính: 'Chiếc',
-          tồn_đầu_kỳ: { số_lượng: 0, giá_trị: 0 },
-          nhập_trong_kỳ: { số_lượng: 1, giá_trị: value },
-          xuất_trong_kỳ: { số_lượng: 0, giá_trị: 0 },
-          tồn_cuối_kỳ: { số_lượng: 0, giá_trị: 0 }
-        }
+    const gopSanPham = sanphamtest.reduce((acc, item) => {
+      let existingSku = acc.find(x => x.masku === item.masku)
+      if (existingSku) {
+        existingSku.sanpham.push(item.sanpham)
       } else {
-        summarizedData[sku]['nhập_trong_kỳ'].số_lượng += 1
-        summarizedData[sku]['nhập_trong_kỳ'].giá_trị += value
+        acc.push({
+          masku: item.masku,
+          namesku: item.namesku,
+          sanpham: [item.sanpham]
+        })
       }
-
-      if (item.xuat) {
-        summarizedData[sku]['xuất_trong_kỳ'].số_lượng += 1
-        summarizedData[sku]['xuất_trong_kỳ'].giá_trị += value
-      }
-    }
-
-    // Kiểm tra lại số lượng sản phẩm đã được tổng hợp
-    console.log('Số lượng SKU đã tổng hợp:', Object.keys(summarizedData).length)
-
-    // Tính tồn cuối kỳ
-    for (const sku in summarizedData) {
-      const data = summarizedData[sku]
-      data['tồn_cuối_kỳ'].số_lượng =
-        data['tồn_đầu_kỳ'].số_lượng +
-        data['nhập_trong_kỳ'].số_lượng -
-        data['xuất_trong_kỳ'].số_lượng;
-      data['tồn_cuối_kỳ'].giá_trị =
-        data['tồn_đầu_kỳ'].giá_trị +
-        data['nhập_trong_kỳ'].giá_trị -
-        data['xuất_trong_kỳ'].giá_trị
-    }
-
-    // Trả về dữ liệu báo cáo
-    const reportArray = Object.values(summarizedData)
-    res.json({ báo_cáo: reportArray })
-  } catch (error) {
-    res.status(500).json({ error: 'Lỗi máy chủ', details: error.message })
-  }
-})
-
-router.get('/locsanpham/:khoId', async (req, res) => {
-  try {
-    const { khoId } = req.params
-    const { fromDate, toDate } = req.query
-
-    const startDate = new Date(fromDate)
-    const endDate = new Date(toDate)
-
-    const dateFilter = {
-      $gte: startDate,
-      $lte: endDate
-    }
-
-    const products = await SanPham.find({
-      kho: new mongoose.Types.ObjectId(khoId),
-      datenhap: dateFilter
-    })
-      .populate('loaisanpham')
-      .populate('dungluongsku')
-
-    if (products.length === 0) {
-      return res.json({
-        message: 'Không có sản phẩm nào trong khoảng thời gian đã chọn'
-      })
-    }
-
-    // Gộp sản phẩm theo dungluongsku
-    const groupedProducts = products.reduce((acc, product) => {
-      const dungluongsku = product.dungluongsku.name // Thay 'name' bằng tên trường tương ứng trong mô hình dung lượng SKU của bạn
-      const tensp = product.name // Thay 'name' bằng tên trường tương ứng trong mô hình sản phẩm của bạn
-
-      if (!acc[dungluongsku]) {
-        acc[dungluongsku] = {
-          tensku: dungluongsku,
-          soluongsanpham: 0,
-          products: [] // Khởi tạo danh sách sản phẩm
-        }
-      }
-
-      // Kiểm tra xem sản phẩm đã có trong danh sách chưa
-      const existingProduct = acc[dungluongsku].products.find(
-        p => p.tensp === tensp
-      )
-      if (existingProduct) {
-        existingProduct.soluong += 1 // Tăng số lượng nếu sản phẩm đã tồn tại
-      } else {
-        acc[dungluongsku].products.push({ tensp, soluong: 1 }) // Thêm sản phẩm mới vào danh sách
-      }
-
-      acc[dungluongsku].soluongsanpham += 1 // Tăng tổng số lượng sản phẩm
-
       return acc
-    }, {})
+    }, [])
 
-    const resultArray = Object.values(groupedProducts)
+    gopSanPham.forEach(skuItem => {
+      const gopDungLuong = skuItem.sanpham.reduce((acc, product) => {
+        let existingDungLuong = acc.find(
+          p => p.madungluongsku === product.madungluongsku
+        )
+        const datenhapArray = Array.isArray(product.datenhap)
+          ? product.datenhap
+          : [product.datenhap]
 
-    res.json({ products: resultArray })
+        if (existingDungLuong) {
+          // Nếu đã có `existingDungLuong`, thêm các ngày nhập từ `datenhapArray`
+          existingDungLuong.datenhap.push(...datenhapArray)
+        } else {
+          // Nếu chưa có, thêm mới `dungluong` với `datenhapArray`
+          acc.push({
+            madungluongsku: product.madungluongsku,
+            name: product.name,
+            datenhap: [...datenhapArray], // Sử dụng `datenhapArray` trực tiếp
+            soluongsp: 0,
+            price: 0,
+            tondauky: {
+              soluong: 0,
+              price: 0
+            }, // Thêm tondauky vào đây
+            nhaptrongky: {
+              soluong: 0,
+              price: 0
+            },
+            xuattrongky: {
+              soluong: 0,
+              price: 0
+            }, // Thêm tondauky vào đây
+            toncuoiky: {
+              soluong: 0,
+              price: 0
+            }
+          })
+          existingDungLuong = acc[acc.length - 1]
+        }
+
+        datenhapArray.forEach(date => {
+          const dateObj = new Date(date)
+          if (dateObj >= from && dateObj <= end) {
+            existingDungLuong.price += product.price // Cộng price tương ứng với ngày nhập
+          }
+        })
+
+        return acc
+      }, [])
+
+      gopDungLuong.forEach(dungluong => {
+        dungluong.datenhap = dungluong.datenhap.filter(date => {
+          const dateObj = new Date(date)
+          return dateObj >= from && dateObj <= end
+        })
+
+        // Tìm ngày nhỏ nhất và tính tồn đầu kỳ
+        if (dungluong.datenhap.length > 0) {
+          const minDate = new Date(
+            Math.min(...dungluong.datenhap.map(date => new Date(date)))
+          )
+          dungluong.soluongsp = dungluong.datenhap.length
+
+          dungluong.tondauky = {
+            soluong: dungluong.datenhap.filter(date => {
+              return new Date(date).toDateString() === minDate.toDateString()
+            }).length,
+            price: 0 // Khởi tạo giá trị mặc định
+          }
+
+          dungluong.nhaptrongky.soluong = dungluong.datenhap.filter(date => {
+            return new Date(date).toDateString() !== minDate.toDateString()
+          }).length
+
+          skuItem.sanpham.forEach(product => {
+            if (product.madungluongsku === dungluong.madungluongsku) {
+              // Tồn đầu kỳ
+              if (
+                new Date(product.datenhap).setHours(0, 0, 0, 0) ===
+                minDate.setHours(0, 0, 0, 0)
+              ) {
+                dungluong.tondauky.price += product.price // Cộng giá sản phẩm vào tondauky.price
+              }
+              // Nhập trong kỳ
+              else if (
+                new Date(product.datenhap).setHours(0, 0, 0, 0) >
+                minDate.setHours(0, 0, 0, 0)
+              ) {
+                console.log(product)
+                dungluong.nhaptrongky.price += product.price
+              }
+
+              if (product.xuat && product.datexuat) {
+                const datexuatObj = new Date(product.datexuat)
+                if (datexuatObj >= from && datexuatObj <= end) {
+                  dungluong.xuattrongky.soluong += 1
+                  dungluong.xuattrongky.price += product.price
+                }
+              }
+            }
+          })
+
+          dungluong.toncuoiky.soluong =
+            dungluong.tondauky.soluong +
+            dungluong.nhaptrongky.soluong -
+            dungluong.xuattrongky.soluong
+
+          dungluong.toncuoiky.price =
+            dungluong.tondauky.price +
+            dungluong.nhaptrongky.price -
+            dungluong.xuattrongky.price
+        }
+      })
+      skuItem.tongtondau = skuItem.tongtondau || { soluong: 0, price: 0 }
+      skuItem.tongnhaptrong = skuItem.tongnhaptrong || { soluong: 0, price: 0 }
+      skuItem.tongxuattrong = skuItem.tongxuattrong || { soluong: 0, price: 0 }
+      skuItem.tongtoncuoiky = skuItem.tongtoncuoiky || { soluong: 0, price: 0 }
+
+      skuItem.soluongsanpham = gopDungLuong.reduce(
+        (total, product) => total + product.soluongsp,
+        0
+      )
+      skuItem.tongtondau.price = gopDungLuong.reduce(
+        (total, product) => total + product.tondauky.price,
+        0
+      )
+      skuItem.tongnhaptrong.price = gopDungLuong.reduce(
+        (total, product) => total + product.nhaptrongky.price,
+        0
+      )
+
+      skuItem.tongxuattrong.price = gopDungLuong.reduce(
+        (total, product) => total + product.xuattrongky.price,
+        0
+      )
+      skuItem.tongtoncuoiky.price = gopDungLuong.reduce(
+        (total, product) => total + product.toncuoiky.price,
+        0
+      )
+
+      skuItem.tongtondau.soluong = gopDungLuong.reduce(
+        (total, product) => total + product.tondauky.soluong,
+        0
+      )
+      skuItem.tongnhaptrong.soluong = gopDungLuong.reduce(
+        (total, product) => total + product.nhaptrongky.soluong,
+        0
+      )
+      skuItem.tongxuattrong.soluong = gopDungLuong.reduce(
+        (total, product) => total + product.xuattrongky.soluong,
+        0
+      )
+      skuItem.tongtoncuoiky.soluong = gopDungLuong.reduce(
+        (total, product) => total + product.toncuoiky.soluong,
+        0
+      )
+
+      skuItem.sanpham = gopDungLuong
+    })
+
+    res.json(gopSanPham)
   } catch (error) {
-    res.status(500).json({ error: 'Lỗi máy chủ', details: error.message })
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 

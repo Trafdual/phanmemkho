@@ -62,6 +62,7 @@ router.post('/postsku/:iduser', async (req, res) => {
     for (const dlName of namedungluong) {
       const dl = new DungLuongSku({ name: dlName })
       dl.madungluong = `${newSkuCode}-${dlName}`
+      dl.sku = sku._id
       await dl.save()
       sku.dungluong.push(dl._id)
     }
