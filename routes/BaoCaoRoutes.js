@@ -9,10 +9,13 @@ const Sku = require('../models/SkuModel')
 router.get('/getsptest/:khoID', async (req, res) => {
   try {
     const khoId = req.params.khoID
-    const { fromDate, endDate } = req.query // Nhận `fromDate` và `endDate` từ query
+    const { fromDate, endDate } = req.query
 
     const from = new Date(fromDate)
     const end = new Date(endDate)
+
+    const prevDay = new Date(fromDate)
+    prevDay.setDate(prevDay.getDate() - 1)
 
     const depot = await DePot.findById(khoId)
     const sanphamtest = await Promise.all(
@@ -62,20 +65,18 @@ router.get('/getsptest/:khoID', async (req, res) => {
           : [product.datenhap]
 
         if (existingDungLuong) {
-          // Nếu đã có `existingDungLuong`, thêm các ngày nhập từ `datenhapArray`
           existingDungLuong.datenhap.push(...datenhapArray)
         } else {
-          // Nếu chưa có, thêm mới `dungluong` với `datenhapArray`
           acc.push({
             madungluongsku: product.madungluongsku,
             name: product.name,
-            datenhap: [...datenhapArray], // Sử dụng `datenhapArray` trực tiếp
+            datenhap: [...datenhapArray], 
             soluongsp: 0,
             price: 0,
             tondauky: {
               soluong: 0,
               price: 0
-            }, // Thêm tondauky vào đây
+            },
             nhaptrongky: {
               soluong: 0,
               price: 0
@@ -83,7 +84,7 @@ router.get('/getsptest/:khoID', async (req, res) => {
             xuattrongky: {
               soluong: 0,
               price: 0
-            }, // Thêm tondauky vào đây
+            },
             toncuoiky: {
               soluong: 0,
               price: 0
@@ -95,7 +96,7 @@ router.get('/getsptest/:khoID', async (req, res) => {
         datenhapArray.forEach(date => {
           const dateObj = new Date(date)
           if (dateObj >= from && dateObj <= end) {
-            existingDungLuong.price += product.price // Cộng price tương ứng với ngày nhập
+            existingDungLuong.price += product.price 
           }
         })
 
@@ -105,54 +106,46 @@ router.get('/getsptest/:khoID', async (req, res) => {
       gopDungLuong.forEach(dungluong => {
         dungluong.datenhap = dungluong.datenhap.filter(date => {
           const dateObj = new Date(date)
-          return dateObj >= from && dateObj <= end
+          return dateObj
         })
 
-        // Tìm ngày nhỏ nhất và tính tồn đầu kỳ
         if (dungluong.datenhap.length > 0) {
-          const minDate = new Date(
-            Math.min(...dungluong.datenhap.map(date => new Date(date)))
-          )
           dungluong.soluongsp = dungluong.datenhap.length
-
-          dungluong.tondauky = {
-            soluong: dungluong.datenhap.filter(date => {
-              return new Date(date).toDateString() === minDate.toDateString()
-            }).length,
-            price: 0 // Khởi tạo giá trị mặc định
-          }
-
           dungluong.nhaptrongky.soluong = dungluong.datenhap.filter(date => {
-            return new Date(date).toDateString() !== minDate.toDateString()
+            return (
+              new Date(date).setHours(0, 0, 0, 0) >=
+                from.setHours(0, 0, 0, 0) &&
+              new Date(date).setHours(0, 0, 0, 0) <= end.setHours(0, 0, 0, 0)
+            )
           }).length
+          let productsOnPrevDay = []
 
           skuItem.sanpham.forEach(product => {
             if (product.madungluongsku === dungluong.madungluongsku) {
-              // Tồn đầu kỳ
+              const productDate = new Date(product.datenhap).setHours(
+                0,
+                0,
+                0,
+                0
+              )
               if (
-                new Date(product.datenhap).setHours(0, 0, 0, 0) ===
-                minDate.setHours(0, 0, 0, 0)
+                productDate >= from.setHours(0, 0, 0, 0) &&
+                productDate <= end.setHours(0, 0, 0, 0)
               ) {
-                dungluong.tondauky.price += product.price // Cộng giá sản phẩm vào tondauky.price
-              }
-              // Nhập trong kỳ
-              else if (
-                new Date(product.datenhap).setHours(0, 0, 0, 0) >
-                minDate.setHours(0, 0, 0, 0)
-              ) {
-                console.log(product)
                 dungluong.nhaptrongky.price += product.price
-              }
-
-              if (product.xuat && product.datexuat) {
-                const datexuatObj = new Date(product.datexuat)
-                if (datexuatObj >= from && datexuatObj <= end) {
-                  dungluong.xuattrongky.soluong += 1
+                if(product.xuat === true){
+                  dungluong.xuattrongky.soluong++
                   dungluong.xuattrongky.price += product.price
                 }
               }
+              if (productDate === prevDay.setHours(0, 0, 0, 0)) {
+                dungluong.tondauky.price += product.price
+                productsOnPrevDay.push(product)
+              }
+
             }
           })
+          dungluong.tondauky.soluong = productsOnPrevDay.length
 
           dungluong.toncuoiky.soluong =
             dungluong.tondauky.soluong +
