@@ -401,7 +401,7 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
   }
 })
 
-router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
+router.post('/xuatkho1/:khoid', async (req, res) => {
   try {
     const { idsanpham1 } = req.body
     const idloaisp = req.params.idloaisp
@@ -409,7 +409,7 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
     const sanphamList = []
     for (const idsanpham of idsanpham1) {
       const sanpham1 = await SanPham.findById(idsanpham)
-      const loaisanpham = await LoaiSanPham.findById(idloaisp)
+      const loaisanpham = await LoaiSanPham.findById(sanpham1.loaisanpham)
       const kho = await Depot.findById(khoid)
       const sanpham = await Promise.all(
         loaisanpham.sanpham.map(async sp => {
@@ -442,7 +442,7 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
     res.json(sanphamList)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+    res.json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 
