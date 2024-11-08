@@ -142,8 +142,10 @@ router.get('/getsptest/:khoID', async (req, res) => {
                 dungluong.nhaptrongky.price += product.price
               }
               if (productDate === prevDayDate) {
-                dungluong.tondauky.price += product.price
-                productsOnPrevDay.push(product)
+                if (product.xuat === false) {
+                  dungluong.tondauky.price += product.price
+                  productsOnPrevDay.push(product)
+                }
               }
               if (productdatexuat >= fromdate && productdatexuat <= enddate) {
                 if (product.xuat === true) {
