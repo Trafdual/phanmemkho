@@ -70,7 +70,7 @@ router.get('/getsptest/:khoID', async (req, res) => {
           acc.push({
             madungluongsku: product.madungluongsku,
             name: product.name,
-            datenhap: [...datenhapArray], 
+            datenhap: [...datenhapArray],
             soluongsp: 0,
             price: 0,
             tondauky: {
@@ -96,7 +96,7 @@ router.get('/getsptest/:khoID', async (req, res) => {
         datenhapArray.forEach(date => {
           const dateObj = new Date(date)
           if (dateObj >= from && dateObj <= end) {
-            existingDungLuong.price += product.price 
+            existingDungLuong.price += product.price
           }
         })
 
@@ -128,23 +128,32 @@ router.get('/getsptest/:khoID', async (req, res) => {
                 0,
                 0
               )
-              if (
-                productDate >= from.setHours(0, 0, 0, 0) &&
-                productDate <= end.setHours(0, 0, 0, 0)
-              ) {
+              const productdatexuat = new Date(product.datexuat).setHours(
+                0,
+                0,
+                0,
+                0
+              )
+              const fromdate = new Date(from).setHours(0, 0, 0, 0)
+              const enddate = new Date(end).setHours(0, 0, 0, 0)
+              const prevDayDate = new Date(prevDay).setHours(0, 0, 0, 0)
+
+              if (productDate >= fromdate && productDate <= enddate) {
                 dungluong.nhaptrongky.price += product.price
-                if(product.xuat === true){
+              }
+              if (productDate === prevDayDate) {
+                dungluong.tondauky.price += product.price
+                productsOnPrevDay.push(product)
+              }
+              if (productdatexuat >= fromdate && productdatexuat <= enddate) {
+                if (product.xuat === true) {
                   dungluong.xuattrongky.soluong++
                   dungluong.xuattrongky.price += product.price
                 }
               }
-              if (productDate === prevDay.setHours(0, 0, 0, 0)) {
-                dungluong.tondauky.price += product.price
-                productsOnPrevDay.push(product)
-              }
-
             }
           })
+
           dungluong.tondauky.soluong = productsOnPrevDay.length
 
           dungluong.toncuoiky.soluong =
