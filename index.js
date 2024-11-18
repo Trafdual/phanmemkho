@@ -26,6 +26,7 @@ const nganhangRoutes=require('./routes/NganHangRoutes')
 const skuroutes=require('./routes/SkuRoutes')
 const trahangroutes=require('./routes/TraHangRoutes')
 const baocaoroutes=require('./routes/BaoCaoRoutes')
+const banhangRoutes=require('./routes/BanHangRoutes')
 require('./routes/passport')
 require('./routes/passportface')
 var path = require('path')
@@ -99,6 +100,7 @@ app.use('/',nganhangRoutes)
 app.use('/',skuroutes)
 app.use('/',trahangroutes)
 app.use('/',baocaoroutes)
+app.use('/',banhangRoutes)
 
 
 const port = process.env.PORT || 8080

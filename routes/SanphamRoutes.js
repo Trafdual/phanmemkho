@@ -30,7 +30,6 @@ router.get('/events', (req, res) => {
   }
 })
 
-// Hàm gửi sự kiện cho tất cả client
 const sendEvent = data => {
   clients.forEach(client => {
     client.write(`data: ${JSON.stringify(data)}\n\n`)
@@ -515,7 +514,6 @@ router.post('/chuyenkho1', async (req, res) => {
     const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
-    // Biến lưu lại loại sản phẩm vừa tạo để sử dụng lại trong vòng lặp
     let createdLoaiSP = {}
 
     for (const idsanpham of idsanpham1) {
@@ -523,7 +521,6 @@ router.post('/chuyenkho1', async (req, res) => {
       const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
       const kho1 = await Depot.findById(loaisp.depot)
 
-      // Cập nhật điều chuyển
       const dieuchuyen = new DieuChuyen({
         sanpham: sanpham._id,
         loaisanpham: loaisp._id,
@@ -538,15 +535,12 @@ router.post('/chuyenkho1', async (req, res) => {
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
 
-      // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
       let loaiSPInKho = kho.loaisanpham.find(
         item => item.malsp === loaisp.malsp
       )
 
       if (!loaiSPInKho) {
-        // Nếu chưa tồn tại, kiểm tra trong biến createdLoaiSP để tránh tạo mới nhiều lần
         if (!createdLoaiSP[loaisp.malsp]) {
-          // Nếu loại sản phẩm chưa có, tạo mới và lưu vào createdLoaiSP
           const newLoaiSP = new LoaiSanPham({
             name: loaisp.name,
             depot: kho._id,
@@ -569,7 +563,6 @@ router.post('/chuyenkho1', async (req, res) => {
 
           createdLoaiSP[loaisp.malsp] = newLoaiSP
         } else {
-          // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
           const existingLoaiSP = createdLoaiSP[loaisp.malsp]
           existingLoaiSP.sanpham.push(sanpham._id)
           kho.sanpham.push(sanpham._id)
@@ -582,7 +575,6 @@ router.post('/chuyenkho1', async (req, res) => {
           await existingLoaiSP.save()
         }
       } else {
-        // Nếu loại sản phẩm đã tồn tại trong kho đích, chỉ cần cập nhật thông tin sản phẩm
         loaiSPInKho = await LoaiSanPham.findById(loaiSPInKho._id)
         loaiSPInKho.sanpham.push(sanpham._id)
         kho.sanpham.push(sanpham._id)
@@ -608,18 +600,18 @@ router.post('/chuyenkho1', async (req, res) => {
 
 router.post('/chuyenkho2/:khoId', async (req, res) => {
   try {
-    const { idsanpham1, tenkho, diengiai } = req.body
+    const { idsanpham1, tenkho } = req.body
     const khoId = req.params.khoId
     const kho1 = await Depot.findById(khoId)
     const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
     const loaisp1 = new LoaiSanPham({
-      diengiai: diengiai,
+      diengiai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
       date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       hour: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       depot: kho._id,
-      makhodiechuyen: kho1._id
+      makhodiechuyen:kho1._id
     })
     const malsp = 'LH' + loaisp1._id.toString().slice(-5)
     loaisp1.malsp = malsp
@@ -638,6 +630,7 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
 
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
+
     }
     res.json({ message: 'Chuyển kho hàng loạt thành công!' })
   } catch (error) {
