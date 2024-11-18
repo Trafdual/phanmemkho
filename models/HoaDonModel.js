@@ -4,8 +4,12 @@ const hoadonSchema = new mongoose.Schema({
   mahoadon: { type: String },
   khachhang: { type: mongoose.Schema.Types.ObjectId, ref: 'khachhang' },
   sanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
+  method: { type: String },
+  soluong: { type: Number },
   date: { type: Date },
-  tongtien: { type: Number }
+  tongtien: { type: Number },
+  nganhang: { type: mongoose.Schema.Types.ObjectId, ref: 'nganhang' },
+  dongia:{type:Number}
 })
 
 const HoaDon = mongoose.model('hoadon', hoadonSchema)

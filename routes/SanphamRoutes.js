@@ -51,13 +51,12 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
           imel: sp1.imel,
           name: sp1.name,
           price: sp1.price,
-          quantity: 1, // Khởi tạo số lượng mặc định là 1
+          quantity: 1,
           xuat: sp1.xuat
         }
       })
     )
 
-    // Gộp thông tin theo mã SKU
     const groupedProducts = sanpham.reduce((acc, product) => {
       const { masku, imel, price, name } = product
 
@@ -202,7 +201,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
 router.post('/postsp1/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
-    const { products } = req.body // `name` và `price` được gửi trong từng sản phẩm trong `products`
+    const { products } = req.body
 
     const loaisanpham = await LoaiSanPham.findById(idloai)
     const kho = await Depot.findById(loaisanpham.depot)

@@ -4,6 +4,10 @@ const Depot = require('../models/DepotModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
 const Sku = require('../models/SkuModel')
 const User = require('../models/UserModel')
+const HoaDon = require('../models/HoaDonModel')
+const momenttimezone = require('moment-timezone')
+const LoaiSanPham = require('../models/LoaiSanPhamModel')
+const KhachHang = require('../models/KhachHangModel')
 
 router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
   try {
@@ -38,7 +42,11 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
         const sanpham = await Promise.all(
           dl.sanpham.map(async sp => {
             const sp1 = await SanPham.findById(sp._id)
-            if (sp1 && sp1.xuat === false) {
+            const loaisanpham = await LoaiSanPham.findById(sp1.loaisanpham)
+            if (
+              sp1.xuat === false &&
+              loaisanpham.loaihanghoa === 'Điện thoại'
+            ) {
               return {
                 _id: sp1._id,
                 name: sp1.name,
@@ -110,14 +118,98 @@ router.get('/getspbanhang/:iduser', async (req, res) => {
   }
 })
 
-router.post('/postchonsanpham', async (req, res) => {
+router.post('/postchonsanpham/', async (req, res) => {
   try {
-    const { idskus } = req.body
-    for (const idsku of idskus) {
-        const sku = await Sku.findById(idsku)
-        
+    const { products, idnganhang, method, makh } = req.body
+
+    const khachhang = await KhachHang.findOne({ makh: makh })
+    if (!khachhang) {
+      return res.status(404).json({ message: 'Khách hàng không tồn tại.' })
     }
-  } catch (error) {}
+
+    const hoadon = new HoaDon({
+      date: momenttimezone().toDate(),
+      method,
+      khachhang: khachhang._id
+    })
+
+    if (method === 'chuyển khoản') {
+      hoadon.nganhang = idnganhang
+    }
+
+    const processedDepots = new Set()
+
+    for (const product of products) {
+      const { dongia, imelist } = product
+      hoadon.dongia = dongia
+
+      for (const imel of imelist) {
+        const sanpham = await SanPham.findOne({ imel })
+        if (!sanpham) continue
+
+        const loaisanpham = await LoaiSanPham.findById(sanpham.loaisanpham)
+        if (!loaisanpham) continue
+
+        const kho = await Depot.findById(loaisanpham.depot)
+        if (!kho) continue
+
+        loaisanpham.sanpham = loaisanpham.sanpham.filter(
+          sp => sp._id.toString() !== sanpham._id.toString()
+        )
+
+        hoadon.sanpham.push(sanpham._id)
+        sanpham.xuat = true
+
+        kho.xuatkho.push(sanpham._id)
+
+        if (!processedDepots.has(kho._id.toString())) {
+          kho.hoadon.push(hoadon._id)
+          processedDepots.add(kho._id.toString())
+        }
+
+        await loaisanpham.save()
+        await sanpham.save()
+      }
+    }
+    hoadon.mahoadon = 'HD' + hoadon._id.toString().slice(-4)
+
+    hoadon.soluong = hoadon.sanpham.length
+    hoadon.tongtien = hoadon.soluong * hoadon.dongia
+
+    await hoadon.save()
+    res.json(hoadon)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const idsku = req.params.idsku
+    const kho = await Depot.findById(idkho)
+    const sanphamjson = await Promise.all(
+      kho.sanpham.map(async sp => {
+        const sp1 = await SanPham.findById(sp._id)
+        if (
+          sp1.dungluongsku.toString() === idsku.toString() &&
+          sp1.xuat === false
+        ) {
+          return {
+            _id: sp1._id,
+            imel: sp1.imel
+          }
+        }
+        return null
+      })
+    )
+    const filteredSanpham = sanphamjson.filter(Boolean)
+    res.json(filteredSanpham)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
 })
 
 module.exports = router
