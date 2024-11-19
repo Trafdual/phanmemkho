@@ -606,11 +606,11 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
     const loaisp1 = new LoaiSanPham({
-      diengiai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
+      name: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
       date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       hour: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       depot: kho._id,
-      makhodiechuyen:kho1._id
+      makhodiechuyen: kho1._id
     })
     const malsp = 'LH' + loaisp1._id.toString().slice(-5)
     loaisp1.malsp = malsp
@@ -620,17 +620,27 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
       trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
       date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
     })
+    kho1.dieuchuyen.push(dieuchuyen._id)
+    kho.loaisanpham.push(loaisp1._id)
 
     for (const idsanpham of idsanpham1) {
       const sanpham = await SanPham.findById(idsanpham)
       const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
-
-      kho1.dieuchuyen.push(dieuchuyen._id)
-
+      kho1.sanpham = kho1.sanpham.filter(sp => sp._id != idsanpham)
+      kho.sanpham.push(sanpham._id)
+      dieuchuyen.sanpham.push(sanpham._id)
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
-
+      loaisp1.sanpham.push(sanpham._id)
+      await loaisp.save()
+      await kho1.save()
+      await kho.save()
+      await dieuchuyen.save()
+      await loaisp1.save()
     }
+    await kho.save()
+    await kho1.save()
+    await loaisp1.save()
     res.json({ message: 'Chuyển kho hàng loạt thành công!' })
   } catch (error) {
     console.error(error)
@@ -753,7 +763,7 @@ router.post('/putsomeproduct', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi khi cập nhật sản phẩm.' })
   }
 })
-router.get('/getsanpham',async(req,res)=>{
+router.get('/getsanpham', async (req, res) => {
   const sanpham = await SanPham.find().lean()
   res.json(sanpham)
 })

@@ -14,8 +14,8 @@ router.get('/getdieuchuyen/:khoID', async (req, res) => {
       kho.dieuchuyen.map(async dieuchuyen => {
         const dieuchuyen1 = await DieuChuyen.findById(dieuchuyen._id)
         const sanpham = await SanPham.findById(dieuchuyen1.sanpham)
-        const loaisanpham = await LoaiSanPham.findById(dieuchuyen1.loaisanpham)
-        const nhacungcap = await NhaCungCap.findById(dieuchuyen1.nhacungcap)
+        const loaisanpham = await LoaiSanPham.findById(sanpham.loaisanpham)
+        const nhacungcap = await NhaCungCap.findById(loaisanpham.nhacungcap)
         return {
           _id: dieuchuyen1._id,
           mancc: nhacungcap.mancc,
