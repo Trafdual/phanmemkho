@@ -38,15 +38,15 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
         if (!dl) return null
 
         const sku1 = await Sku.findById(dl.sku)
+        let loaihanghoa
 
         const sanpham = await Promise.all(
           dl.sanpham.map(async sp => {
             const sp1 = await SanPham.findById(sp._id)
             const loaisanpham = await LoaiSanPham.findById(sp1.loaisanpham)
-            if (
-              sp1.xuat === false &&
-              loaisanpham.loaihanghoa === 'Điện thoại'
-            ) {
+            loaihanghoa = loaisanpham.loaihanghoa
+
+            if (sp1.xuat === false) {
               return {
                 _id: sp1._id,
                 name: sp1.name,
@@ -82,8 +82,99 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
         return {
           idsku: dl._id,
           name: dl.name,
+          loaihanghoa: loaihanghoa,
           tenkhohientai: khoHienTai.name,
-          tensp: `${sku1.name} (${dl.name})`,
+          tensp: dl.name === '' ? sku1.name : `${sku1.name} (${dl.name})`,
+          tonkho: soluongTrongKhoHienTai,
+          cacKhoKhac: soLuongCacKhoKhac,
+          tongSoLuongCacKhoKhac: totalSoLuongCacKhoKhac
+        }
+      })
+    )
+
+    res.json(dungluongskujson.filter(Boolean))
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/banhangtest/:idsku/:idkho/:userid', async (req, res) => {
+  try {
+    const { idsku, idkho, userid } = req.params
+
+    const user = await User.findById(userid).populate('depot')
+    if (!user || !user.depot.length) {
+      return res.status(404).json({ message: 'Người dùng không có kho nào.' })
+    }
+
+    const allKho = user.depot
+    const khoHienTai = allKho.find(kho => kho._id.toString() === idkho)
+    if (!khoHienTai) {
+      return res.status(404).json({ message: 'Kho hiện tại không tồn tại.' })
+    }
+    const cacKhoKhac = allKho.filter(kho => kho._id.toString() !== idkho)
+
+    const sku = await Sku.findById(idsku)
+    if (!sku) {
+      return res.status(404).json({ message: 'SKU không tồn tại.' })
+    }
+
+    const dungluongskujson = await Promise.all(
+      sku.dungluong.map(async dungluong => {
+        const dl = await DungLuongSku.findById(dungluong._id)
+        if (!dl) return null
+
+        const sku1 = await Sku.findById(dl.sku)
+        let loaihanghoa
+        const sanphamLinhKien = await Promise.all(
+          dl.sanpham.map(async sp => {
+            const sp1 = await SanPham.findById(sp._id)
+            const loaisanpham = await LoaiSanPham.findById(sp1.loaisanpham)
+            loaihanghoa = loaisanpham.loaihanghoa
+            if (!sp1 || !loaisanpham) return null
+
+            if (sp1.xuat === false && loaisanpham.loaihanghoa === 'Linh kiện') {
+              return {
+                _id: sp1._id,
+                name: sp1.name,
+                masku: dl.madungluong,
+                price: sp1.price,
+                kho: sp1.kho.toString()
+              }
+            }
+            return null
+          })
+        )
+
+        const filteredSanpham = sanphamLinhKien.filter(Boolean)
+
+        if (filteredSanpham.length === 0) return null
+
+        const tonkho = filteredSanpham.reduce((acc, sp) => {
+          acc[sp.kho] = (acc[sp.kho] || 0) + 1
+          return acc
+        }, {})
+
+        const soluongTrongKhoHienTai = tonkho[idkho] || 0
+
+        const soLuongCacKhoKhac = cacKhoKhac.map(kho => ({
+          khoId: kho._id,
+          tenkho: kho.name,
+          soluong: tonkho[kho._id.toString()] || 0
+        }))
+
+        const totalSoLuongCacKhoKhac = soLuongCacKhoKhac.reduce(
+          (acc, kho) => acc + kho.soluong,
+          0
+        )
+
+        return {
+          idsku: dl._id,
+          name: dl.name,
+          tenkhohientai: khoHienTai.name,
+          loaihanghoa: loaihanghoa,
+          tensp: dl.name === '' ? sku1.name : `${sku1.name} (${dl.name})`,
           tonkho: soluongTrongKhoHienTai,
           cacKhoKhac: soLuongCacKhoKhac,
           tongSoLuongCacKhoKhac: totalSoLuongCacKhoKhac

@@ -768,4 +768,5 @@ router.get('/getsanpham', async (req, res) => {
   res.json(sanpham)
 })
 
+
 module.exports = router
