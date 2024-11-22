@@ -209,9 +209,11 @@ router.get('/getspbanhang/:iduser', async (req, res) => {
   }
 })
 
-router.post('/postchonsanpham/', async (req, res) => {
+router.post('/postchonsanpham/:idkho', async (req, res) => {
   try {
     const { products, idnganhang, method, makh } = req.body
+    const idkho = req.params.idkho
+    const depot = await Depot.findById(idkho)
 
     const khachhang = await KhachHang.findOne({ makh: makh })
     if (!khachhang) {
@@ -231,37 +233,81 @@ router.post('/postchonsanpham/', async (req, res) => {
     const processedDepots = new Set()
 
     for (const product of products) {
-      const { dongia, imelist } = product
-      hoadon.dongia = dongia
+      const { dongia, imelist, soluong, idsku } = product
+      hoadon.dongia += dongia
 
-      for (const imel of imelist) {
-        const sanpham = await SanPham.findOne({ imel })
-        if (!sanpham) continue
-
-        const loaisanpham = await LoaiSanPham.findById(sanpham.loaisanpham)
-        if (!loaisanpham) continue
-
-        const kho = await Depot.findById(loaisanpham.depot)
-        if (!kho) continue
-
-        loaisanpham.sanpham = loaisanpham.sanpham.filter(
-          sp => sp._id.toString() !== sanpham._id.toString()
+      if (!imelist || !Array.isArray(imelist)) {
+        const sanpham = await Promise.all(
+          depot.sanpham.map(async sp => {
+            const sp1 = await SanPham.findById(sp._id)
+            if (sp1.dungluongsku.toString() === idsku.toString()) {
+              return sp1
+            }
+          })
         )
+        const sortedSanpham = sanpham
+          .filter(sp => sp !== undefined)
+          .sort((a, b) => {
+            return a._id > b._id ? 1 : -1
+          })
 
-        hoadon.sanpham.push(sanpham._id)
-        sanpham.xuat = true
+        const selectedSanpham = sortedSanpham.slice(0, soluong)
 
-        kho.xuatkho.push(sanpham._id)
+        for (const sp of selectedSanpham) {
+          const loaisanpham = await LoaiSanPham.findById(sp.loaisanpham)
+          if (!loaisanpham) continue
 
-        if (!processedDepots.has(kho._id.toString())) {
-          kho.hoadon.push(hoadon._id)
-          processedDepots.add(kho._id.toString())
+          const kho = await Depot.findById(loaisanpham.depot)
+          if (!kho) continue
+
+          loaisanpham.sanpham = loaisanpham.sanpham.filter(
+            spItem => spItem._id.toString() !== sp._id.toString()
+          )
+
+          hoadon.sanpham.push(sp._id)
+          sp.xuat = true
+
+          kho.xuatkho.push(sp._id)
+
+          if (!processedDepots.has(kho._id.toString())) {
+            kho.hoadon.push(hoadon._id)
+            processedDepots.add(kho._id.toString())
+          }
+
+          await loaisanpham.save()
+          await sp.save()
         }
+      } else {
+        for (const imel of imelist) {
+          const sanpham = await SanPham.findOne({ imel })
+          if (!sanpham) continue
 
-        await loaisanpham.save()
-        await sanpham.save()
+          const loaisanpham = await LoaiSanPham.findById(sanpham.loaisanpham)
+          if (!loaisanpham) continue
+
+          const kho = await Depot.findById(loaisanpham.depot)
+          if (!kho) continue
+
+          loaisanpham.sanpham = loaisanpham.sanpham.filter(
+            sp => sp._id.toString() !== sanpham._id.toString()
+          )
+
+          hoadon.sanpham.push(sanpham._id)
+          sanpham.xuat = true
+
+          kho.xuatkho.push(sanpham._id)
+
+          if (!processedDepots.has(kho._id.toString())) {
+            kho.hoadon.push(hoadon._id)
+            processedDepots.add(kho._id.toString())
+          }
+
+          await loaisanpham.save()
+          await sanpham.save()
+        }
       }
     }
+
     hoadon.mahoadon = 'HD' + hoadon._id.toString().slice(-4)
 
     hoadon.soluong = hoadon.sanpham.length
