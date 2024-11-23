@@ -225,6 +225,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
       method,
       khachhang: khachhang._id
     })
+    
 
     if (method === 'chuyển khoản') {
       hoadon.nganhang = idnganhang
@@ -234,7 +235,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
     for (const product of products) {
       const { dongia, imelist, soluong, idsku } = product
-      hoadon.dongia += dongia
+      hoadon.tongtien += dongia
 
       if (!imelist || !Array.isArray(imelist)) {
         const sanpham = await Promise.all(
@@ -311,9 +312,10 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
     hoadon.mahoadon = 'HD' + hoadon._id.toString().slice(-4)
 
     hoadon.soluong = hoadon.sanpham.length
-    hoadon.tongtien = hoadon.soluong * hoadon.dongia
+    khachhang.donhang.push(hoadon._id)
 
     await hoadon.save()
+    await khachhang.save()
     res.json(hoadon)
   } catch (error) {
     console.error(error)
