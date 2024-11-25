@@ -9,7 +9,10 @@ const hoadonSchema = new mongoose.Schema({
   date: { type: Date },
   tongtien: { type: Number },
   nganhang: { type: mongoose.Schema.Types.ObjectId, ref: 'nganhang' },
-  dongia:{type:Number}
+  dongia: { type: Number },
+  datcoc: { type: Number },
+  tienkhachtra: { type: Number },
+  tientralaikhach: { type: Number }
 })
 
 const HoaDon = mongoose.model('hoadon', hoadonSchema)

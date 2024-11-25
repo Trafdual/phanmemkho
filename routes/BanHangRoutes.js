@@ -8,7 +8,7 @@ const HoaDon = require('../models/HoaDonModel')
 const momenttimezone = require('moment-timezone')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const KhachHang = require('../models/KhachHangModel')
-
+const LenhDieuChuyen = require('../models/LenhDieuChuyenModel')
 router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
   try {
     const { idsku, idkho, userid } = req.params
@@ -211,7 +211,8 @@ router.get('/getspbanhang/:iduser', async (req, res) => {
 
 router.post('/postchonsanpham/:idkho', async (req, res) => {
   try {
-    const { products, idnganhang, method, makh } = req.body
+    const { products, idnganhang, method, makh, datcoc, tienkhachtra } =
+      req.body
     const idkho = req.params.idkho
     const depot = await Depot.findById(idkho)
 
@@ -223,9 +224,9 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
     const hoadon = new HoaDon({
       date: momenttimezone().toDate(),
       method,
-      khachhang: khachhang._id
+      khachhang: khachhang._id,
+      tongtien: 0
     })
-    
 
     if (method === 'chuyển khoản') {
       hoadon.nganhang = idnganhang
@@ -275,6 +276,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
             processedDepots.add(kho._id.toString())
           }
 
+          await kho.save()
           await loaisanpham.save()
           await sp.save()
         }
@@ -303,6 +305,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
             processedDepots.add(kho._id.toString())
           }
 
+          await kho.save()
           await loaisanpham.save()
           await sanpham.save()
         }
@@ -312,6 +315,9 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
     hoadon.mahoadon = 'HD' + hoadon._id.toString().slice(-4)
 
     hoadon.soluong = hoadon.sanpham.length
+    hoadon.datcoc = datcoc
+    hoadon.tienkhachtra = tienkhachtra
+    hoadon.tientralaikhach = hoadon.tienkhachtra - hoadon.tongtien
     khachhang.donhang.push(hoadon._id)
 
     await hoadon.save()
@@ -351,4 +357,81 @@ router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
   }
 })
 
+router.post('/postyeucaudc/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const { masku, soluong, tenkhochuyen, lido } = req.body
+    const khonhan = await Depot.findById(idkho)
+    const khochuyen = await Depot.findOne({ name: tenkhochuyen })
+    const dungluongsku = await DungLuongSku.findOne({ madungluong: masku })
+    const sku = await Sku.findById(dungluongsku.sku)
+    const tensanpham =
+      dungluongsku.name === '' ? sku.name : `${sku.name} (${dungluongsku.name})`
+
+    const lenhdc = new LenhDieuChuyen({
+      khonhan: khonhan._id,
+      khochuyen: khochuyen._id,
+      soluong,
+      lido,
+      sku: dungluongsku._id,
+      tensanpham
+    })
+    const malenhdc = 'LDC' + lenhdc._id.toString().slice(-4)
+    lenhdc.malenhdc = malenhdc
+    khochuyen.lenhdieuchuyen.push(lenhdc._id)
+    await lenhdc.save()
+    await khochuyen.save()
+    res.json(lenhdc)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const kho = await Depot.findById(idkho)
+    const lenhdieuchuyen = await Promise.all(
+      kho.lenhdieuchuyen.map(async lenhdc => {
+        const lenhdc1 = await LenhDieuChuyen.findById(lenhdc._id)
+        const khochuyen = await Depot.findById(lenhdc1.khochuyen)
+        const khonhan = await Depot.findById(lenhdc1.khonhan)
+        const dungluongsku = await DungLuongSku.findById(lenhdc1.sku)
+        if (lenhdc1.duyet === false) {
+          return {
+            _id: lenhdc1._id,
+            malenhdc: lenhdc1.malenhdc,
+            tensanpham: lenhdc1.tensanpham,
+            khochuyen: khochuyen.name,
+            khonhan: khonhan.name,
+            lido: lenhdc1.lido,
+            sku: dungluongsku.madungluong,
+            soluong: lenhdc1.soluong
+          }
+        }
+        return null
+      })
+    )
+    const filteredLenhdieuchuyen = lenhdieuchuyen.filter(item => item !== null)
+
+    res.json(filteredLenhdieuchuyen)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/duyetdieuchuyen/:idlenh', async (req, res) => {
+  try {
+    const idlenh = req.params.idlenh
+    const lenhdc = await LenhDieuChuyen.findById(idlenh)
+    lenhdc.duyet =true
+    await lenhdc.save()
+    res.json(lenhdc)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 module.exports = router
