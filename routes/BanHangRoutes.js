@@ -80,6 +80,7 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
         }))
 
         return {
+          masku:dl.madungluong,
           idsku: dl._id,
           name: dl.name,
           loaihanghoa: loaihanghoa,
@@ -268,6 +269,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
           hoadon.sanpham.push(sp._id)
           sp.xuat = true
+          sp.datexuat = momenttimezone().toDate()
 
           kho.xuatkho.push(sp._id)
 
@@ -297,6 +299,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
           hoadon.sanpham.push(sanpham._id)
           sanpham.xuat = true
+          sanpham.datexuat = momenttimezone().toDate()
 
           kho.xuatkho.push(sanpham._id)
 
@@ -374,7 +377,8 @@ router.post('/postyeucaudc/:idkho', async (req, res) => {
       soluong,
       lido,
       sku: dungluongsku._id,
-      tensanpham
+      tensanpham,
+      date: momenttimezone().toDate()
     })
     const malenhdc = 'LDC' + lenhdc._id.toString().slice(-4)
     lenhdc.malenhdc = malenhdc
@@ -426,7 +430,7 @@ router.post('/duyetdieuchuyen/:idlenh', async (req, res) => {
   try {
     const idlenh = req.params.idlenh
     const lenhdc = await LenhDieuChuyen.findById(idlenh)
-    lenhdc.duyet =true
+    lenhdc.duyet = true
     await lenhdc.save()
     res.json(lenhdc)
   } catch (error) {

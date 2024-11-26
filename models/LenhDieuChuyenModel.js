@@ -8,6 +8,7 @@ const lenhdcSchema = new mongoose.Schema({
   lido: { type: String },
   sku: { type: mongoose.Types.ObjectId, ref: 'dungluong' },
   soluong: { type: Number },
+  date:{type:Date},
   duyet: { type: Boolean, default: false }
 })
 const LenhDieuChuyen = mongoose.model('lenhdieuchuyen', lenhdcSchema)
