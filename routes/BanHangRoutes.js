@@ -6,6 +6,7 @@ const Sku = require('../models/SkuModel')
 const User = require('../models/UserModel')
 const HoaDon = require('../models/HoaDonModel')
 const momenttimezone = require('moment-timezone')
+const moment = require('moment')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const KhachHang = require('../models/KhachHangModel')
 const LenhDieuChuyen = require('../models/LenhDieuChuyenModel')
@@ -412,7 +413,7 @@ router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
             lido: lenhdc1.lido,
             sku: dungluongsku.madungluong,
             soluong: lenhdc1.soluong,
-            date: moment(lenhdc1.date).format('dd/MM/yyyy HH:mm:ss')
+            date: moment(lenhdc1.date).format('DD/MM/YYYY HH:mm:ss')
           }
         }
         return null
