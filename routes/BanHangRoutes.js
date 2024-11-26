@@ -80,7 +80,7 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
         }))
 
         return {
-          masku:dl.madungluong,
+          masku: dl.madungluong,
           idsku: dl._id,
           name: dl.name,
           loaihanghoa: loaihanghoa,
@@ -411,7 +411,8 @@ router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
             khonhan: khonhan.name,
             lido: lenhdc1.lido,
             sku: dungluongsku.madungluong,
-            soluong: lenhdc1.soluong
+            soluong: lenhdc1.soluong,
+            date: moment(lenhdc1.date).format('dd/MM/yyyy HH:mm:ss')
           }
         }
         return null
