@@ -326,6 +326,10 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
     await hoadon.save()
     await khachhang.save()
+
+    const hoadonjson ={
+
+    }
     res.json(hoadon)
   } catch (error) {
     console.error(error)
@@ -453,7 +457,7 @@ router.post('/huydieuchuyen/:idlenh', async (req, res) => {
   }
 })
 
-router.post('/getlenhdctheongay/:idkho', async (req, res) => {
+router.get('/getlenhdctheongay/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
 
