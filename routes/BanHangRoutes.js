@@ -413,7 +413,8 @@ router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
             lido: lenhdc1.lido,
             sku: dungluongsku.madungluong,
             soluong: lenhdc1.soluong,
-            date: moment(lenhdc1.date).format('DD/MM/YYYY HH:mm:ss')
+            date: moment(lenhdc1.date).format('DD/MM/YYYY HH:mm:ss'),
+            duyet: lenhdc1.duyet
           }
         }
         return null
@@ -440,4 +441,78 @@ router.post('/duyetdieuchuyen/:idlenh', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+router.post('/huydieuchuyen/:idlenh', async (req, res) => {
+  try {
+    const idlenh = req.params.idlenh
+    await LenhDieuChuyen.findByIdAndDelete(idlenh)
+    res.json({ message: 'Hủy thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/getlenhdctheongay/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+
+    const begintime = new Date(req.query.begintime)
+    const endtime = new Date(req.query.endtime)
+
+    if (!idkho || isNaN(begintime) || isNaN(endtime)) {
+      return res.status(400).json({
+        error: 'Thiếu thông tin idkho hoặc khoảng thời gian không hợp lệ.'
+      })
+    }
+
+    const onlyDate = date =>
+      new Date(date.getFullYear(), date.getMonth(), date.getDate())
+    const begintimeOnly = onlyDate(begintime)
+    const endtimeOnly = onlyDate(endtime)
+
+    // Tìm kho theo idkho
+    const kho = await Depot.findById(idkho)
+    if (!kho) {
+      return res.status(404).json({ error: 'Không tìm thấy kho.' })
+    }
+
+    const lenhdieuchuyenjson = await Promise.all(
+      kho.lenhdieuchuyen.map(async lenhdc => {
+        const lenh = await LenhDieuChuyen.findById(lenhdc._id)
+        const khochuyen = await Depot.findById(lenh.khochuyen)
+        const khonhan = await Depot.findById(lenh.khonhan)
+        const dungluongsku = await DungLuongSku.findById(lenh.sku)
+        const lenhDateOnly = onlyDate(new Date(lenh.date))
+
+        if (lenhDateOnly >= begintimeOnly && lenhDateOnly <= endtimeOnly) {
+          return {
+            _id: lenh._id,
+            malenhdc: lenh.malenhdc,
+            tensanpham: lenh.tensanpham,
+            khochuyen: khochuyen.name,
+            khonhan: khonhan.name,
+            lido: lenh.lido,
+            sku: dungluongsku.madungluong,
+            soluong: lenh.soluong,
+            date: moment(lenh.date).format('DD/MM/YYYY HH:mm:ss'),
+            duyet: lenh.duyet
+          }
+        }
+        return null
+      })
+    )
+    const filteredLenhdieuchuyen = lenhdieuchuyenjson.filter(
+      item => item !== null
+    )
+
+    return res.status(200).json(filteredLenhdieuchuyen)
+  } catch (error) {
+    console.error('Lỗi khi lấy lệnh điều chuyển:', error)
+    return res
+      .status(500)
+      .json({ error: 'Có lỗi xảy ra, vui lòng thử lại sau.' })
+  }
+})
+
 module.exports = router
