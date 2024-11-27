@@ -268,7 +268,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
             spItem => spItem._id.toString() !== sp._id.toString()
           )
 
-          hoadon.sanpham.push(sp._id)
+          hoadon.sanpham.push({ sp: sp._id, dongia: dongia })
           sp.xuat = true
           sp.datexuat = momenttimezone().toDate()
 
@@ -298,7 +298,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
             sp => sp._id.toString() !== sanpham._id.toString()
           )
 
-          hoadon.sanpham.push(sanpham._id)
+          hoadon.sanpham.push({ sp: sanpham._id, dongia: dongia })
           sanpham.xuat = true
           sanpham.datexuat = momenttimezone().toDate()
 
@@ -326,11 +326,49 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
     await hoadon.save()
     await khachhang.save()
+    const sanpham = await Promise.all(
+      hoadon.sanpham.map(async sp => {
+        const sp1 = await SanPham.findById(sp.sp._id)
+        const dungluong = await DungLuongSku.findById(sp1.dungluongsku)
+        return {
+          tensanpham: sp1.name,
+          madungluong: dungluong.madungluong,
+          dongia: sp.dongia
+        }
+      })
+    )
+    const groupedSanpham = sanpham.reduce((acc, item) => {
+      const key = item.tensanpham
+      if (!acc[key]) {
+        acc[key] = {
+          tensanpham: item.tensanpham,
+          soluong: 0,
+          dongia: item.dongia,
+          thanhtien: 0
+        }
+      }
+      acc[key].soluong += 1
+      acc[key].thanhtien = acc[key].dongia * acc[key].soluong
+      return acc
+    }, {})
 
-    const hoadonjson ={
+    const result = Object.values(groupedSanpham)
 
+    const hoadonjson = {
+      mahoadon: hoadon.mahoadon,
+      makh: makh,
+      tenkhach: khachhang.name,
+      phone: khachhang.phone,
+      address: khachhang.address,
+      date: moment(hoadon.date).format('DD/MM/YYYY HH:mm:ss'),
+      method: hoadon.method,
+      tongtien: hoadon.tongtien,
+      datcoc: hoadon.datcoc,
+      tienkhachtra: hoadon.tienkhachtra,
+      tientralaikhach: hoadon.tientralaikhach,
+      sanpham: result
     }
-    res.json(hoadon)
+    res.json(hoadonjson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

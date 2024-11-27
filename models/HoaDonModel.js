@@ -3,7 +3,12 @@ const mongoose = require('mongoose')
 const hoadonSchema = new mongoose.Schema({
   mahoadon: { type: String },
   khachhang: { type: mongoose.Schema.Types.ObjectId, ref: 'khachhang' },
-  sanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
+  sanpham: [
+    {
+      sp: { type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' },
+      dongia: { type: Number }
+    }
+  ],
   method: { type: String },
   soluong: { type: Number },
   date: { type: Date },
