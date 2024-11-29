@@ -13,7 +13,16 @@ router.post('/upload', uploads.single('image'), (req, res) => {
 router.get('/getalltrogiup', async (req, res) => {
   try {
     const trogiup = await TroGiup.find().lean()
-    res.json(trogiup)
+    const trogiupjson = await Promise.all(
+      trogiup.map(async tg => {
+        return {
+          _id: tg._id,
+          tieude: tg.tieude,
+          image: tg.image || ''
+        }
+      })
+    )
+    res.json(trogiupjson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
