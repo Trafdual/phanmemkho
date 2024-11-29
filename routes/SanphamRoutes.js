@@ -625,6 +625,7 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
           _id: sp1._id,
           malohang: loaisp.malsp,
           masp: sp1.masp,
+          imel:sp1.imel,
           tenmay: sp1.name,
           ngaynhap: moment(loaisp.date).format('DD/MM/YYYY'),
           ngayxuat: moment(sp1.datexuat).format('DD/MM/YYYY')
