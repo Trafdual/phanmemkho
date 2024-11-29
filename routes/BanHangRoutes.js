@@ -556,5 +556,28 @@ router.get('/getlenhdctheongay/:idkho', async (req, res) => {
       .json({ error: 'Có lỗi xảy ra, vui lòng thử lại sau.' })
   }
 })
+router.get('/soluonglenhchuaduyet/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const kho = await Depot.findById(idkho)
+    const lenhdieuchuyen = await Promise.all(
+      kho.lenhdieuchuyen.map(async lenhdc => {
+        const lenhdc1 = await LenhDieuChuyen.findById(lenhdc._id)
+        if (lenhdc1.duyet === false) {
+          return lenhdc1
+        }
+        return null
+      })
+    )
+    const filteredLenhdieuchuyen = lenhdieuchuyen.filter(item => item !== null)
+    const soluonglenh = filteredLenhdieuchuyen.length
+    res.json({ soluonglenh: soluonglenh })
+  } catch (error) {
+    console.error('Lỗi khi lấy lệnh điều chuyển:', error)
+    return res
+      .status(500)
+      .json({ error: 'Có lỗi xảy ra, vui lòng thử lại sau.' })
+  }
+})
 
 module.exports = router
