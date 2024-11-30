@@ -33,8 +33,8 @@ router.get('/getthemtrogiup', async (req, res) => {
 })
 router.post('/posttrogiup', async (req, res) => {
   try {
-    const { tieude, noidung } = req.body
-    const trogiup = new TroGiup({ tieude, noidung })
+    const { tieude, noidung,image } = req.body
+    const trogiup = new TroGiup({ tieude, noidung,image })
     await trogiup.save()
     res.render('trogiup')
   } catch (error) {

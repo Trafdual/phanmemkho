@@ -28,6 +28,7 @@ const trahangroutes=require('./routes/TraHangRoutes')
 const baocaoroutes=require('./routes/BaoCaoRoutes')
 const banhangRoutes=require('./routes/BanHangRoutes')
 const trogiupRoutes =require('./routes/TroGiupRoutes')
+const { router } = require('./routes/sendEvent')
 require('./routes/passport')
 require('./routes/passportface')
 var path = require('path')
@@ -103,6 +104,7 @@ app.use('/',trahangroutes)
 app.use('/',baocaoroutes)
 app.use('/',banhangRoutes)
 app.use('/',trogiupRoutes)
+app.use('/',router)
 
 
 const port = process.env.PORT || 8080
