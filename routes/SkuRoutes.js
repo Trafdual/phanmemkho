@@ -15,7 +15,7 @@ router.get('/getdungluongsku/:userID', async (req, res) => {
             const dungluong = await DungLuongSku.findById(dl._id)
             return {
               _id: dungluong._id,
-              name: `${sku.name} (${dungluong.name})`,
+              name: dungluong.name === "" ? sku.name : `${sku.name} (${dungluong.name})`,
               madungluong: dungluong.madungluong
             }
           })
@@ -59,12 +59,24 @@ router.post('/postsku/:iduser', async (req, res) => {
       dungluong: []
     })
 
-    for (const dlName of namedungluong) {
-      const dl = new DungLuongSku({ name: dlName })
-      dl.madungluong = `${newSkuCode}-${dlName}`
-      dl.sku = sku._id
+    if (!namedungluong || namedungluong.length === 0) {
+      const dl = new DungLuongSku({
+        name: '',
+        madungluong: newSkuCode,
+        sku: sku._id
+      })
       await dl.save()
       sku.dungluong.push(dl._id)
+    } else {
+      for (const dlName of namedungluong) {
+        const dl = new DungLuongSku({
+          name: dlName,
+          madungluong: `${newSkuCode}-${dlName}`,
+          sku: sku._id
+        })
+        await dl.save()
+        sku.dungluong.push(dl._id)
+      }
     }
 
     user.sku.push(sku._id)

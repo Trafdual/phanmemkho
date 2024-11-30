@@ -17,7 +17,7 @@ router.get('/hoadon/:khoId', async (req, res) => {
         const khachhang = await KhachHang.findById(hd1.khachhang)
         const sanpham = await Promise.all(
           hd1.sanpham.map(async sp => {
-            const sp1 = await SanPham.findById(sp._id)
+            const sp1 = await SanPham.findById(sp.sp._id)
             const loaisanpham = await LoaiSanPham.findById(sp1.loaisanpham)
             return {
               malohang: loaisanpham.malsp,
@@ -25,7 +25,7 @@ router.get('/hoadon/:khoId', async (req, res) => {
               tenmay: sp1.name,
               price: sp1.price,
               mausac: sp1.color,
-              dungluong: sp1.capacity
+              dungluong: sp1.dungluongsku
             }
           })
         )

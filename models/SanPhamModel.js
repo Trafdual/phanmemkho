@@ -12,7 +12,8 @@ const sanphamSchema = new mongoose.Schema({
   kho: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   dungluongsku: { type: mongoose.Schema.Types.ObjectId, ref: 'dungluong' },
   diengiai:{type:String},
-  tralai:{type:Boolean,default:false}
+  tralai:{type:Boolean,default:false},
+  loaihanghoa:{type:String}
 })
 
 const SanPham = mongoose.model('sanpham', sanphamSchema)

@@ -5,37 +5,7 @@ const Depot = require('../models/DepotModel')
 const momenttimezone = require('moment-timezone')
 const moment = require('moment')
 const DieuChuyen = require('../models/DieuChuyenModel')
-const mongoose = require('mongoose')
-let clients = []
-let hasSentMessage = false
 const DungLuongSku = require('../models/DungluongSkuModel')
-
-router.get('/events', (req, res) => {
-  console.log('Client connected to events API') // Thông báo khi có client kết nối
-  res.setHeader('Content-Type', 'text/event-stream')
-  res.setHeader('Cache-Control', 'no-cache')
-  res.setHeader('Connection', 'keep-alive')
-  res.flushHeaders()
-  try {
-    clients.push(res)
-
-    // Dọn dẹp khi client ngắt kết nối
-    req.on('close', () => {
-      clients = clients.filter(client => client !== res)
-      console.log('Client disconnected from events API')
-    })
-  } catch (error) {
-    console.error('Error in events API:', error)
-    res.status(500).send('Internal Server Error')
-  }
-})
-
-// Hàm gửi sự kiện cho tất cả client
-const sendEvent = data => {
-  clients.forEach(client => {
-    client.write(`data: ${JSON.stringify(data)}\n\n`)
-  })
-}
 
 router.get('/getsanpham/:idloaisanpham', async (req, res) => {
   try {
@@ -52,13 +22,12 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
           imel: sp1.imel,
           name: sp1.name,
           price: sp1.price,
-          quantity: 1, // Khởi tạo số lượng mặc định là 1
+          quantity: 1,
           xuat: sp1.xuat
         }
       })
     )
 
-    // Gộp thông tin theo mã SKU
     const groupedProducts = sanpham.reduce((acc, product) => {
       const { masku, imel, price, name } = product
 
@@ -187,9 +156,6 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
       await loaisanpham.save()
       await kho.save()
       await dungluongsku.save()
-
-      sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
-
       addedProducts.push(sanpham)
     }
 
@@ -203,7 +169,7 @@ router.post('/postsp/:idloaisanpham', async (req, res) => {
 router.post('/postsp1/:idloaisanpham', async (req, res) => {
   try {
     const idloai = req.params.idloaisanpham
-    const { products } = req.body // `name` và `price` được gửi trong từng sản phẩm trong `products`
+    const { products } = req.body
 
     const loaisanpham = await LoaiSanPham.findById(idloai)
     const kho = await Depot.findById(loaisanpham.depot)
@@ -241,9 +207,6 @@ router.post('/postsp1/:idloaisanpham', async (req, res) => {
         await loaisanpham.save()
         await kho.save()
         await dungluongsku.save()
-
-        sendEvent({ message: `Sản phẩm mới đã được thêm: ${imel}` })
-
         addedProducts.push(sanpham)
       }
     }
@@ -401,7 +364,7 @@ router.post('/xuatkho/:idsanpham/:idloaisp/:khoid', async (req, res) => {
   }
 })
 
-router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
+router.post('/xuatkho1/:khoid', async (req, res) => {
   try {
     const { idsanpham1 } = req.body
     const idloaisp = req.params.idloaisp
@@ -409,7 +372,7 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
     const sanphamList = []
     for (const idsanpham of idsanpham1) {
       const sanpham1 = await SanPham.findById(idsanpham)
-      const loaisanpham = await LoaiSanPham.findById(idloaisp)
+      const loaisanpham = await LoaiSanPham.findById(sanpham1.loaisanpham)
       const kho = await Depot.findById(khoid)
       const sanpham = await Promise.all(
         loaisanpham.sanpham.map(async sp => {
@@ -442,7 +405,7 @@ router.post('/xuatkho1/:idloaisp/:khoid', async (req, res) => {
     res.json(sanphamList)
   } catch (error) {
     console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+    res.json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 
@@ -515,7 +478,6 @@ router.post('/chuyenkho1', async (req, res) => {
     const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
-    // Biến lưu lại loại sản phẩm vừa tạo để sử dụng lại trong vòng lặp
     let createdLoaiSP = {}
 
     for (const idsanpham of idsanpham1) {
@@ -523,7 +485,6 @@ router.post('/chuyenkho1', async (req, res) => {
       const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
       const kho1 = await Depot.findById(loaisp.depot)
 
-      // Cập nhật điều chuyển
       const dieuchuyen = new DieuChuyen({
         sanpham: sanpham._id,
         loaisanpham: loaisp._id,
@@ -538,15 +499,12 @@ router.post('/chuyenkho1', async (req, res) => {
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
 
-      // Kiểm tra xem loại sản phẩm đã tồn tại trong kho đích chưa
       let loaiSPInKho = kho.loaisanpham.find(
         item => item.malsp === loaisp.malsp
       )
 
       if (!loaiSPInKho) {
-        // Nếu chưa tồn tại, kiểm tra trong biến createdLoaiSP để tránh tạo mới nhiều lần
         if (!createdLoaiSP[loaisp.malsp]) {
-          // Nếu loại sản phẩm chưa có, tạo mới và lưu vào createdLoaiSP
           const newLoaiSP = new LoaiSanPham({
             name: loaisp.name,
             depot: kho._id,
@@ -569,7 +527,6 @@ router.post('/chuyenkho1', async (req, res) => {
 
           createdLoaiSP[loaisp.malsp] = newLoaiSP
         } else {
-          // Nếu loại sản phẩm đã được tạo trong lần trước, sử dụng lại
           const existingLoaiSP = createdLoaiSP[loaisp.malsp]
           existingLoaiSP.sanpham.push(sanpham._id)
           kho.sanpham.push(sanpham._id)
@@ -582,7 +539,6 @@ router.post('/chuyenkho1', async (req, res) => {
           await existingLoaiSP.save()
         }
       } else {
-        // Nếu loại sản phẩm đã tồn tại trong kho đích, chỉ cần cập nhật thông tin sản phẩm
         loaiSPInKho = await LoaiSanPham.findById(loaiSPInKho._id)
         loaiSPInKho.sanpham.push(sanpham._id)
         kho.sanpham.push(sanpham._id)
@@ -608,14 +564,14 @@ router.post('/chuyenkho1', async (req, res) => {
 
 router.post('/chuyenkho2/:khoId', async (req, res) => {
   try {
-    const { idsanpham1, tenkho, diengiai } = req.body
+    const { idsanpham1, tenkho } = req.body
     const khoId = req.params.khoId
     const kho1 = await Depot.findById(khoId)
     const kho = await Depot.findOne({ name: tenkho }).populate('loaisanpham')
     const vietnamTime = moment().tz('Asia/Ho_Chi_Minh').toDate()
 
     const loaisp1 = new LoaiSanPham({
-      diengiai: diengiai,
+      name: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
       date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       hour: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss'),
       depot: kho._id,
@@ -629,16 +585,27 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
       trangthai: `Điều chuyển từ kho ${kho1.name} sang kho ${kho.name}`,
       date: moment(vietnamTime).format('YYYY-MM-DD HH:mm:ss')
     })
+    kho1.dieuchuyen.push(dieuchuyen._id)
+    kho.loaisanpham.push(loaisp1._id)
 
     for (const idsanpham of idsanpham1) {
       const sanpham = await SanPham.findById(idsanpham)
       const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
-
-      kho1.dieuchuyen.push(dieuchuyen._id)
-
+      kho1.sanpham = kho1.sanpham.filter(sp => sp._id != idsanpham)
+      kho.sanpham.push(sanpham._id)
+      dieuchuyen.sanpham.push(sanpham._id)
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
+      loaisp1.sanpham.push(sanpham._id)
+      await loaisp.save()
+      await kho1.save()
+      await kho.save()
+      await dieuchuyen.save()
+      await loaisp1.save()
     }
+    await kho.save()
+    await kho1.save()
+    await loaisp1.save()
     res.json({ message: 'Chuyển kho hàng loạt thành công!' })
   } catch (error) {
     console.error(error)
@@ -658,6 +625,7 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
           _id: sp1._id,
           malohang: loaisp.malsp,
           masp: sp1.masp,
+          imel:sp1.imel,
           tenmay: sp1.name,
           ngaynhap: moment(loaisp.date).format('DD/MM/YYYY'),
           ngayxuat: moment(sp1.datexuat).format('DD/MM/YYYY')
@@ -765,5 +733,6 @@ router.get('/getsanpham', async (req, res) => {
   const sanpham = await SanPham.find().lean()
   res.json(sanpham)
 })
+
 
 module.exports = router
