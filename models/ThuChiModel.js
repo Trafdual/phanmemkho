@@ -9,7 +9,14 @@ const thuchiSchema = new mongoose.Schema({
   lydo: { type: String },
   method: { type: String },
   loaitien: { type: String },
-  depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' }
+  depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
+  chitiet: [
+    {
+      diengiai: { type: String },
+      sotien: { type: Number },
+      mucthuchi: { type: mongoose.Schema.Types.ObjectId, ref: 'mucthuchi' }
+    }
+  ]
 })
 
 const ThuChi = mongoose.model('thuchi', thuchiSchema)

@@ -15,6 +15,7 @@ const userSchema = new mongoose.Schema({
     isActivity: { type: Boolean, default: true },
     nganhangkho:[{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'}],
     sku:[{type: mongoose.Schema.Types.ObjectId, ref: 'sku'}],
+    mucthuchi:[{type: mongoose.Schema.Types.ObjectId, ref: 'mucthuchi'}]
 });
 
 const User = mongoose.model('user', userSchema);
