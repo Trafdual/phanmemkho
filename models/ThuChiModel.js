@@ -3,9 +3,9 @@ const mongoose = require('mongoose')
 const thuchiSchema = new mongoose.Schema({
   date: { type: Date },
   mathuchi: { type: String },
-  loaichungtu: { type: String },
+  loaichungtu: { type:mongoose.Schema.Types.ObjectId,ref:'loaichungtu'},
   tongtien: { type: Number },
-  doituong: { type: String },
+  doituong: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
   lydo: { type: String },
   method: { type: String },
   loaitien: { type: String },

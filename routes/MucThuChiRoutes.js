@@ -7,7 +7,7 @@ router.post('/postmucthuchi/:userid', async (req, res) => {
     const { name, loaimuc } = req.body
     const user = await User.findById(userid)
     const mucthuchi = new MucThuChi({ name, loaimuc })
-    mucthuchi.mamuc = 'MTC' + mucthuchi.mamuc.toString().slice(-5)
+    mucthuchi.mamuc = 'MTC' + mucthuchi._id.toString().slice(-5)
     mucthuchi.user = user._id
     user.mucthuchi.push(mucthuchi._id)
     await mucthuchi.save()

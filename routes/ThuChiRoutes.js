@@ -2,8 +2,9 @@ const router = require('express').Router()
 const Depot = require('../models/DepotModel')
 const ThuChi = require('../models/ThuChiModel')
 const MucThuChi = require('../models/MucThuChiModel')
+const LoaiChungTu = require('../models/LoaiChungTuModel')
+const NhaCungCap = require('../models/NhanCungCapModel')
 const moment = require('moment')
-const { request } = require('express')
 
 router.get('/getthuchitienmat/:depotid', async (req, res) => {
   try {
@@ -12,14 +13,16 @@ router.get('/getthuchitienmat/:depotid', async (req, res) => {
     const thuchi = await Promise.all(
       depot.thuchi.map(async tc => {
         const thuchitien = await ThuChi.findById(tc._id)
+        const doituong = await NhaCungCap.findById(thuchitien.doituong)
+        const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
         if (thuchitien.method === 'Tiền mặt') {
           return {
             _id: thuchitien._id,
             mathuchi: thuchitien.mathuchi,
             date: moment(thuchitien.date).format('DD/MM/YYYY'),
-            loaichungtu: thuchitien.loaichungtu,
+            loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
             tongtien: thuchitien.tongtien,
-            doituong: thuchitien.doituong,
+            doituong: doituong.name,
             lydo: thuchitien.lydo,
             method: thuchitien.method,
             loaitien: thuchitien.loaitien
@@ -43,14 +46,16 @@ router.get('/getthuchichuyenkhoan/:depotid', async (req, res) => {
     const thuchi = await Promise.all(
       depot.thuchi.map(async tc => {
         const thuchitien = await ThuChi.findById(tc._id)
-        if (thuchitien.method === 'Chuyển khoản') {
+        const doituong = await NhaCungCap.findById(thuchitien.doituong)
+        const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
+        if (thuchitien.method === 'Tiền gửi') {
           return {
             _id: thuchitien._id,
             mathuchi: thuchitien.mathuchi,
             date: moment(thuchitien.date).format('DD/MM/YYYY'),
-            loaichungtu: thuchitien.loaichungtu,
+            loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
             tongtien: thuchitien.tongtien,
-            doituong: thuchitien.doituong,
+            doituong: doituong.name,
             lydo: thuchitien.lydo,
             method: thuchitien.method,
             loaitien: thuchitien.loaitien
@@ -72,9 +77,9 @@ router.post('/postthuchi/:depotid', async (req, res) => {
     const { depotid } = req.params
     const {
       date,
-      loaichungtu,
+      maloaict,
       tongtien,
-      doituong,
+      madoituong,
       lydo,
       method,
       loaitien,
@@ -84,9 +89,9 @@ router.post('/postthuchi/:depotid', async (req, res) => {
     // Kiểm tra giá trị đầu vào
     if (
       !date ||
-      !loaichungtu ||
+      !maloaict ||
       !tongtien ||
-      !doituong ||
+      !madoituong ||
       !method ||
       !loaitien ||
       !products
@@ -98,10 +103,12 @@ router.post('/postthuchi/:depotid', async (req, res) => {
     if (!depot) {
       return res.status(404).json({ message: 'Không tìm thấy kho hàng.' })
     }
+    const loaichungtu = await LoaiChungTu.findOne({ maloaict })
+    const doituong = await NhaCungCap.findOne({ mancc: madoituong })
 
     const thuchi = new ThuChi({
       date,
-      loaichungtu,
+      loaichungtu: loaichungtu._id,
       tongtien,
       doituong,
       lydo,
@@ -117,10 +124,12 @@ router.post('/postthuchi/:depotid', async (req, res) => {
 
     // Xử lý products đồng thời
     const productPromises = products.map(async product => {
-      const { diengiai, sotien, mucthuchiid } = product
-      const mucthuchi = await MucThuChi.findById(mucthuchiid)
+      const { diengiai, sotien, mamucthu } = product
+      const mucthuchi = await MucThuChi.findOne({ mamuc: mamucthu })
       if (!mucthuchi) {
-        throw new Error(`Không tìm thấy mục thu chi với ID: ${mucthuchiid}`)
+        return res.json({
+          message: `Không tìm thấy mục thu chi với mã: ${mamucthu}`
+        })
       }
 
       thuchi.chitiet.push({
@@ -136,8 +145,10 @@ router.post('/postthuchi/:depotid', async (req, res) => {
     await Promise.all(productPromises)
 
     depot.thuchi.push(thuchi._id)
+    loaichungtu.thuchi.push(thuchi._id)
     await thuchi.save()
     await depot.save()
+    await loaichungtu.save()
 
     res.json(thuchi)
   } catch (error) {
