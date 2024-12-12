@@ -2,7 +2,7 @@ const router = require('express').Router()
 const ThuChi = require('../models/ThuChiModel')
 const HoaDon = require('../models/HoaDonModel')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
-const Depot =require('../models/DepotModel')
+const Depot = require('../models/DepotModel')
 router.post('/getdoanhthu/:depotid', async (req, res) => {
   try {
     const depotId = req.params.depotid
@@ -146,6 +146,44 @@ router.get('/getdoanhthu/:depotid', async (req, res) => {
       doanhthutongtruoc
     }
     res.json(doanhthujson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getbaocaobanhang/:depotid', async (req, res) => {
+  try {
+    const depotid = req.params.depotid
+    const { fromDate, endDate } = req.query
+    const depot = await Depot.findById(depotid).populate('hoadon')
+    const from = new Date(fromDate)
+    const end = new Date(endDate)
+    const hoadon = depot.hoadon.filter(
+      hd => new Date(hd.date) >= from && new Date(hd.date) <= end
+    )
+    const tongTienTienMat = hoadon
+      .filter(hd => hd.method === 'Tiền mặt')
+      .reduce((total, hd) => total + hd.tongtien, 0)
+
+    const tongTienChuyenKhoan = hoadon
+      .filter(hd => hd.method === 'Chuyển khoản')
+      .reduce((total, hd) => total + hd.tongtien, 0)
+
+    const loaisanpham = await LoaiSanPham.find({
+      depot: depotid,
+      date: { $gte: from, $lte: end }
+    })
+    const loaisanphamdoanhthu = loaisanpham.reduce(
+      (total, lsp) => total + lsp.tongtien,
+      0
+    )
+    const baocaojson = {
+      tongTienTienMat,
+      tongTienChuyenKhoan,
+      loaisanphamdoanhthu
+    }
+    res.json(baocaojson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
