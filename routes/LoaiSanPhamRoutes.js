@@ -6,10 +6,9 @@ const TraNo = require('../models/TraNoModel')
 const NganHang = require('../models/NganHangKhoModel')
 const SanPham = require('../models/SanPhamModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
-const {sendEvent} =require('./sendEvent')
+const { sendEvent } = require('./sendEvent')
 
 const moment = require('moment')
-
 
 router.get('/getloaisanphamweb', async (req, res) => {
   try {
@@ -114,16 +113,12 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
         const loaisp = await LoaiSanPham.findById(loaisanpham._id).populate(
           'sanpham'
         )
-        const tongtien = loaisp.sanpham.reduce(
-          (sum, product) => sum + (product.price || 0),
-          0
-        )
 
         return {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          tongtien: tongtien,
+          tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
           conlai: loaisp.sanpham.length
         }
