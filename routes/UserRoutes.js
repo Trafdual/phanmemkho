@@ -163,9 +163,8 @@ router.post('/register', async (req, res) => {
     }
 
     const exitphone = await User.findOne({ phone })
-    if(exitphone) {
+    if (exitphone) {
       return res.json({ message: 'số điện thoại này đã được đăng kí' })
-
     }
 
     const existingemail = await User.findOne({ email })
@@ -291,15 +290,11 @@ router.post('/login', async (req, res) => {
     if (!user) {
       return res.json({ message: 'email chưa được đăng ký' })
     }
-
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      const isPasswordValidCrypto = decrypt(user.password) === password
-
-      if (!isPasswordValidCrypto) {
-        return res.json({ message: 'mật khẩu đăng nhập không đúng' })
-      }
+      return res.json({ message: 'Mật khẩu đăng nhập không đúng' })
     }
+
     const accountCreationTime = moment(user.date)
     const currentTime = moment()
     const differenceInMinutes = currentTime.diff(accountCreationTime, 'months')
