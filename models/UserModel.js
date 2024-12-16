@@ -20,7 +20,8 @@ const userSchema = new mongoose.Schema({
   nganhangkho: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nganhang' }],
   sku: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sku' }],
   mucthuchi: [{ type: mongoose.Schema.Types.ObjectId, ref: 'mucthuchi' }],
-  loaichungtu: [{ type: mongoose.Schema.Types.ObjectId, ref: 'loaichungtu' }]
+  loaichungtu: [{ type: mongoose.Schema.Types.ObjectId, ref: 'loaichungtu' }],
+  nhomkhachhang: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhomkhachhang' }],
 })
 
 const User = mongoose.model('user', userSchema)

@@ -1,10 +1,12 @@
 const router = require('express').Router()
 const KhachHang = require('../models/KhachHangModel')
 const Depot = require('../models/DepotModel')
+const NhomKhachHang = require('../models/NhomKhacHangModel')
 const moment = require('moment')
 router.get('/khachhang', async (req, res) => {
   try {
     const khachhang = await KhachHang.find().lean()
+
     res.render('khachhang', { khachhang })
   } catch (error) {
     console.error(error)
@@ -45,15 +47,19 @@ router.post('/postkhachhang', async (req, res) => {
     const depot = await Depot.findById(depotId)
     const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
 
-    const { name, phone, email, cancuoc, address, date } = req.body
+    const { name, phone, email, cancuoc, address, date, nhomkhachhang } =
+      req.body
     const khachhang = new KhachHang({
       name,
       phone,
       email,
       cancuoc,
       address,
-      date:formattedDate
+      date: formattedDate
     })
+    if (nhomkhachhang) {
+      khachhang.nhomkhachhang = nhomkhachhang
+    }
     const makh = 'KH' + khachhang._id.toString().slice(-5)
     khachhang.makh = makh
     depot.khachang.push(khachhang._id)
@@ -71,7 +77,8 @@ router.post('/postkhachhang/:depotId', async (req, res) => {
   try {
     const depotId = req.params.depotId
     const depot = await Depot.findById(depotId)
-    const { name, phone, email, cancuoc, address, date } = req.body
+    const { name, phone, email, cancuoc, address, date, nhomkhachhang } =
+      req.body
     const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
     const khachhang = new KhachHang({
       name,
@@ -79,8 +86,13 @@ router.post('/postkhachhang/:depotId', async (req, res) => {
       email,
       cancuoc,
       address,
-      date:formattedDate
+      date: formattedDate
     })
+
+    if (nhomkhachhang) {
+      khachhang.nhomkhachhang = nhomkhachhang
+    }
+    
     const makh = 'KH' + khachhang._id.toString().slice(-5)
     khachhang.makh = makh
     depot.khachang.push(khachhang._id)
