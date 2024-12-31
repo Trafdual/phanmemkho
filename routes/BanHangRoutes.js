@@ -221,6 +221,8 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
     const depot = await Depot.findById(idkho)
 
     const khachhang = await KhachHang.findOne({ makh: makh })
+    const nhomkhachhang = await NhomKhacHang.findById(khachhang.nhomkhachhang)
+
     if (!khachhang) {
       return res.status(404).json({ message: 'Khách hàng không tồn tại.' })
     }
@@ -360,11 +362,17 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
       const congno = new CongNo({
         khachhang: khachhang._id,
         tongtien: hoadon.tongtien,
-        date: momenttimezone().toDate()
+        date: momenttimezone().toDate(),
+        depot: depot._id
       })
+      nhomkhachhang.congno.push(congno)
       khachhang.congno.push(congno._id)
+      depot.congno.push(congno._id)
       await congno.save()
       await hoadon.save()
+      await depot.save()
+      await khachhang.save()
+      await nhomkhachhang.save()
     }
     const hoadonjson = {
       mahoadon: hoadon.mahoadon,

@@ -5,6 +5,9 @@ const mongoose = require('mongoose')
 const DePot = require('../models/DepotModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
 const Sku = require('../models/SkuModel')
+const CongNo = require('../models/CongNoModel')
+const KhachHang = require('../models/KhachHangModel')
+const NhomKhacHang = require('../models/NhomKhacHangModel')
 
 router.get('/getsptest/:khoID', async (req, res) => {
   try {
@@ -222,5 +225,158 @@ router.get('/getsptest/:khoID', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+router.post('/getcongno/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const depot = await DePot.findById(idkho)
+    const { fromdate, enddate } = req.query
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+    const prevMonthEnd = new Date(from)
+    prevMonthEnd.setDate(0)
+    prevMonthEnd.setUTCHours(23, 59, 59, 999)
+
+    const prevMonthStart = new Date(
+      prevMonthEnd.getFullYear(),
+      prevMonthEnd.getMonth(),
+      1
+    )
+    const congnoLastMonth = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: prevMonthStart, $lte: prevMonthEnd }
+    })
+    console.log(prevMonthEnd)
+
+    const lastMonthData = {}
+    congnoLastMonth.forEach(cn => {
+      lastMonthData[cn.khachhang] = cn.tongtien
+    })
+
+    const congno = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: from, $lte: end }
+    })
+
+    const congno1 = await Promise.all(
+      congno.map(async cn => {
+        const khachhang = await KhachHang.findById(cn.khachhang)
+        const nhomkhachhang = await NhomKhacHang.findById(
+          khachhang.nhomkhachhang
+        )
+
+        const tangTrongKy = congno
+          .filter(
+            transaction =>
+              transaction.khachhang.toString() === cn.khachhang.toString()
+          )
+          .reduce((sum, transaction) => {
+            return sum + transaction.tongtien
+          }, 0)
+
+        const nodauky = lastMonthData[cn.khachhang] || 0
+
+        return {
+          makh: khachhang.makh,
+          namekhach: khachhang.name,
+          nhomkhachhang: nhomkhachhang.name,
+          phone: khachhang.phone,
+          nodauky,
+          tangtrongky: tangTrongKy,
+          giamtrongky: 0
+        }
+      })
+    )
+
+    res.json(congno1)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
+router.get('/getcongno3/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const depot = await DePot.findById(idkho)
+    const { fromdate, enddate } = req.query
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+
+    // Lấy ngày bắt đầu của tháng hiện tại
+    const prevMonthEnd = new Date(from)
+    prevMonthEnd.setDate(0)
+    prevMonthEnd.setUTCHours(23, 59, 59, 999)
+
+    // Lấy ngày bắt đầu của tháng đầu tiên (có thể là tháng trước đó hoặc tháng trước nhiều năm)
+    const prevMonthStart = new Date(from)
+    prevMonthStart.setMonth(0) // Lấy tháng đầu tiên của năm
+    prevMonthStart.setDate(1) // Đặt ngày là 1 (ngày đầu năm)
+    prevMonthStart.setUTCHours(0, 0, 0, 0)
+
+    // Lấy tất cả nợ của các tháng trước
+    const congnoAllPreviousMonths = await CongNo.find({
+      depot: depot._id,
+      date: { $lt: from } // Lọc nợ từ tất cả các tháng trước tháng hiện tại
+    })
+
+    // Lấy nợ của tháng hiện tại
+    const congnoCurrentMonth = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: from, $lte: end }
+    })
+
+    const khachhang = await Promise.all(
+      depot.khachang.map(async kh => {
+        const khachhang = await KhachHang.findById(kh._id)
+        const nhomkhachhang = await NhomKhacHang.findById(
+          khachhang.nhomkhachhang
+        )
+
+        let totalTanggtrongky = 0
+        let customerTotalNodauky = 0
+
+        // Lọc tất cả nợ của các tháng trước cho khách hàng
+        const customerCongnoPreviousMonths = congnoAllPreviousMonths.filter(
+          cn => cn.khachhang.toString() === khachhang._id.toString()
+        )
+        // Tổng nợ của tất cả các tháng trước là nợ đầu kỳ
+        customerTotalNodauky = customerCongnoPreviousMonths.reduce(
+          (sum, cn) => sum + cn.tongtien,
+          0
+        )
+
+        // Lọc nợ của tháng hiện tại cho từng khách hàng
+        const customerCongnoCurrentMonth = congnoCurrentMonth.filter(
+          cn => cn.khachhang.toString() === khachhang._id.toString()
+        )
+        // Tổng nợ phát sinh trong kỳ
+        totalTanggtrongky = customerCongnoCurrentMonth.reduce(
+          (sum, cn) => sum + cn.tongtien,
+          0
+        )
+
+        return {
+          makh: khachhang.makh,
+          namekhach: khachhang.name,
+          nhomkhachhang: nhomkhachhang.name,
+          phone: khachhang.phone,
+          nodauky: customerTotalNodauky, // Nợ đầu kỳ từ tất cả các tháng trước
+          tangtrongky: totalTanggtrongky, // Tổng nợ phát sinh trong kỳ
+          giamtrongky: 0 // Bạn có thể tính giảm trong kỳ nếu cần
+        }
+      })
+    )
+
+    res.json(khachhang)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 
 module.exports = router

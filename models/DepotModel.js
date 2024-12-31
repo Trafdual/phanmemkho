@@ -14,6 +14,7 @@ const depotSchema = new mongoose.Schema({
   trahang:[{ type:mongoose.Schema.Types.ObjectId,ref:'trahang'}],
   lenhdieuchuyen:[{ type:mongoose.Schema.Types.ObjectId,ref:'lenhdieuchuyen'}],
   thuchi:[{ type:mongoose.Schema.Types.ObjectId,ref:'thuchi'}],
+  congno:[{ type:mongoose.Schema.Types.ObjectId,ref:'congno'}],
 
 })
 const DePot = mongoose.model('depot', depotSchema)
