@@ -4,6 +4,7 @@ const ThuChi = require('../models/ThuChiModel')
 const MucThuChi = require('../models/MucThuChiModel')
 const LoaiChungTu = require('../models/LoaiChungTuModel')
 const NhaCungCap = require('../models/NhanCungCapModel')
+const KhachHang = require('../models/KhachHangModel')
 const moment = require('moment')
 
 router.get('/getthuchitienmat/:depotid', async (req, res) => {
@@ -13,7 +14,11 @@ router.get('/getthuchitienmat/:depotid', async (req, res) => {
     const thuchi = await Promise.all(
       depot.thuchi.map(async tc => {
         const thuchitien = await ThuChi.findById(tc._id)
-        const doituong = await NhaCungCap.findById(thuchitien.doituong)
+        let doituong = await NhaCungCap.findById(thuchitien.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(thuchitien.doituong)
+        }
+
         const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
         if (thuchitien.method === 'Tiền mặt') {
           return {
@@ -22,7 +27,7 @@ router.get('/getthuchitienmat/:depotid', async (req, res) => {
             date: moment(thuchitien.date).format('DD/MM/YYYY'),
             loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
             tongtien: thuchitien.tongtien,
-            doituong: doituong.name,
+            doituong: doituong.name || '',
             lydo: thuchitien.lydo,
             method: thuchitien.method,
             loaitien: thuchitien.loaitien
@@ -46,7 +51,10 @@ router.get('/getthuchichuyenkhoan/:depotid', async (req, res) => {
     const thuchi = await Promise.all(
       depot.thuchi.map(async tc => {
         const thuchitien = await ThuChi.findById(tc._id)
-        const doituong = await NhaCungCap.findById(thuchitien.doituong)
+        let doituong = await NhaCungCap.findById(thuchitien.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(thuchitien.doituong)
+        }
         const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
         if (thuchitien.method === 'Tiền gửi') {
           return {
@@ -55,7 +63,7 @@ router.get('/getthuchichuyenkhoan/:depotid', async (req, res) => {
             date: moment(thuchitien.date).format('DD/MM/YYYY'),
             loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
             tongtien: thuchitien.tongtien,
-            doituong: doituong.name,
+            doituong: doituong.name || '',
             lydo: thuchitien.lydo,
             method: thuchitien.method,
             loaitien: thuchitien.loaitien
@@ -104,7 +112,10 @@ router.post('/postthuchi/:depotid', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy kho hàng.' })
     }
     const loaichungtu = await LoaiChungTu.findOne({ maloaict })
-    const doituong = await NhaCungCap.findOne({ mancc: madoituong })
+    let doituong = await NhaCungCap.findOne({ mancc: madoituong })
+    if (!doituong) {
+      doituong = await KhachHang.findOne({ makh: madoituong })
+    }
 
     const thuchi = new ThuChi({
       date,
@@ -172,6 +183,32 @@ router.get('/getchitietthuchi/:idthuchi', async (req, res) => {
       })
     )
     res.json(chitiet)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+router.get('/doituongthuchi/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const depot = await Depot.findById(idkho)
+    const nhacungcap = await Promise.all(
+      depot.nhacungcap.map(async ncc => {
+        const ncc1 = await NhaCungCap.findById(ncc._id)
+        return ncc1
+      })
+    )
+    const khachhang = await Promise.all(
+      depot.khachang.map(async kh => {
+        const kh1 = await KhachHang.findById(kh._id)
+        return kh1
+      })
+    )
+    const doituongjson = {
+      nhacungcap: nhacungcap,
+      khachhang: khachhang
+    }
+    res.json(doituongjson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

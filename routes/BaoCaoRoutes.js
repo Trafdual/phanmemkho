@@ -8,6 +8,9 @@ const Sku = require('../models/SkuModel')
 const CongNo = require('../models/CongNoModel')
 const KhachHang = require('../models/KhachHangModel')
 const NhomKhacHang = require('../models/NhomKhacHangModel')
+const MucThuChi = require('../models/MucThuChiModel')
+const ThuChi = require('../models/ThuChiModel')
+const HoaDon = require('../models/HoaDonModel')
 
 router.get('/getsptest/:khoID', async (req, res) => {
   try {
@@ -296,7 +299,6 @@ router.post('/getcongno/:idkho', async (req, res) => {
   }
 })
 
-
 router.get('/getcongno3/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
@@ -306,24 +308,35 @@ router.get('/getcongno3/:idkho', async (req, res) => {
     const end = new Date(enddate)
     end.setUTCHours(23, 59, 59, 999)
 
-    // Lấy ngày bắt đầu của tháng hiện tại
-    const prevMonthEnd = new Date(from)
-    prevMonthEnd.setDate(0)
-    prevMonthEnd.setUTCHours(23, 59, 59, 999)
+    const previousFrom = new Date(from)
+    previousFrom.setDate(
+      previousFrom.getDate() - (end.getDate() - from.getDate())
+    )
+    const previousEnd = new Date(from)
+    previousEnd.setDate(previousEnd.getDate() - 1)
+    console.log(previousFrom)
 
-    // Lấy ngày bắt đầu của tháng đầu tiên (có thể là tháng trước đó hoặc tháng trước nhiều năm)
-    const prevMonthStart = new Date(from)
-    prevMonthStart.setMonth(0) // Lấy tháng đầu tiên của năm
-    prevMonthStart.setDate(1) // Đặt ngày là 1 (ngày đầu năm)
-    prevMonthStart.setUTCHours(0, 0, 0, 0)
+    const mucThuChiCongNo = await MucThuChi.find({ name: 'công nợ' })
 
-    // Lấy tất cả nợ của các tháng trước
-    const congnoAllPreviousMonths = await CongNo.find({
+    const giamTrongKyThuChi = await ThuChi.find({
       depot: depot._id,
-      date: { $lt: from } // Lọc nợ từ tất cả các tháng trước tháng hiện tại
+      date: { $gte: from, $lte: end },
+      'chitiet.mucthuchi': { $in: mucThuChiCongNo.map(muc => muc._id) },
+      loaitien: 'Tiền thu'
     })
 
-    // Lấy nợ của tháng hiện tại
+    const giamTrongKyTruoc = await ThuChi.find({
+      depot: depot._id,
+      date: { $gte: previousFrom, $lte: previousEnd },
+      'chitiet.mucthuchi': { $in: mucThuChiCongNo.map(muc => muc._id) },
+      loaitien: 'Tiền thu'
+    })
+
+    const congnoAllPreviousMonths = await CongNo.find({
+      depot: depot._id,
+      date: { $lt: from }
+    })
+
     const congnoCurrentMonth = await CongNo.find({
       depot: depot._id,
       date: { $gte: from, $lte: end }
@@ -338,35 +351,72 @@ router.get('/getcongno3/:idkho', async (req, res) => {
 
         let totalTanggtrongky = 0
         let customerTotalNodauky = 0
+        let totalGiamtrongky = 0
 
-        // Lọc tất cả nợ của các tháng trước cho khách hàng
         const customerCongnoPreviousMonths = congnoAllPreviousMonths.filter(
           cn => cn.khachhang.toString() === khachhang._id.toString()
         )
-        // Tổng nợ của tất cả các tháng trước là nợ đầu kỳ
         customerTotalNodauky = customerCongnoPreviousMonths.reduce(
           (sum, cn) => sum + cn.tongtien,
           0
         )
 
-        // Lọc nợ của tháng hiện tại cho từng khách hàng
         const customerCongnoCurrentMonth = congnoCurrentMonth.filter(
           cn => cn.khachhang.toString() === khachhang._id.toString()
         )
-        // Tổng nợ phát sinh trong kỳ
+
         totalTanggtrongky = customerCongnoCurrentMonth.reduce(
           (sum, cn) => sum + cn.tongtien,
           0
         )
+
+        const customerThuChi = giamTrongKyThuChi.filter(
+          tc => tc.doituong.toString() === khachhang._id.toString()
+        )
+        totalGiamtrongky = customerThuChi.reduce(
+          (sum, tc) =>
+            sum +
+            tc.chitiet.reduce(
+              (detailSum, detail) =>
+                mucThuChiCongNo.some(
+                  muc => muc._id.toString() === detail.mucthuchi.toString()
+                )
+                  ? detailSum + detail.sotien
+                  : detailSum,
+              0
+            ),
+          0
+        )
+
+        const customerThuChiTruoc = giamTrongKyTruoc.filter(
+          tc => tc.doituong.toString() === khachhang._id.toString()
+        )
+
+        const totalGiamtrongkyTruocDo = customerThuChiTruoc.reduce(
+          (sum, tc) =>
+            sum +
+            tc.chitiet.reduce(
+              (detailSum, detail) =>
+                mucThuChiCongNo.some(
+                  muc => muc._id.toString() === detail.mucthuchi.toString()
+                )
+                  ? detailSum + detail.sotien
+                  : detailSum,
+              0
+            ),
+          0
+        )
+
+        customerTotalNodauky = customerTotalNodauky - totalGiamtrongkyTruocDo
 
         return {
           makh: khachhang.makh,
           namekhach: khachhang.name,
           nhomkhachhang: nhomkhachhang.name,
           phone: khachhang.phone,
-          nodauky: customerTotalNodauky, // Nợ đầu kỳ từ tất cả các tháng trước
-          tangtrongky: totalTanggtrongky, // Tổng nợ phát sinh trong kỳ
-          giamtrongky: 0 // Bạn có thể tính giảm trong kỳ nếu cần
+          nodauky: customerTotalNodauky,
+          tangtrongky: totalTanggtrongky,
+          giamtrongky: totalGiamtrongky
         }
       })
     )
@@ -378,5 +428,90 @@ router.get('/getcongno3/:idkho', async (req, res) => {
   }
 })
 
+router.get('/baocaobanhang', async (req, res) => {
+  try {
+    const { fromdate, enddate } = req.query
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+
+    const hoaDons = await HoaDon.find({
+      date: {
+        $gte: from,
+        $lte: end
+      }
+    })
+
+    const hoaDonReport = hoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+      acc[dateKey] += hoaDon.tongtien || 0
+      return acc
+    }, {})
+
+    const sanPhams = await SanPham.find({
+      datenhap: {
+        $gte: from,
+        $lte: end
+      }
+    })
+
+    const nhapHangReport = sanPhams.reduce((acc, sanPham) => {
+      const dateKey = sanPham.datenhap.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+      acc[dateKey] += sanPham.price || 0
+      return acc
+    }, {})
+
+    const congNoHoaDons = await HoaDon.find({
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      ghino: true
+    }).populate('khachhang', 'ten')
+
+    const congNoReport = congNoHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const combinedReport = {}
+
+    const allDates = [
+      ...new Set([
+        ...Object.keys(hoaDonReport),
+        ...Object.keys(nhapHangReport),
+        ...Object.keys(congNoReport)
+      ])
+    ]
+
+    allDates.forEach(date => {
+      combinedReport[date] = {
+        hoaDon: hoaDonReport[date] || 0,
+        nhapHang: nhapHangReport[date] || 0,
+        congNo: congNoReport[date] || 0
+      }
+    })
+
+    res.status(200).json(combinedReport)
+  } catch (error) {
+    console.error('Lỗi khi tạo báo cáo:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ. Không thể tạo báo cáo.'
+    })
+  }
+})
 
 module.exports = router
