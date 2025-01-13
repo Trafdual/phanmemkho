@@ -7,6 +7,8 @@ const SanPham = require('../models/SanPhamModel')
 const moment = require('moment')
 const momenttimezone = require('moment-timezone')
 const DePot = require('../models/DepotModel')
+const DungLuong = require('../models/DungluongSkuModel')
+const Sku = require('../models/SkuModel')
 router.get('/hoadon/:khoId', async (req, res) => {
   try {
     const khoid = req.params.khoId
@@ -52,6 +54,7 @@ router.get('/hoadon/:khoId', async (req, res) => {
 router.get('/getchitiethoadon/:idhoadon', async (req, res) => {
   try {
     const idhoadon = req.params.idhoadon
+
     const hoadon = await HoaDon.findById(idhoadon)
     const user = await User.findById(hoadon.nhanvien)
     const khachhang = await KhachHang.findById(hoadon.khachhang)
@@ -88,7 +91,11 @@ router.post('/posthoadon/:khoid', async (req, res) => {
     const kho = await DePot.findById(khoid)
     const vietnamTime = momenttimezone().toDate()
     const kh = await KhachHang.findOne({ makh: makhachhang })
-    const hoadon = new HoaDon({ khachhang: kh._id, date: vietnamTime,tongtien:0 })
+    const hoadon = new HoaDon({
+      khachhang: kh._id,
+      date: vietnamTime,
+      tongtien: 0
+    })
 
     for (const masp of masanpham) {
       const sanpham = await SanPham.findOne({ masp })
@@ -106,6 +113,121 @@ router.post('/posthoadon/:khoid', async (req, res) => {
     await hoadon.save()
     await kho.save()
     res.json(hoadon)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/gethoadonstore/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const kho = await DePot.findById(idkho)
+    const { fromdate, enddate } = req.query
+
+    if (!fromdate || !enddate) {
+      return res
+        .status(400)
+        .json({ message: 'Vui lòng cung cấp từ ngày và đến ngày.' })
+    }
+
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+
+    const filteredHoadons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      }
+    })
+
+    const hoadonjson = await Promise.all(
+      filteredHoadons.map(async hoadon => {
+        const hd = await HoaDon.findById(hoadon._id)
+        const khachhang = await KhachHang.findById(hd.khachhang)
+        return {
+          _id: hd._id,
+          mahd: hd.mahoadon,
+          date: moment(hd.date).format('DD/MM/YYYY - HH:mm'),
+          ghino: hd.ghino || false,
+          makh: khachhang.makh,
+          namekh: khachhang.name,
+          phone: khachhang.phone,
+          tongtien: hd.tongtien
+        }
+      })
+    )
+
+    res.status(200).json(hoadonjson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/gethoadonchitiet/:idhoadon', async (req, res) => {
+  try {
+    const idhoadon = req.params.idhoadon
+    const hoadon = await HoaDon.findById(idhoadon)
+    const khachhang = await KhachHang.findById(hoadon.khachhang)
+
+    const sanphamjson = await Promise.all(
+      hoadon.sanpham.map(async sanpham => {
+        const sp = await SanPham.findById(sanpham.sp._id)
+        const loaisanpham = await LoaiSanPham.findById(sp.loaisanpham)
+        const dungluongsku = await DungLuong.findById(sp.dungluongsku)
+        const sku = await Sku.findById(dungluongsku.sku)
+
+        return {
+          namesanpham: `${sku.name} (${dungluongsku.name})`,
+          imel: sp.imel || '',
+          dongia: sanpham.dongia,
+          loaihanghoa: loaisanpham.loaihanghoa
+        }
+      })
+    )
+
+    const groupedSanpham = sanphamjson.reduce((acc, item) => {
+      const existingProduct = acc.find(
+        sp => sp.namesanpham === item.namesanpham
+      )
+      if (existingProduct) {
+        existingProduct.details.push({
+          imel: item.imel || '',
+          dongia: item.dongia
+        })
+        existingProduct.tongdongia += item.dongia
+      } else {
+        acc.push({
+          namesanpham: item.namesanpham,
+          loaihanghoa: item.loaihanghoa,
+          details: [
+            {
+              imel: item.imel || '',
+              dongia: item.dongia
+            }
+          ],
+          tongdongia: item.dongia
+        })
+      }
+      return acc
+    }, [])
+
+    const hoadonjson = {
+      mahd: hoadon.mahoadon,
+      date: moment(hoadon.date).format('DD/MM/YYYY - HH:mm'),
+      namekhachhang: khachhang.name,
+      phone: khachhang.phone,
+      ghino: hoadon.ghino,
+      congno: hoadon.ghino || false,
+      tongtien: hoadon.tongtien,
+      sanpham: groupedSanpham,
+      method: hoadon.method
+    }
+
+    res.json(hoadonjson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

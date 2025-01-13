@@ -11,6 +11,7 @@ const NhomKhacHang = require('../models/NhomKhacHangModel')
 const MucThuChi = require('../models/MucThuChiModel')
 const ThuChi = require('../models/ThuChiModel')
 const HoaDon = require('../models/HoaDonModel')
+const moment = require('moment')
 
 router.get('/getsptest/:khoID', async (req, res) => {
   try {
@@ -428,14 +429,18 @@ router.get('/getcongno3/:idkho', async (req, res) => {
   }
 })
 
-router.get('/baocaobanhang', async (req, res) => {
+router.get('/baocaobanhang/:idkho', async (req, res) => {
   try {
     const { fromdate, enddate } = req.query
+    const idkho = req.params.idkho
+    const kho = await DePot.findById(idkho).populate(['hoadon', 'sanpham'])
+
     const from = new Date(fromdate)
     const end = new Date(enddate)
     end.setUTCHours(23, 59, 59, 999)
 
     const hoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
       date: {
         $gte: from,
         $lte: end
@@ -452,14 +457,18 @@ router.get('/baocaobanhang', async (req, res) => {
     }, {})
 
     const sanPhams = await SanPham.find({
-      datenhap: {
+      _id: {
+        $in: kho.sanpham
+      },
+      datexuat: {
         $gte: from,
         $lte: end
-      }
+      },
+      xuat: true
     })
 
     const nhapHangReport = sanPhams.reduce((acc, sanPham) => {
-      const dateKey = sanPham.datenhap.toISOString().split('T')[0]
+      const dateKey = sanPham.datexuat.toISOString().split('T')[0]
       if (!acc[dateKey]) {
         acc[dateKey] = 0
       }
@@ -468,11 +477,30 @@ router.get('/baocaobanhang', async (req, res) => {
     }, {})
 
     const congNoHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
       date: {
         $gte: from,
         $lte: end
       },
       ghino: true
+    }).populate('khachhang', 'ten')
+
+    const tienmatHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      method: 'Tiền mặt'
+    }).populate('khachhang', 'ten')
+
+    const chuyenkhoanHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      method: 'chuyển khoản'
     }).populate('khachhang', 'ten')
 
     const congNoReport = congNoHoaDons.reduce((acc, hoaDon) => {
@@ -486,22 +514,49 @@ router.get('/baocaobanhang', async (req, res) => {
       return acc
     }, {})
 
-    const combinedReport = {}
+    const tienmatReport = tienmatHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const chuyenkhoanReport = chuyenkhoanHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const combinedReport = []
 
     const allDates = [
       ...new Set([
         ...Object.keys(hoaDonReport),
         ...Object.keys(nhapHangReport),
-        ...Object.keys(congNoReport)
+        ...Object.keys(congNoReport),
+        ...Object.keys(tienmatReport),
+        ...Object.keys(chuyenkhoanReport)
       ])
     ]
 
     allDates.forEach(date => {
-      combinedReport[date] = {
+      combinedReport.push({
+        date: moment(date).format('DD/MM/YYYY'),
         hoaDon: hoaDonReport[date] || 0,
         nhapHang: nhapHangReport[date] || 0,
-        congNo: congNoReport[date] || 0
-      }
+        congNo: congNoReport[date] || 0,
+        tienmat: tienmatReport[date] || 0,
+        chuyenkhoan: chuyenkhoanReport[date] || 0
+      })
     })
 
     res.status(200).json(combinedReport)
