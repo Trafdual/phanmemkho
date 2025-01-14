@@ -87,5 +87,15 @@ router.post('/editnhacungcap/:idncc', async (req, res) => {
   }
 })
 
+router.get('/getchitietncc/:idncc', async (req, res) => {
+  try {
+    const idncc = req.params.idncc
+    const nhacungcap = await NhanCungCap.findById(idncc)
+    res.json(nhacungcap)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 
 module.exports = router
