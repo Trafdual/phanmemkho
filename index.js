@@ -33,6 +33,7 @@ const mucthuchiRoutes = require('./routes/MucThuChiRoutes')
 const loaichungtuRoutes = require('./routes/LoaiChungTuRoutes')
 const doanhthuRoutes = require('./routes/DoanhThuRoutes')
 const nhomkhachang = require('./routes/NhomKhachHangRoutes')
+const tranoroutes = require('./routes/TraNoRoutes')
 const { router } = require('./routes/sendEvent')
 require('./routes/passport')
 require('./routes/passportface')
@@ -114,6 +115,7 @@ app.use('/', loaichungtuRoutes)
 app.use('/', doanhthuRoutes)
 app.use('/', nhomkhachang)
 app.use('/', router)
+app.use('/', tranoroutes)
 
 const port = process.env.PORT || 8080
 
