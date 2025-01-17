@@ -661,6 +661,8 @@ router.post('/postloaisanpham5/:depotid', async (req, res) => {
     loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
 
     await loaisanpham.save()
+    sendEvent({ message: `lô hàng mới đã được thêm` })
+
     res.json(loaisanpham)
   } catch (error) {
     console.error(error)
