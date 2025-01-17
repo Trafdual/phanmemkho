@@ -117,7 +117,8 @@ app.use('/', nhomkhachang)
 app.use('/', router)
 app.use('/', tranoroutes)
 
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 3015
+
 
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
