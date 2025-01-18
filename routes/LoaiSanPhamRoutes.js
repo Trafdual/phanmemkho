@@ -655,7 +655,6 @@ router.post('/postloaisanpham5/:depotid', async (req, res) => {
     const loaisanpham = new LoaiSanPham({
       name: '',
       depot: depotid,
-      nhacungcap: '',
       loaihanghoa: ''
     })
     loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
@@ -826,10 +825,10 @@ router.post('/updateloaisanpham4', async (req, res) => {
   }
 })
 
-router.get('/getfullchitietlo/:idloaisanpham', async (req, res) => {
+router.get('/getfullchitietlo/:malohang', async (req, res) => {
   try {
-    const idloai = req.params.idloaisanpham
-    const loaisanpham = await LoaiSanPham.findById(idloai)
+    const malohang = req.params.malohang
+    const loaisanpham = await LoaiSanPham.findOne({ malsp: malohang })
     const sanpham = await Promise.all(
       loaisanpham.sanpham.map(async sp => {
         const sp1 = await SanPham.findById(sp._id)
@@ -869,16 +868,106 @@ router.get('/getfullchitietlo/:idloaisanpham', async (req, res) => {
     const result = Object.values(groupedProducts).map(product => ({
       masku: product.masku,
       name: product.name,
-      imel: Array.from(product.imel).join(','),
-      quantity: product.quantity,
+      imel: Array.from(product.imel),
+      soluong: product.quantity,
       price: parseFloat(product.total / product.quantity),
-      total: product.total
+      tongtien: product.total
     }))
 
     res.json(result)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/deletelohang', async (req, res) => {
+  try {
+    const { malohang } = req.body
+    const lohang = await LoaiSanPham.findOne({ malsp: malohang })
+    await Promise.all(
+      lohang.sanpham.map(async sp => {
+        await SanPham.findByIdAndDelete(sp._id)
+      })
+    )
+    await LoaiSanPham.findByIdAndDelete(lohang._id)
+    res.json({ message: 'Xóa lô hàng thành công.' })
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+router.post('/postimel', async (req, res) => {
+  try {
+    const { malohang, products } = req.body
+    const loaisanpham = await LoaiSanPham.findOne({ malsp: malohang })
+    const depot = await Depot.findById(loaisanpham.depot)
+    const addedProducts = []
+    let tongtien = 0
+
+    for (const product of products) {
+      const { madungluongsku, imelList, name, price, soluong } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      if (!imelList || imelList.length === 0) {
+        for (let i = 0; i < soluong; i++) {
+          const sanpham = new SanPham({
+            name,
+            datenhap: loaisanpham.date,
+            price
+          })
+
+          sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+          sanpham.kho = depot._id
+          sanpham.loaisanpham = loaisanpham._id
+          sanpham.dungluongsku = dungluongsku ? dungluongsku._id : null
+
+          tongtien += Number(price)
+
+          await sanpham.save()
+          loaisanpham.sanpham.push(sanpham._id)
+          depot.sanpham.push(sanpham._id)
+          if (dungluongsku) dungluongsku.sanpham.push(sanpham._id)
+          if (dungluongsku) await dungluongsku.save()
+
+          addedProducts.push(sanpham)
+        }
+        continue
+      }
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) continue
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price
+        })
+
+        sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+        sanpham.kho = depot._id
+        sanpham.loaisanpham = loaisanpham._id
+        sanpham.dungluongsku = dungluongsku._id
+        tongtien += Number(price)
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        depot.sanpham.push(sanpham._id)
+        dungluongsku.sanpham.push(sanpham._id)
+        await dungluongsku.save()
+        addedProducts.push(sanpham)
+      }
+    }
+    await loaisanpham.save()
+    await depot.save()
+
+    sendEvent({ message: `Thêm imel thành công` })
+    res.json({ message: 'thêm imel thành công' })
+  } catch (error) {
+    console.error(error)
   }
 })
 
