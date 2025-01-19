@@ -6,10 +6,9 @@ const TraNo = require('../models/TraNoModel')
 const NganHang = require('../models/NganHangKhoModel')
 const SanPham = require('../models/SanPhamModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
-const {sendEvent} =require('./sendEvent')
+const { sendEvent } = require('./sendEvent')
 
 const moment = require('moment')
-
 
 router.get('/getloaisanphamweb', async (req, res) => {
   try {
@@ -114,16 +113,12 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
         const loaisp = await LoaiSanPham.findById(loaisanpham._id).populate(
           'sanpham'
         )
-        const tongtien = loaisp.sanpham.reduce(
-          (sum, product) => sum + (product.price || 0),
-          0
-        )
 
         return {
           _id: loaisp._id,
           malsp: loaisp.malsp,
           name: loaisp.name,
-          tongtien: tongtien,
+          tongtien: loaisp.tongtien,
           date: moment(loaisp.date).format('DD/MM/YYYY'),
           conlai: loaisp.sanpham.length
         }
@@ -651,6 +646,328 @@ router.post('/postloaisanpham4', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/postloaisanpham5/:depotid', async (req, res) => {
+  try {
+    const depotid = req.params.depotid
+    const loaisanpham = new LoaiSanPham({
+      name: '',
+      depot: depotid,
+      loaihanghoa: ''
+    })
+    loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
+
+    await loaisanpham.save()
+    sendEvent({ message: `lô hàng mới đã được thêm` })
+
+    res.json(loaisanpham)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/updateloaisanpham4', async (req, res) => {
+  try {
+    const {
+      malo,
+      name,
+      date,
+      mancc,
+      ghino,
+      hour,
+      method,
+      manganhangkho,
+      loaihanghoa,
+      products
+    } = req.body
+
+    const loaisanpham = await LoaiSanPham.findOne({ malsp: malo })
+    if (!loaisanpham)
+      return res.status(404).json({ message: 'Loại sản phẩm không tồn tại.' })
+
+    const nhacungcap = await NhanCungCap.findOne({ mancc })
+    const depot = await Depot.findById(nhacungcap.depotId)
+
+    const formattedDate = moment(date).isValid() ? moment(date).toDate() : null
+    if (!formattedDate) return res.json({ message: 'Ngày không hợp lệ.' })
+
+    const formattedHour = moment(hour).isValid() ? moment(hour).toDate() : null
+    if (!formattedHour) return res.json({ message: 'Giờ không hợp lệ.' })
+
+    const nganhangkho = await NganHang.findOne({ manganhangkho })
+
+    loaisanpham.name = name
+    loaisanpham.date = formattedDate
+    loaisanpham.hour = formattedHour
+    loaisanpham.nhacungcap = nhacungcap._id
+    loaisanpham.loaihanghoa = loaihanghoa
+
+    const updatedProducts = []
+    let tongtien = 0
+
+    for (const product of products) {
+      const { madungluongsku, imelList, name, price, soluong } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      if (!imelList || imelList.length === 0) {
+        for (let i = 0; i < soluong; i++) {
+          const sanpham = new SanPham({
+            name,
+            datenhap: loaisanpham.date,
+            price,
+            loaihanghoa
+          })
+
+          sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+          sanpham.kho = depot._id
+          sanpham.loaisanpham = loaisanpham._id
+          sanpham.dungluongsku = dungluongsku ? dungluongsku._id : null
+
+          tongtien += Number(price)
+
+          await sanpham.save()
+          loaisanpham.sanpham.push(sanpham._id)
+          depot.sanpham.push(sanpham._id)
+          if (dungluongsku) dungluongsku.sanpham.push(sanpham._id)
+          if (dungluongsku) await dungluongsku.save()
+
+          updatedProducts.push(sanpham)
+        }
+        continue
+      }
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) continue
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price,
+          loaihanghoa
+        })
+
+        sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+        sanpham.kho = depot._id
+        sanpham.loaisanpham = loaisanpham._id
+        sanpham.dungluongsku = dungluongsku._id
+        tongtien += Number(price)
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        depot.sanpham.push(sanpham._id)
+        dungluongsku.sanpham.push(sanpham._id)
+        await dungluongsku.save()
+        updatedProducts.push(sanpham)
+      }
+    }
+
+    loaisanpham.tongtien = tongtien
+
+    if (ghino === 'ghino') {
+      loaisanpham.ghino = true
+      const trano = await TraNo.findOne({ nhacungcap: nhacungcap._id })
+      if (trano) {
+        const donno = trano.donno.find(
+          dn => dn.loaisanpham.toString() === loaisanpham._id.toString()
+        )
+        if (donno) {
+          donno.tienno = loaisanpham.tongtien
+          donno.tienphaitra = loaisanpham.tongtien
+        } else {
+          trano.donno.push({
+            loaisanpham: loaisanpham._id,
+            tienno: loaisanpham.tongtien,
+            tienphaitra: loaisanpham.tongtien,
+            tiendatra: 0
+          })
+        }
+        trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
+        trano.tongtra = trano.donno.reduce(
+          (sum, item) => sum + item.tiendatra,
+          0
+        )
+        await trano.save()
+      }
+    } else {
+      loaisanpham.ghino = false
+      if (method === 'Tiền mặt') loaisanpham.method = 'tienmat'
+      if (method === 'Chuyển khoản') {
+        loaisanpham.method = 'chuyenkhoan'
+        loaisanpham.nganhang = nganhangkho._id
+      }
+    }
+
+    await loaisanpham.save()
+    depot.loaisanpham.push(loaisanpham._id)
+    nhacungcap.loaisanpham.push(loaisanpham._id)
+    await nhacungcap.save()
+    await depot.save()
+
+    const updatedData = {
+      _id: loaisanpham._id,
+      malsp: loaisanpham.malsp,
+      name: loaisanpham.name,
+      tongtien: loaisanpham.tongtien,
+      date: moment(loaisanpham.date).format('DD/MM/YYYY')
+    }
+
+    sendEvent({ message: `Sản phẩm đã được cập nhật: ${updatedData}` })
+    res.json(updatedData)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getfullchitietlo/:malohang', async (req, res) => {
+  try {
+    const malohang = req.params.malohang
+    const loaisanpham = await LoaiSanPham.findOne({ malsp: malohang })
+    const sanpham = await Promise.all(
+      loaisanpham.sanpham.map(async sp => {
+        const sp1 = await SanPham.findById(sp._id)
+        const sku = await DungLuongSku.findById(sp1.dungluongsku)
+        return {
+          masp: sp1.masp,
+          masku: sku.madungluong,
+          _id: sp1._id,
+          imel: sp1.imel,
+          name: sp1.name,
+          price: sp1.price,
+          quantity: 1,
+          xuat: sp1.xuat
+        }
+      })
+    )
+
+    const groupedProducts = sanpham.reduce((acc, product) => {
+      const { masku, imel, price, name } = product
+
+      if (!acc[masku]) {
+        acc[masku] = {
+          ...product,
+          imel: new Set([imel]),
+          quantity: 0,
+          total: 0
+        }
+      }
+
+      acc[masku].imel.add(imel)
+      acc[masku].quantity += product.quantity
+      acc[masku].total += price * product.quantity
+
+      return acc
+    }, {})
+
+    const result = Object.values(groupedProducts).map(product => ({
+      masku: product.masku,
+      name: product.name,
+      imel: Array.from(product.imel),
+      soluong: product.quantity,
+      price: parseFloat(product.total / product.quantity),
+      tongtien: product.total
+    }))
+
+    res.json(result)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/deletelohang', async (req, res) => {
+  try {
+    const { malohang } = req.body
+    const lohang = await LoaiSanPham.findOne({ malsp: malohang })
+    await Promise.all(
+      lohang.sanpham.map(async sp => {
+        await SanPham.findByIdAndDelete(sp._id)
+      })
+    )
+    await LoaiSanPham.findByIdAndDelete(lohang._id)
+    res.json({ message: 'Xóa lô hàng thành công.' })
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+router.post('/postimel', async (req, res) => {
+  try {
+    const { malohang, products } = req.body
+    const loaisanpham = await LoaiSanPham.findOne({ malsp: malohang })
+    const depot = await Depot.findById(loaisanpham.depot)
+    const addedProducts = []
+    let tongtien = 0
+
+    for (const product of products) {
+      const { madungluongsku, imelList, name, price, soluong } = product
+      const dungluongsku = await DungLuongSku.findOne({
+        madungluong: madungluongsku
+      })
+
+      if (!imelList || imelList.length === 0) {
+        for (let i = 0; i < soluong; i++) {
+          const sanpham = new SanPham({
+            name,
+            datenhap: loaisanpham.date,
+            price
+          })
+
+          sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+          sanpham.kho = depot._id
+          sanpham.loaisanpham = loaisanpham._id
+          sanpham.dungluongsku = dungluongsku ? dungluongsku._id : null
+
+          tongtien += Number(price)
+
+          await sanpham.save()
+          loaisanpham.sanpham.push(sanpham._id)
+          depot.sanpham.push(sanpham._id)
+          if (dungluongsku) dungluongsku.sanpham.push(sanpham._id)
+          if (dungluongsku) await dungluongsku.save()
+
+          addedProducts.push(sanpham)
+        }
+        continue
+      }
+
+      for (const imel of imelList) {
+        const sp = await SanPham.findOne({ imel })
+        if (sp) continue
+
+        const sanpham = new SanPham({
+          name,
+          imel,
+          datenhap: loaisanpham.date,
+          price
+        })
+
+        sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
+        sanpham.kho = depot._id
+        sanpham.loaisanpham = loaisanpham._id
+        sanpham.dungluongsku = dungluongsku._id
+        tongtien += Number(price)
+        await sanpham.save()
+        loaisanpham.sanpham.push(sanpham._id)
+        depot.sanpham.push(sanpham._id)
+        dungluongsku.sanpham.push(sanpham._id)
+        await dungluongsku.save()
+        addedProducts.push(sanpham)
+      }
+    }
+    await loaisanpham.save()
+    await depot.save()
+
+    sendEvent({ message: `Thêm imel thành công` })
+    res.json({ message: 'thêm imel thành công' })
+  } catch (error) {
+    console.error(error)
   }
 })
 

@@ -5,6 +5,13 @@ const mongoose = require('mongoose')
 const DePot = require('../models/DepotModel')
 const DungLuongSku = require('../models/DungluongSkuModel')
 const Sku = require('../models/SkuModel')
+const CongNo = require('../models/CongNoModel')
+const KhachHang = require('../models/KhachHangModel')
+const NhomKhacHang = require('../models/NhomKhacHangModel')
+const MucThuChi = require('../models/MucThuChiModel')
+const ThuChi = require('../models/ThuChiModel')
+const HoaDon = require('../models/HoaDonModel')
+const moment = require('moment')
 
 router.get('/getsptest/:khoID', async (req, res) => {
   try {
@@ -220,6 +227,345 @@ router.get('/getsptest/:khoID', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/getcongno/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const depot = await DePot.findById(idkho)
+    const { fromdate, enddate } = req.query
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+    const prevMonthEnd = new Date(from)
+    prevMonthEnd.setDate(0)
+    prevMonthEnd.setUTCHours(23, 59, 59, 999)
+
+    const prevMonthStart = new Date(
+      prevMonthEnd.getFullYear(),
+      prevMonthEnd.getMonth(),
+      1
+    )
+    const congnoLastMonth = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: prevMonthStart, $lte: prevMonthEnd }
+    })
+    console.log(prevMonthEnd)
+
+    const lastMonthData = {}
+    congnoLastMonth.forEach(cn => {
+      lastMonthData[cn.khachhang] = cn.tongtien
+    })
+
+    const congno = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: from, $lte: end }
+    })
+
+    const congno1 = await Promise.all(
+      congno.map(async cn => {
+        const khachhang = await KhachHang.findById(cn.khachhang)
+        const nhomkhachhang = await NhomKhacHang.findById(
+          khachhang.nhomkhachhang
+        )
+
+        const tangTrongKy = congno
+          .filter(
+            transaction =>
+              transaction.khachhang.toString() === cn.khachhang.toString()
+          )
+          .reduce((sum, transaction) => {
+            return sum + transaction.tongtien
+          }, 0)
+
+        const nodauky = lastMonthData[cn.khachhang] || 0
+
+        return {
+          makh: khachhang.makh,
+          namekhach: khachhang.name,
+          nhomkhachhang: nhomkhachhang.name,
+          phone: khachhang.phone,
+          nodauky,
+          tangtrongky: tangTrongKy,
+          giamtrongky: 0
+        }
+      })
+    )
+
+    res.json(congno1)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getcongno3/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const depot = await DePot.findById(idkho)
+    const { fromdate, enddate } = req.query
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+
+    const previousFrom = new Date(from)
+    previousFrom.setDate(
+      previousFrom.getDate() - (end.getDate() - from.getDate())
+    )
+    const previousEnd = new Date(from)
+    previousEnd.setDate(previousEnd.getDate() - 1)
+    console.log(previousFrom)
+
+    const mucThuChiCongNo = await MucThuChi.find({ name: 'công nợ' })
+
+    const giamTrongKyThuChi = await ThuChi.find({
+      depot: depot._id,
+      date: { $gte: from, $lte: end },
+      'chitiet.mucthuchi': { $in: mucThuChiCongNo.map(muc => muc._id) },
+      loaitien: 'Tiền thu'
+    })
+
+    const giamTrongKyTruoc = await ThuChi.find({
+      depot: depot._id,
+      date: { $gte: previousFrom, $lte: previousEnd },
+      'chitiet.mucthuchi': { $in: mucThuChiCongNo.map(muc => muc._id) },
+      loaitien: 'Tiền thu'
+    })
+
+    const congnoAllPreviousMonths = await CongNo.find({
+      depot: depot._id,
+      date: { $lt: from }
+    })
+
+    const congnoCurrentMonth = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: from, $lte: end }
+    })
+
+    const khachhang = await Promise.all(
+      depot.khachang.map(async kh => {
+        const khachhang = await KhachHang.findById(kh._id)
+        const nhomkhachhang = await NhomKhacHang.findById(
+          khachhang.nhomkhachhang
+        )
+
+        let totalTanggtrongky = 0
+        let customerTotalNodauky = 0
+        let totalGiamtrongky = 0
+
+        const customerCongnoPreviousMonths = congnoAllPreviousMonths.filter(
+          cn => cn.khachhang.toString() === khachhang._id.toString()
+        )
+        customerTotalNodauky = customerCongnoPreviousMonths.reduce(
+          (sum, cn) => sum + cn.tongtien,
+          0
+        )
+
+        const customerCongnoCurrentMonth = congnoCurrentMonth.filter(
+          cn => cn.khachhang.toString() === khachhang._id.toString()
+        )
+
+        totalTanggtrongky = customerCongnoCurrentMonth.reduce(
+          (sum, cn) => sum + cn.tongtien,
+          0
+        )
+
+        const customerThuChi = giamTrongKyThuChi.filter(
+          tc => tc.doituong.toString() === khachhang._id.toString()
+        )
+        totalGiamtrongky = customerThuChi.reduce(
+          (sum, tc) =>
+            sum +
+            tc.chitiet.reduce(
+              (detailSum, detail) =>
+                mucThuChiCongNo.some(
+                  muc => muc._id.toString() === detail.mucthuchi.toString()
+                )
+                  ? detailSum + detail.sotien
+                  : detailSum,
+              0
+            ),
+          0
+        )
+
+        const customerThuChiTruoc = giamTrongKyTruoc.filter(
+          tc => tc.doituong.toString() === khachhang._id.toString()
+        )
+
+        const totalGiamtrongkyTruocDo = customerThuChiTruoc.reduce(
+          (sum, tc) =>
+            sum +
+            tc.chitiet.reduce(
+              (detailSum, detail) =>
+                mucThuChiCongNo.some(
+                  muc => muc._id.toString() === detail.mucthuchi.toString()
+                )
+                  ? detailSum + detail.sotien
+                  : detailSum,
+              0
+            ),
+          0
+        )
+
+        customerTotalNodauky = customerTotalNodauky - totalGiamtrongkyTruocDo
+
+        return {
+          makh: khachhang.makh,
+          namekhach: khachhang.name,
+          nhomkhachhang: nhomkhachhang.name,
+          phone: khachhang.phone,
+          nodauky: customerTotalNodauky,
+          tangtrongky: totalTanggtrongky,
+          giamtrongky: totalGiamtrongky
+        }
+      })
+    )
+
+    res.json(khachhang)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/baocaobanhang/:idkho', async (req, res) => {
+  try {
+    const { fromdate, enddate } = req.query
+    const idkho = req.params.idkho
+    const kho = await DePot.findById(idkho).populate(['hoadon', 'sanpham'])
+
+    const from = new Date(fromdate)
+    const end = new Date(enddate)
+    end.setUTCHours(23, 59, 59, 999)
+
+    const hoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      }
+    })
+
+    const hoaDonReport = hoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+      acc[dateKey] += hoaDon.tongtien || 0
+      return acc
+    }, {})
+
+    const sanPhams = await SanPham.find({
+      _id: {
+        $in: kho.sanpham
+      },
+      datexuat: {
+        $gte: from,
+        $lte: end
+      },
+      xuat: true
+    })
+
+    const nhapHangReport = sanPhams.reduce((acc, sanPham) => {
+      const dateKey = sanPham.datexuat.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+      acc[dateKey] += sanPham.price || 0
+      return acc
+    }, {})
+
+    const congNoHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      ghino: true
+    }).populate('khachhang', 'ten')
+
+    const tienmatHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      method: 'Tiền mặt'
+    }).populate('khachhang', 'ten')
+
+    const chuyenkhoanHoaDons = await HoaDon.find({
+      _id: { $in: kho.hoadon },
+      date: {
+        $gte: from,
+        $lte: end
+      },
+      method: 'chuyển khoản'
+    }).populate('khachhang', 'ten')
+
+    const congNoReport = congNoHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const tienmatReport = tienmatHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const chuyenkhoanReport = chuyenkhoanHoaDons.reduce((acc, hoaDon) => {
+      const dateKey = hoaDon.date.toISOString().split('T')[0]
+      if (!acc[dateKey]) {
+        acc[dateKey] = 0
+      }
+
+      acc[dateKey] += hoaDon.tongtien || 0
+
+      return acc
+    }, {})
+
+    const combinedReport = []
+
+    const allDates = [
+      ...new Set([
+        ...Object.keys(hoaDonReport),
+        ...Object.keys(nhapHangReport),
+        ...Object.keys(congNoReport),
+        ...Object.keys(tienmatReport),
+        ...Object.keys(chuyenkhoanReport)
+      ])
+    ]
+
+    allDates.forEach(date => {
+      combinedReport.push({
+        date: moment(date).format('DD/MM/YYYY'),
+        hoaDon: hoaDonReport[date] || 0,
+        nhapHang: nhapHangReport[date] || 0,
+        congNo: congNoReport[date] || 0,
+        tienmat: tienmatReport[date] || 0,
+        chuyenkhoan: chuyenkhoanReport[date] || 0
+      })
+    })
+
+    res.status(200).json(combinedReport)
+  } catch (error) {
+    console.error('Lỗi khi tạo báo cáo:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Lỗi máy chủ. Không thể tạo báo cáo.'
+    })
   }
 })
 

@@ -21,13 +21,19 @@ const khachhangRoutes = require('./routes/KhachHangRoutes')
 const hoadonRoutes = require('./routes/HoaDonRoutes')
 const nhanvienRoutes = require('./routes/NhanvienRoutes')
 const nhacungcapRoutes = require('./routes/NhanCungCapRoutes')
-const dieuchuyenRoutes=require('./routes/DieuChuyenRoutes')
-const nganhangRoutes=require('./routes/NganHangRoutes')
-const skuroutes=require('./routes/SkuRoutes')
-const trahangroutes=require('./routes/TraHangRoutes')
-const baocaoroutes=require('./routes/BaoCaoRoutes')
-const banhangRoutes=require('./routes/BanHangRoutes')
-const trogiupRoutes =require('./routes/TroGiupRoutes')
+const dieuchuyenRoutes = require('./routes/DieuChuyenRoutes')
+const nganhangRoutes = require('./routes/NganHangRoutes')
+const skuroutes = require('./routes/SkuRoutes')
+const trahangroutes = require('./routes/TraHangRoutes')
+const baocaoroutes = require('./routes/BaoCaoRoutes')
+const banhangRoutes = require('./routes/BanHangRoutes')
+const trogiupRoutes = require('./routes/TroGiupRoutes')
+const thuchiRoutes = require('./routes/ThuChiRoutes')
+const mucthuchiRoutes = require('./routes/MucThuChiRoutes')
+const loaichungtuRoutes = require('./routes/LoaiChungTuRoutes')
+const doanhthuRoutes = require('./routes/DoanhThuRoutes')
+const nhomkhachang = require('./routes/NhomKhachHangRoutes')
+const tranoroutes = require('./routes/TraNoRoutes')
 const { router } = require('./routes/sendEvent')
 require('./routes/passport')
 require('./routes/passportface')
@@ -88,7 +94,6 @@ app.use(cors())
 app.use(passport.initialize())
 app.use(passport.session())
 
-
 app.use('/', userRoutes)
 app.use('/', depotroutes)
 app.use('/', sanphamRoutes)
@@ -97,17 +102,22 @@ app.use('/', khachhangRoutes)
 app.use('/', hoadonRoutes)
 app.use('/', nhanvienRoutes)
 app.use('/', nhacungcapRoutes)
-app.use('/',dieuchuyenRoutes)
-app.use('/',nganhangRoutes)
-app.use('/',skuroutes)
-app.use('/',trahangroutes)
-app.use('/',baocaoroutes)
-app.use('/',banhangRoutes)
-app.use('/',trogiupRoutes)
-app.use('/',router)
+app.use('/', dieuchuyenRoutes)
+app.use('/', nganhangRoutes)
+app.use('/', skuroutes)
+app.use('/', trahangroutes)
+app.use('/', baocaoroutes)
+app.use('/', banhangRoutes)
+app.use('/', trogiupRoutes)
+app.use('/', thuchiRoutes)
+app.use('/', mucthuchiRoutes)
+app.use('/', loaichungtuRoutes)
+app.use('/', doanhthuRoutes)
+app.use('/', nhomkhachang)
+app.use('/', router)
+app.use('/', tranoroutes)
 
-
-const port = process.env.PORT || 8080
+const port = process.env.PORT || 3015
 
 app.use((req, res, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private')
@@ -142,8 +152,7 @@ app.use((req, res, next) => {
 //         console.log('The file was obfuscated and saved as', outputPath);
 //     });
 // });
-// 
-
+//
 
 // async function fetchLinks (url) {
 //   const browser = await puppeteer.launch()
@@ -188,7 +197,6 @@ app.use((req, res, next) => {
 //   createSitemap(links, 'sitemap.xml')
 //   console.log('Sitemap created')
 // })
-
 
 app.listen(port, () => {
   try {
