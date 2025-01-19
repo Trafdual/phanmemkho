@@ -652,13 +652,17 @@ router.post('/postloaisanpham4', async (req, res) => {
 router.post('/postloaisanpham5/:depotid', async (req, res) => {
   try {
     const depotid = req.params.depotid
+    const depot = await Depot.findById(depotid)
+
     const loaisanpham = new LoaiSanPham({
       name: '',
       depot: depotid,
       loaihanghoa: ''
     })
-    loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
 
+    depot.loaisanpham.push(loaisanpham._id)
+    loaisanpham.malsp = 'LH' + loaisanpham._id.toString().slice(-5)
+    await depot.save()
     await loaisanpham.save()
     sendEvent({ message: `lô hàng mới đã được thêm` })
 
@@ -885,12 +889,17 @@ router.post('/deletelohang', async (req, res) => {
   try {
     const { malohang } = req.body
     const lohang = await LoaiSanPham.findOne({ malsp: malohang })
+    const depot = await Depot.findById(lohang.depot)
+    const index = depot.loaisanpham.indexOf(lohang._id)
+    depot.loaisanpham.splice(index, 1)
     await Promise.all(
       lohang.sanpham.map(async sp => {
         await SanPham.findByIdAndDelete(sp._id)
       })
     )
     await LoaiSanPham.findByIdAndDelete(lohang._id)
+    await depot.save()
+
     res.json({ message: 'Xóa lô hàng thành công.' })
   } catch (error) {
     console.error(error)
