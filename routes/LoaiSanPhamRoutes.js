@@ -894,6 +894,10 @@ router.post('/deletelohang', async (req, res) => {
     depot.loaisanpham.splice(index, 1)
     await Promise.all(
       lohang.sanpham.map(async sp => {
+        const sanpham = await SanPham.findById(sp._id)
+        const dungluong = await DungLuongSku.findById(sanpham.dungluongsku)
+        dungluong.sanpham.splice(dungluong.sanpham.indexOf(sp._id), 1)
+        await dungluong.save()
         await SanPham.findByIdAndDelete(sp._id)
       })
     )
