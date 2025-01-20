@@ -746,28 +746,45 @@ router.post('/updateloaisanpham4', async (req, res) => {
       }
 
       for (const imel of imelList) {
-        const sp = await SanPham.findOne({ imel })
-        if (sp) continue
+        let sp = await SanPham.findOne({ imel })
 
-        const sanpham = new SanPham({
-          name,
-          imel,
-          datenhap: loaisanpham.date,
-          price,
-          loaihanghoa
-        })
+        if (sp) {
+          sp.name = name
+          sp.datenhap = loaisanpham.date
+          sp.price = price
+          sp.loaihanghoa = loaihanghoa
+          sp.kho = depot._id
+          sp.loaisanpham = loaisanpham._id
+          sp.dungluongsku = dungluongsku ? dungluongsku._id : null
 
-        sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
-        sanpham.kho = depot._id
-        sanpham.loaisanpham = loaisanpham._id
-        sanpham.dungluongsku = dungluongsku._id
-        tongtien += Number(price)
-        await sanpham.save()
-        loaisanpham.sanpham.push(sanpham._id)
-        depot.sanpham.push(sanpham._id)
-        dungluongsku.sanpham.push(sanpham._id)
-        await dungluongsku.save()
-        updatedProducts.push(sanpham)
+          await sp.save()
+        } else {
+          sp = new SanPham({
+            name,
+            imel,
+            datenhap: loaisanpham.date,
+            price,
+            loaihanghoa
+          })
+
+          sp.masp = 'SP' + sp._id.toString().slice(-5)
+          sp.kho = depot._id
+          sp.loaisanpham = loaisanpham._id
+          sp.dungluongsku = dungluongsku ? dungluongsku._id : null
+
+          tongtien += Number(price)
+
+          await sp.save()
+
+          loaisanpham.sanpham.push(sp._id)
+          depot.sanpham.push(sp._id)
+          if (dungluongsku) {
+            dungluongsku.sanpham.push(sp._id)
+            await dungluongsku.save()
+          }
+        }
+
+        updatedProducts.push(sp)
       }
     }
 
@@ -929,7 +946,7 @@ router.post('/postimel', async (req, res) => {
           const sanpham = new SanPham({
             name,
             datenhap: loaisanpham.date,
-            price
+            price: 0
           })
 
           sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
@@ -958,7 +975,7 @@ router.post('/postimel', async (req, res) => {
           name,
           imel,
           datenhap: loaisanpham.date,
-          price
+          price: 0
         })
 
         sanpham.masp = 'SP' + sanpham._id.toString().slice(-5)
