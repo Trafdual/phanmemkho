@@ -756,6 +756,7 @@ router.post('/updateloaisanpham4', async (req, res) => {
           sp.kho = depot._id
           sp.loaisanpham = loaisanpham._id
           sp.dungluongsku = dungluongsku ? dungluongsku._id : null
+          tongtien += Number(price)
 
           await sp.save()
         } else {
@@ -825,7 +826,6 @@ router.post('/updateloaisanpham4', async (req, res) => {
     }
 
     await loaisanpham.save()
-    depot.loaisanpham.push(loaisanpham._id)
     nhacungcap.loaisanpham.push(loaisanpham._id)
     await nhacungcap.save()
     await depot.save()
