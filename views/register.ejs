@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-    <script>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="Cache-Control"
+            content="no-cache, no-store, must-revalidate">
+        <link rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+        <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <script
+            src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+        <script>
         // Your JavaScript code here
         if (!Array.prototype.includes) {
             console.log('Array.prototype.includes is not supported.');
@@ -17,7 +22,7 @@
             console.log('Array.prototype.includes is supported.');
         }
     </script>
-    <style>
+        <style>
         /* Your CSS styles here */
         
         body {
@@ -143,67 +148,84 @@
             display: none
         }
     </style>
-</head>
+    </head>
 
-<body>
+    <body>
 
-    <div id="register-container">
-        <div class="logo">
-            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
-                BICRAFT</h3>
+        <div id="register-container">
+            <div class="logo">
+                <h3
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+                    BICRAFT</h3>
+            </div>
+            <h2>Register</h2>
+            <input type="text" placeholder="Họ và Tên" id="name" name="name"
+                required><br>
+            <input type="text" placeholder="Số Điện Thoại" id="phone"
+                name="phone" required><br>
+            <input type="text" placeholder="Email" id="email" name="email"
+                required><br>
+            <input type="text" placeholder="Password" id="password"
+                name="password" required><br>
+            <div id="error-container" style="margin-top:5px">
+            </div>
+            <button class="btnn" onclick="registerUser1()"
+                id="registerButton"><div class="loading-spinner"
+                    id="loadingSpinner"></div> Register</button>
         </div>
-        <h2>Register</h2>
-        <input type="text" placeholder="Họ và Tên" id="name" name="name" required><br>
-        <input type="text" placeholder="Số Điện Thoại" id="phone" name="phone" required><br>
-        <input type="text" placeholder="Email" id="email" name="email" required><br>
-        <input type="text" placeholder="Password" id="password" name="password" required><br>
-        <div id="error-container" style="margin-top:5px">
+        <div id="otp-container">
+            <div class="logo">
+                <h3
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+                    BICRAFT</h3>
+            </div>
+            <p id="clicknut">Click vào nút send email để nhận mã OTP</p>
+            <div id="nhapma">
+                <h2>Nhập mã OTP</h2>
+                <input type="text" placeholder="nhập mã OTP" id="otp" name="otp"
+                    required><br>
+            </div>
+            <p id="countdown"><span id="time">60</span></p>
+            <div id="error-container1"></div>
+            <button class="btnn" onclick="sendEmail()" id="sendemail"> Send
+                Email</button>
+            <button class="btnn" onclick="codeverify()"
+                id="codeverifyButton"><div class="loading-spinner"
+                    id="loadingSpinner1"></div> Verify</button>
+            <div class="no alert alert-danger">OTP error</div>
         </div>
-        <button class="btnn" onclick="registerUser1()" id="registerButton"><div class="loading-spinner" id="loadingSpinner"></div> Register</button>
-    </div>
-    <div id="otp-container">
-        <div class="logo">
-            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
-                BICRAFT</h3>
+        <div id="kho-container">
+            <div class="logo">
+                <h3
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+                    BICRAFT</h3>
+            </div>
+            <h2>Tạo kho chứa của bạn</h2>
+            <input type="text" placeholder="Tên kho chứa" id="namekho"
+                name="name" required><br>
+            <input type="text" placeholder="Địa chỉ" id="address" name="address"
+                required><br>
+            <button class="btnn" onclick="postdepot()" id="postdepotButton"><div
+                    class="loading-spinner" id="loadingSpinner2"></div>
+                Initialization</button>
         </div>
-        <p id="clicknut">Click vào nút send email để nhận mã OTP</p>
-        <div id="nhapma">
-            <h2>Nhập mã OTP</h2>
-            <input type="text" placeholder="nhập mã OTP" id="otp" name="otp" required><br>
-        </div>
-        <p id="countdown"><span id="time">60</span></p>
-        <div id="error-container1"></div>
-        <button class="btnn" onclick="sendEmail()" id="sendemail"> Send Email</button>
-        <button class="btnn" onclick="codeverify()" id="codeverifyButton"><div class="loading-spinner" id="loadingSpinner1"></div> Verify</button>
-        <div class="no alert alert-danger">OTP error</div>
-    </div>
-    <div id="kho-container">
-        <div class="logo">
-            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
-                BICRAFT</h3>
-        </div>
-        <h2>Tạo kho chứa của bạn</h2>
-        <input type="text" placeholder="Tên kho chứa" id="namekho" name="name" required><br>
-        <input type="text" placeholder="Địa chỉ" id="address" name="address" required><br>
-        <button class="btnn" onclick="postdepot()" id="postdepotButton"><div class="loading-spinner" id="loadingSpinner2"></div> Initialization</button>
-    </div>
-    <div id="dialogsuccess" class="dialog-overlay">
-        <div class="dialog-xemthem">
-            <h2 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
-                Success!</h2>
-            <div class="d-flex flex-column">
-                <div class="d-flex">
-                    <h6 class="me-3">
-                        Đăng kí thành công
-                    </h6>
-                    <p>Vui lòng đợi 5 giây để trở về màn hình đăng nhập</p>
+        <div id="dialogsuccess" class="dialog-overlay">
+            <div class="dialog-xemthem">
+                <h2
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">
+                    Success!</h2>
+                <div class="d-flex flex-column">
+                    <div class="d-flex">
+                        <h6 class="me-3">
+                            Đăng kí thành công
+                        </h6>
+                        <p>Vui lòng đợi 5 giây để trở về màn hình đăng nhập</p>
+                    </div>
+                    <hr>
                 </div>
-                <hr>
             </div>
         </div>
-    </div>
-    <script src="https://www.ansuataohanoi.com/register.js"></script>
-</body>
-
+        <script src="https://ansuataohanoi.com/register.js"></script>
+    </body>
 
 </html>

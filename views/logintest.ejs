@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
-    <style>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet"
+            href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+        <script
+            src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+        <script
+            src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+        <style>
         /* Your CSS styles here */
         
         body {
@@ -116,67 +119,83 @@
             display: none;
         }
     </style>
-</head>
+    </head>
 
-<body>
+    <body>
 
-    <div class="login-container" id="dangnhap">
-        <div class="logo">
-            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
+        <div class="login-container" id="dangnhap">
+            <div class="logo">
+                <h3
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
+            </div>
+            <h3 style="font-weight: bold;">Đăng nhập BiCraft</h3>
+            <form action="/loginemail" method="get" id="formemail">
+                <div class="form-input" id="btndangkyemail">
+                    <img src="https://ansuataohanoi.com/user.png" alt
+                        id="googleicon">
+                    <p>Sử dụng tài khoản email</p>
+                </div>
+            </form>
+            <form action="/auth/google" method="get" id="formgoogle">
+                <div class="form-input" id="btndangkygoogle">
+                    <img src="https://ansuataohanoi.com/google.png" alt
+                        id="googleicon">
+                    <p>Tiếp tục với google</p>
+                </div>
+            </form>
+            <form action="/auth/facebook" method="get" id="formfacebook">
+                <div class="form-input" id="btnfacebook">
+                    <img src="https://ansuataohanoi.com/facebook.png" alt
+                        id="googleicon">
+                    <p>Tiếp tục với facebook</p>
+                </div>
+            </form>
+            <hr>
+            <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại
+                Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc
+                Chính sách Quyền riêng tư của chúng tôi.</p>
+            <hr>
+            <p style="margin-top:20px; font-size: 18px; font-weight: bold;"
+                class="foot">Bạn chưa có tài khoản? <a onclick="dangky()">Đăng
+                    ký</a></p>
         </div>
-        <h3 style="font-weight: bold;">Đăng nhập BiCraft</h3>
-        <form action="/loginemail" method="get" id="formemail">
-            <div class="form-input" id="btndangkyemail">
-                <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
-                <p>Sử dụng tài khoản email</p>
+        <div class="login-container" id="dangky">
+            <div class="logo">
+                <h3
+                    style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
             </div>
-        </form>
-        <form action="/auth/google" method="get" id="formgoogle">
-            <div class="form-input" id="btndangkygoogle">
-                <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
-                <p>Tiếp tục với google</p>
-            </div>
-        </form>
-        <form action="/auth/facebook" method="get" id="formfacebook">
-            <div class="form-input" id="btnfacebook">
-                <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
-                <p>Tiếp tục với facebook</p>
-            </div>
-        </form>
-        <hr>
-        <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
-        <hr>
-        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn chưa có tài khoản? <a onclick="dangky()">Đăng ký</a></p>
-    </div>
-    <div class="login-container" id="dangky">
-        <div class="logo">
-            <h3 style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: red; font-weight: bold; font-size: 40px; text-shadow: 1px 2px 5px rgba(242, 11, 11, 0.5);">BICRAFT</h3>
+            <h3 style="font-weight: bold;">Đăng Ký BiCraft</h3>
+            <form action="/getregister" method="get" id="formemail1">
+                <div class="form-input" id="btndangkyemail1">
+                    <img src="https://ansuataohanoi.com/user.png" alt
+                        id="googleicon">
+                    <p>Sử dụng tài khoản email</p>
+                </div>
+            </form>
+            <form action="/auth/google" method="get" id="formgoogle1">
+                <div class="form-input" id="btndangkygoogle1">
+                    <img src="https://ansuataohanoi.com/google.png" alt
+                        id="googleicon">
+                    <p>Tiếp tục với google</p>
+                </div>
+            </form>
+            <form action="/auth/facebook" method="get" id="formfacebook1">
+                <div class="form-input" id="btnfacebook1">
+                    <img src="https://ansuataohanoi.com/facebook.png" alt
+                        id="googleicon">
+                    <p>Tiếp tục với facebook</p>
+                </div>
+            </form>
+            <hr>
+            <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại
+                Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc
+                Chính sách Quyền riêng tư của chúng tôi.</p>
+            <hr>
+            <p style="margin-top:20px; font-size: 18px; font-weight: bold;"
+                class="foot">Bạn đã có tài khoản? <a onclick="dangnhap()">Đăng
+                    nhập</a></p>
         </div>
-        <h3 style="font-weight: bold;">Đăng Ký BiCraft</h3>
-        <form action="/getregister" method="get" id="formemail1">
-            <div class="form-input" id="btndangkyemail1">
-                <img src="https://www.ansuataohanoi.com/user.png" alt="" id="googleicon">
-                <p>Sử dụng tài khoản email</p>
-            </div>
-        </form>
-        <form action="/auth/google" method="get" id="formgoogle1">
-            <div class="form-input" id="btndangkygoogle1">
-                <img src="https://www.ansuataohanoi.com/google.png" alt="" id="googleicon">
-                <p>Tiếp tục với google</p>
-            </div>
-        </form>
-        <form action="/auth/facebook" method="get" id="formfacebook1">
-            <div class="form-input" id="btnfacebook1">
-                <img src="https://www.ansuataohanoi.com/facebook.png" alt="" id="googleicon">
-                <p>Tiếp tục với facebook</p>
-            </div>
-        </form>
-        <hr>
-        <p class="note">Bằng việc tiếp tục với tài khoản có vị trí tại Vietnam, bạn đồng ý với Điều khoản Sử dụng, cho rằng mình đã đọc Chính sách Quyền riêng tư của chúng tôi.</p>
-        <hr>
-        <p style="margin-top:20px; font-size: 18px; font-weight: bold;" class="foot">Bạn đã có tài khoản? <a onclick="dangnhap()">Đăng nhập</a></p>
-    </div>
-    <script>
+        <script>
         function dangky() {
             document.getElementById('dangnhap').style.display = 'none';
             document.getElementById('dangky').style.display = 'block';
@@ -208,6 +227,6 @@
             document.getElementById('formfacebook').submit();
         });
     </script>
-</body>
+    </body>
 
 </html>
