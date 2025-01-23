@@ -2110,45 +2110,56 @@ router.post('/postimel', function _callee20(req, res) {
 
         case 4:
           loaisanpham = _context20.sent;
-          _context20.next = 7;
-          return regeneratorRuntime.awrap(Depot.findById(loaisanpham.depot));
+
+          if (loaisanpham) {
+            _context20.next = 7;
+            break;
+          }
+
+          return _context20.abrupt("return", res.status(400).json({
+            message: 'Không tìm thấy lô hàng.'
+          }));
 
         case 7:
+          _context20.next = 9;
+          return regeneratorRuntime.awrap(Depot.findById(loaisanpham.depot));
+
+        case 9:
           depot = _context20.sent;
           addedProducts = [];
           tongtien = 0;
           _iteratorNormalCompletion7 = true;
           _didIteratorError7 = false;
           _iteratorError7 = undefined;
-          _context20.prev = 13;
+          _context20.prev = 15;
           _iterator7 = products[Symbol.iterator]();
 
-        case 15:
+        case 17:
           if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
-            _context20.next = 89;
+            _context20.next = 91;
             break;
           }
 
           product = _step7.value;
           madungluongsku = product.madungluongsku, imelList = product.imelList, name = product.name, price = product.price, soluong = product.soluong;
-          _context20.next = 20;
+          _context20.next = 22;
           return regeneratorRuntime.awrap(DungLuongSku.findOne({
             madungluong: madungluongsku
           }));
 
-        case 20:
+        case 22:
           dungluongsku = _context20.sent;
 
           if (!(!imelList || imelList.length === 0)) {
-            _context20.next = 43;
+            _context20.next = 45;
             break;
           }
 
           i = 0;
 
-        case 23:
+        case 25:
           if (!(i < soluong)) {
-            _context20.next = 42;
+            _context20.next = 44;
             break;
           }
 
@@ -2162,63 +2173,63 @@ router.post('/postimel', function _callee20(req, res) {
           sanpham.loaisanpham = loaisanpham._id;
           sanpham.dungluongsku = dungluongsku ? dungluongsku._id : null;
           tongtien += Number(price);
-          _context20.next = 32;
+          _context20.next = 34;
           return regeneratorRuntime.awrap(sanpham.save());
 
-        case 32:
+        case 34:
           loaisanpham.sanpham.push(sanpham._id);
           depot.sanpham.push(sanpham._id);
           if (dungluongsku) dungluongsku.sanpham.push(sanpham._id);
 
           if (!dungluongsku) {
-            _context20.next = 38;
+            _context20.next = 40;
             break;
           }
 
-          _context20.next = 38;
+          _context20.next = 40;
           return regeneratorRuntime.awrap(dungluongsku.save());
 
-        case 38:
+        case 40:
           addedProducts.push(sanpham);
 
-        case 39:
+        case 41:
           i++;
-          _context20.next = 23;
+          _context20.next = 25;
           break;
 
-        case 42:
-          return _context20.abrupt("continue", 86);
+        case 44:
+          return _context20.abrupt("continue", 88);
 
-        case 43:
+        case 45:
           _iteratorNormalCompletion8 = true;
           _didIteratorError8 = false;
           _iteratorError8 = undefined;
-          _context20.prev = 46;
+          _context20.prev = 48;
           _iterator8 = imelList[Symbol.iterator]();
 
-        case 48:
+        case 50:
           if (_iteratorNormalCompletion8 = (_step8 = _iterator8.next()).done) {
-            _context20.next = 72;
+            _context20.next = 74;
             break;
           }
 
           imel = _step8.value;
-          _context20.next = 52;
+          _context20.next = 54;
           return regeneratorRuntime.awrap(SanPham.findOne({
             imel: imel
           }));
 
-        case 52:
+        case 54:
           sp = _context20.sent;
 
           if (!sp) {
-            _context20.next = 55;
+            _context20.next = 57;
             break;
           }
 
-          return _context20.abrupt("continue", 69);
+          return _context20.abrupt("continue", 71);
 
-        case 55:
+        case 57:
           _sanpham2 = new SanPham({
             name: name,
             imel: imel,
@@ -2230,125 +2241,125 @@ router.post('/postimel', function _callee20(req, res) {
           _sanpham2.loaisanpham = loaisanpham._id;
           _sanpham2.dungluongsku = dungluongsku._id;
           tongtien += Number(price);
-          _context20.next = 63;
+          _context20.next = 65;
           return regeneratorRuntime.awrap(_sanpham2.save());
 
-        case 63:
+        case 65:
           loaisanpham.sanpham.push(_sanpham2._id);
           depot.sanpham.push(_sanpham2._id);
           dungluongsku.sanpham.push(_sanpham2._id);
-          _context20.next = 68;
+          _context20.next = 70;
           return regeneratorRuntime.awrap(dungluongsku.save());
 
-        case 68:
+        case 70:
           addedProducts.push(_sanpham2);
 
-        case 69:
+        case 71:
           _iteratorNormalCompletion8 = true;
-          _context20.next = 48;
-          break;
-
-        case 72:
-          _context20.next = 78;
+          _context20.next = 50;
           break;
 
         case 74:
-          _context20.prev = 74;
-          _context20.t0 = _context20["catch"](46);
+          _context20.next = 80;
+          break;
+
+        case 76:
+          _context20.prev = 76;
+          _context20.t0 = _context20["catch"](48);
           _didIteratorError8 = true;
           _iteratorError8 = _context20.t0;
 
-        case 78:
-          _context20.prev = 78;
-          _context20.prev = 79;
+        case 80:
+          _context20.prev = 80;
+          _context20.prev = 81;
 
           if (!_iteratorNormalCompletion8 && _iterator8["return"] != null) {
             _iterator8["return"]();
           }
 
-        case 81:
-          _context20.prev = 81;
+        case 83:
+          _context20.prev = 83;
 
           if (!_didIteratorError8) {
-            _context20.next = 84;
+            _context20.next = 86;
             break;
           }
 
           throw _iteratorError8;
 
-        case 84:
-          return _context20.finish(81);
-
-        case 85:
-          return _context20.finish(78);
-
         case 86:
-          _iteratorNormalCompletion7 = true;
-          _context20.next = 15;
-          break;
+          return _context20.finish(83);
 
-        case 89:
-          _context20.next = 95;
+        case 87:
+          return _context20.finish(80);
+
+        case 88:
+          _iteratorNormalCompletion7 = true;
+          _context20.next = 17;
           break;
 
         case 91:
-          _context20.prev = 91;
-          _context20.t1 = _context20["catch"](13);
+          _context20.next = 97;
+          break;
+
+        case 93:
+          _context20.prev = 93;
+          _context20.t1 = _context20["catch"](15);
           _didIteratorError7 = true;
           _iteratorError7 = _context20.t1;
 
-        case 95:
-          _context20.prev = 95;
-          _context20.prev = 96;
+        case 97:
+          _context20.prev = 97;
+          _context20.prev = 98;
 
           if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
             _iterator7["return"]();
           }
 
-        case 98:
-          _context20.prev = 98;
+        case 100:
+          _context20.prev = 100;
 
           if (!_didIteratorError7) {
-            _context20.next = 101;
+            _context20.next = 103;
             break;
           }
 
           throw _iteratorError7;
 
-        case 101:
-          return _context20.finish(98);
-
-        case 102:
-          return _context20.finish(95);
-
         case 103:
-          _context20.next = 105;
-          return regeneratorRuntime.awrap(loaisanpham.save());
+          return _context20.finish(100);
+
+        case 104:
+          return _context20.finish(97);
 
         case 105:
           _context20.next = 107;
-          return regeneratorRuntime.awrap(depot.save());
+          return regeneratorRuntime.awrap(loaisanpham.save());
 
         case 107:
+          _context20.next = 109;
+          return regeneratorRuntime.awrap(depot.save());
+
+        case 109:
           sendEvent({
             message: "Th\xEAm imel th\xE0nh c\xF4ng"
           });
           res.json({
             message: 'thêm imel thành công'
           });
-          _context20.next = 114;
+          _context20.next = 116;
           break;
 
-        case 111:
-          _context20.prev = 111;
+        case 113:
+          _context20.prev = 113;
           _context20.t2 = _context20["catch"](0);
           console.error(_context20.t2);
 
-        case 114:
+        case 116:
         case "end":
           return _context20.stop();
       }
     }
-  }, null, null, [[0, 111], [13, 91, 95, 103], [46, 74, 78, 86], [79,, 81, 85], [96,, 98, 102]]);
+  }, null, null, [[0, 113], [15, 93, 97, 105], [48, 76, 80, 88], [81,, 83, 87], [98,, 100, 104]]);
 });
 module.exports = router;

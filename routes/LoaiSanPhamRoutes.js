@@ -931,6 +931,9 @@ router.post('/postimel', async (req, res) => {
   try {
     const { malohang, products } = req.body
     const loaisanpham = await LoaiSanPham.findOne({ malsp: malohang })
+    if (!loaisanpham) {
+      return res.status(400).json({ message: 'Không tìm thấy lô hàng.' })
+    }
     const depot = await Depot.findById(loaisanpham.depot)
     const addedProducts = []
     let tongtien = 0
