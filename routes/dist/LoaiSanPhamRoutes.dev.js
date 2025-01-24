@@ -2345,7 +2345,7 @@ router.post('/postimel', function _callee20(req, res) {
             message: "Th\xEAm imel th\xE0nh c\xF4ng"
           });
           res.json({
-            message: 'thêm imel thành công'
+            success: 'thêm imel thành công'
           });
           _context20.next = 116;
           break;

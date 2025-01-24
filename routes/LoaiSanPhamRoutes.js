@@ -998,7 +998,7 @@ router.post('/postimel', async (req, res) => {
     await depot.save()
 
     sendEvent({ message: `Thêm imel thành công` })
-    res.json({ message: 'thêm imel thành công' })
+    res.json({ success: 'thêm imel thành công' })
   } catch (error) {
     console.error(error)
   }
