@@ -993,7 +993,9 @@ router.post('/postimel', async (req, res) => {
 
       for (const imel of imelList) {
         const sp = await SanPham.findOne({ imel })
-        if (sp) continue
+        if (sp) {
+          return res.json({message: 'Imel đã tồn tại'})
+        }
 
         const sanpham = new SanPham({
           name,

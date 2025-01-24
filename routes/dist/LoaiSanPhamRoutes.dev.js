@@ -2317,7 +2317,9 @@ router.post('/postimel', function _callee19(req, res) {
             break;
           }
 
-          return _context19.abrupt("continue", 71);
+          return _context19.abrupt("return", res.json({
+            message: 'Imel đã tồn tại'
+          }));
 
         case 57:
           _sanpham2 = new SanPham({
