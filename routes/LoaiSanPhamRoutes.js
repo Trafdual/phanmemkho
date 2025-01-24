@@ -1019,6 +1019,7 @@ router.post('/postimel', async (req, res) => {
     sendEvent({ message: `Thêm imel thành công` })
     res.json({ success: 'thêm imel thành công' })
   } catch (error) {
+    res.status(500).json({ message: `Lỗi: ${error.message}` })
     console.error(error)
   }
 })

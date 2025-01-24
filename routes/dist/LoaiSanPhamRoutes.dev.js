@@ -2433,15 +2433,18 @@ router.post('/postimel', function _callee19(req, res) {
           res.json({
             success: 'thêm imel thành công'
           });
-          _context19.next = 116;
+          _context19.next = 117;
           break;
 
         case 113:
           _context19.prev = 113;
           _context19.t2 = _context19["catch"](0);
+          res.status(500).json({
+            message: "L\u1ED7i: ".concat(_context19.t2.message)
+          });
           console.error(_context19.t2);
 
-        case 116:
+        case 117:
         case "end":
           return _context19.stop();
       }
