@@ -906,23 +906,42 @@ router.post('/deletelohang', async (req, res) => {
   try {
     const { malohang } = req.body
     const lohang = await LoaiSanPham.findOne({ malsp: malohang })
+    if (!lohang) {
+      return res.status(404).json({ message: 'Không tìm thấy lô hàng.' })
+    }
+
     const depot = await Depot.findById(lohang.depot)
-    const index = depot.loaisanpham.indexOf(lohang._id)
-    depot.loaisanpham.splice(index, 1)
-    await Promise.all(
-      lohang.sanpham.map(async sp => {
-        const sanpham = await SanPham.findById(sp._id)
-        const dungluong = await DungLuongSku.findById(sanpham.dungluongsku)
+    if (!depot) {
+      return res.status(404).json({ message: 'Không tìm thấy depot.' })
+    }
+
+    // Xóa sản phẩm trong lô hàng
+    for (const sp of lohang.sanpham) {
+      const sanpham = await SanPham.findById(sp._id)
+      if (!sanpham) continue
+
+      const dungluong = await DungLuongSku.findById(sanpham.dungluongsku)
+      if (dungluong) {
         dungluong.sanpham.splice(dungluong.sanpham.indexOf(sp._id), 1)
         await dungluong.save()
-        await SanPham.findByIdAndDelete(sp._id)
-      })
-    )
-    await LoaiSanPham.findByIdAndDelete(lohang._id)
-    await depot.save()
+      }
 
-    res.json({ message: 'Xóa lô hàng thành công.' })
+      await SanPham.findByIdAndDelete(sp._id)
+    }
+
+    // Xóa lô hàng khỏi depot
+    const index = depot.loaisanpham.indexOf(lohang._id)
+    if (index !== -1) {
+      depot.loaisanpham.splice(index, 1)
+      await depot.save()
+    }
+
+    // Xóa lô hàng
+    await LoaiSanPham.findByIdAndDelete(lohang._id)
+
+    res.json({ success: 'Xóa lô hàng thành công.' })
   } catch (error) {
+    res.status(500).json({ message: `Lỗi: ${error.message}` })
     console.error(error)
   }
 })
