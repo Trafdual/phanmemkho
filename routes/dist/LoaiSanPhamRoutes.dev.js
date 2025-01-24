@@ -2064,7 +2064,7 @@ router.post('/deletelohang', function _callee18(req, res) {
 
         case 17:
           if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
-            _context18.next = 36;
+            _context18.next = 39;
             break;
           }
 
@@ -2080,7 +2080,7 @@ router.post('/deletelohang', function _callee18(req, res) {
             break;
           }
 
-          return _context18.abrupt("continue", 33);
+          return _context18.abrupt("continue", 36);
 
         case 24:
           _context18.next = 26;
@@ -2088,97 +2088,101 @@ router.post('/deletelohang', function _callee18(req, res) {
 
         case 26:
           dungluong = _context18.sent;
+          depot.sanpham.splice(depot.sanpham.indexOf(sp._id), 1);
+          _context18.next = 30;
+          return regeneratorRuntime.awrap(depot.save());
 
+        case 30:
           if (!dungluong) {
-            _context18.next = 31;
+            _context18.next = 34;
             break;
           }
 
           dungluong.sanpham.splice(dungluong.sanpham.indexOf(sp._id), 1);
-          _context18.next = 31;
+          _context18.next = 34;
           return regeneratorRuntime.awrap(dungluong.save());
 
-        case 31:
-          _context18.next = 33;
+        case 34:
+          _context18.next = 36;
           return regeneratorRuntime.awrap(SanPham.findByIdAndDelete(sp._id));
 
-        case 33:
+        case 36:
           _iteratorNormalCompletion7 = true;
           _context18.next = 17;
           break;
 
-        case 36:
-          _context18.next = 42;
+        case 39:
+          _context18.next = 45;
           break;
 
-        case 38:
-          _context18.prev = 38;
+        case 41:
+          _context18.prev = 41;
           _context18.t0 = _context18["catch"](15);
           _didIteratorError7 = true;
           _iteratorError7 = _context18.t0;
 
-        case 42:
-          _context18.prev = 42;
-          _context18.prev = 43;
+        case 45:
+          _context18.prev = 45;
+          _context18.prev = 46;
 
           if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
             _iterator7["return"]();
           }
 
-        case 45:
-          _context18.prev = 45;
+        case 48:
+          _context18.prev = 48;
 
           if (!_didIteratorError7) {
-            _context18.next = 48;
+            _context18.next = 51;
             break;
           }
 
           throw _iteratorError7;
 
-        case 48:
+        case 51:
+          return _context18.finish(48);
+
+        case 52:
           return _context18.finish(45);
 
-        case 49:
-          return _context18.finish(42);
-
-        case 50:
+        case 53:
           // Xóa lô hàng khỏi depot
           index = depot.loaisanpham.indexOf(lohang._id);
 
           if (!(index !== -1)) {
-            _context18.next = 55;
+            _context18.next = 58;
             break;
           }
 
           depot.loaisanpham.splice(index, 1);
-          _context18.next = 55;
+          _context18.next = 58;
           return regeneratorRuntime.awrap(depot.save());
 
-        case 55:
-          _context18.next = 57;
+        case 58:
+          _context18.next = 60;
           return regeneratorRuntime.awrap(LoaiSanPham.findByIdAndDelete(lohang._id));
 
-        case 57:
+        case 60:
           res.json({
             success: 'Xóa lô hàng thành công.'
           });
-          _context18.next = 64;
+          _context18.next = 67;
           break;
 
-        case 60:
-          _context18.prev = 60;
+        case 63:
+          _context18.prev = 63;
           _context18.t1 = _context18["catch"](0);
           res.status(500).json({
             message: "L\u1ED7i: ".concat(_context18.t1.message)
           });
           console.error(_context18.t1);
 
-        case 64:
+        case 67:
         case "end":
           return _context18.stop();
       }
     }
-  }, null, null, [[0, 60], [15, 38, 42, 50], [43,, 45, 49]]);
+  }, null, null, [[0, 63], [15, 41, 45, 53], [46,, 48, 52]]);
 });
 router.post('/postimel', function _callee19(req, res) {
   var _req$body7, malohang, products, loaisanpham, depot, addedProducts, tongtien, _iteratorNormalCompletion8, _didIteratorError8, _iteratorError8, _iterator8, _step8, product, madungluongsku, imelList, name, price, soluong, dungluongsku, i, sanpham, _iteratorNormalCompletion9, _didIteratorError9, _iteratorError9, _iterator9, _step9, imel, sp, _sanpham2;

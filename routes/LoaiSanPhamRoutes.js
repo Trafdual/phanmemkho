@@ -921,6 +921,8 @@ router.post('/deletelohang', async (req, res) => {
       if (!sanpham) continue
 
       const dungluong = await DungLuongSku.findById(sanpham.dungluongsku)
+      depot.sanpham.splice(depot.sanpham.indexOf(sp._id), 1)
+      await depot.save()
       if (dungluong) {
         dungluong.sanpham.splice(dungluong.sanpham.indexOf(sp._id), 1)
         await dungluong.save()
