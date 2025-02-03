@@ -4,6 +4,9 @@ const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const HoaDon = require('../models/HoaDonModel')
 const Depot = require('../models/DepotModel')
 const KhachHang = require('../models/KhachHangModel')
+const MucThuChi = require('../models/MucThuChiModel')
+const User = require('../models/UserModel')
+const ThuChi = require('../models/ThuChiModel')
 
 router.post('/posttranno/:idtrano', async (req, res) => {
   try {
@@ -93,21 +96,69 @@ router.get('/gettrano/:idkho', async (req, res) => {
   }
 })
 
-router.post('/thuno', async (req, res) => {
+router.post('/thuno/:userID/:khoId', async (req, res) => {
   try {
-    const { ids } = req.body
+    const { ids, loaichungtu, khachhangid, method } = req.body
+    const userID = req.params.userID
+    const khoId = req.params.khoId
+
+    const user = await User.findById(userID)
+
+    // Kiểm tra xem mục thu chi "công nợ" đã tồn tại chưa
+    let mucthuchi = await MucThuChi.findOne({ name: 'công nợ', user: user._id })
+
+    // Nếu chưa có thì tạo mới
+    if (!mucthuchi) {
+      mucthuchi = new MucThuChi({
+        name: 'công nợ',
+        loaimuc: 'Tiền thu',
+        user: user._id
+      })
+      mucthuchi.mamuc = 'MTC' + mucthuchi._id.toString().slice(-5)
+      await mucthuchi.save()
+    }
+
+    // Tạo phiếu thu chi
+    const thuchi = new ThuChi({
+      loaichungtu: loaichungtu,
+      doituong: khachhangid,
+      method,
+      lydo: 'Trả nợ',
+      loaitien: 'Tiền thu',
+      depot: khoId
+    })
+    thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5)
+
+    // Lặp qua danh sách hóa đơn và cập nhật thông tin
     for (const id of ids) {
       const trano = await HoaDon.findById(id)
       if (!trano)
         return res.status(404).json({ message: 'Không tìm thấy tài liệu.' })
+
+      thuchi.chitiet.push({
+        diengiai: `Trả nợ hóa đơn ${trano.mahoadon}`,
+        sotien: trano.tongtien,
+        mucthuchi: mucthuchi._id
+      })
+      mucthuchi.thuchi.push(thuchi._id)
+
       trano.ghino = true
       await trano.save()
     }
+
+    // Tính tổng tiền
+    thuchi.tongtien = thuchi.chitiet.reduce((sum, item) => sum + item.sotien, 0)
+
+    // Lưu thông tin
+    await thuchi.save()
+    await mucthuchi.save()
+
     res.json({ message: 'Thu nợ thành công.' })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
 
 module.exports = router
