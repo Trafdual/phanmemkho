@@ -18,6 +18,8 @@ var User = require('../models/UserModel');
 
 var ThuChi = require('../models/ThuChiModel');
 
+var LoaiChungTu = require('../models/LoaiChungTuModel');
+
 router.post('/posttranno/:idtrano', function _callee(req, res) {
   var _req$body, tiendatra, ngaytra, iddonno, idtrano, trano, index;
 
@@ -155,6 +157,8 @@ router.get('/gettrano/:idkho', function _callee3(req, res) {
 
                     return _context2.abrupt("return", {
                       _id: tn._id,
+                      mahoadon: tn.mahoadon,
+                      khachhangid: khachhang._id,
                       makhachhang: khachhang.makh,
                       namekhachhang: khachhang.name,
                       phone: khachhang.phone,
@@ -184,6 +188,7 @@ router.get('/gettrano/:idkho', function _callee3(req, res) {
               groupedData[item.makhachhang] = {
                 makhachhang: item.makhachhang,
                 namekhachhang: item.namekhachhang,
+                khachhangid: item.khachhangid,
                 address: item.address,
                 phone: item.phone,
                 tongtien: 0,
@@ -192,7 +197,11 @@ router.get('/gettrano/:idkho', function _callee3(req, res) {
             }
 
             groupedData[item.makhachhang].tongtien += item.tongtien;
-            groupedData[item.makhachhang].ids.push(item._id);
+            groupedData[item.makhachhang].ids.push({
+              _id: item._id,
+              mahoadon: item.mahoadon,
+              tongtien: item.tongtien
+            });
           });
           result = Object.values(groupedData);
           res.json(result);
@@ -215,7 +224,7 @@ router.get('/gettrano/:idkho', function _callee3(req, res) {
   }, null, null, [[0, 15]]);
 });
 router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
-  var _req$body2, ids, loaichungtu, khachhangid, method, userID, khoId, user, mucthuchi, thuchi, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, id, trano;
+  var _req$body2, ids, loaichungtu, khachhangid, method, userID, khoId, user, mucthuchi, lct, depot, thuchi, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, id, trano;
 
   return regeneratorRuntime.async(function _callee4$(_context4) {
     while (1) {
@@ -238,9 +247,19 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
 
         case 9:
           mucthuchi = _context4.sent;
+          _context4.next = 12;
+          return regeneratorRuntime.awrap(LoaiChungTu.findById(loaichungtu));
+
+        case 12:
+          lct = _context4.sent;
+          _context4.next = 15;
+          return regeneratorRuntime.awrap(Depot.findById(khoId));
+
+        case 15:
+          depot = _context4.sent;
 
           if (mucthuchi) {
-            _context4.next = 15;
+            _context4.next = 21;
             break;
           }
 
@@ -250,11 +269,10 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
             user: user._id
           });
           mucthuchi.mamuc = 'MTC' + mucthuchi._id.toString().slice(-5);
-          _context4.next = 15;
+          _context4.next = 21;
           return regeneratorRuntime.awrap(mucthuchi.save());
 
-        case 15:
-          // Tạo phiếu thu chi
+        case 21:
           thuchi = new ThuChi({
             loaichungtu: loaichungtu,
             doituong: khachhangid,
@@ -263,29 +281,30 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
             loaitien: 'Tiền thu',
             depot: khoId
           });
-          thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5); // Lặp qua danh sách hóa đơn và cập nhật thông tin
-
+          thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5);
+          lct.thuchi.push(thuchi._id);
+          depot.thuchi.push(thuchi._id);
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context4.prev = 20;
+          _context4.prev = 28;
           _iterator = ids[Symbol.iterator]();
 
-        case 22:
+        case 30:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context4.next = 37;
+            _context4.next = 45;
             break;
           }
 
           id = _step.value;
-          _context4.next = 26;
+          _context4.next = 34;
           return regeneratorRuntime.awrap(HoaDon.findById(id));
 
-        case 26:
+        case 34:
           trano = _context4.sent;
 
           if (trano) {
-            _context4.next = 29;
+            _context4.next = 37;
             break;
           }
 
@@ -293,89 +312,95 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
             message: 'Không tìm thấy tài liệu.'
           }));
 
-        case 29:
+        case 37:
           thuchi.chitiet.push({
             diengiai: "Tr\u1EA3 n\u1EE3 h\xF3a \u0111\u01A1n ".concat(trano.mahoadon),
             sotien: trano.tongtien,
             mucthuchi: mucthuchi._id
           });
           mucthuchi.thuchi.push(thuchi._id);
-          trano.ghino = true;
-          _context4.next = 34;
+          trano.ghino = false;
+          _context4.next = 42;
           return regeneratorRuntime.awrap(trano.save());
 
-        case 34:
+        case 42:
           _iteratorNormalCompletion = true;
-          _context4.next = 22;
+          _context4.next = 30;
           break;
 
-        case 37:
-          _context4.next = 43;
+        case 45:
+          _context4.next = 51;
           break;
 
-        case 39:
-          _context4.prev = 39;
-          _context4.t0 = _context4["catch"](20);
+        case 47:
+          _context4.prev = 47;
+          _context4.t0 = _context4["catch"](28);
           _didIteratorError = true;
           _iteratorError = _context4.t0;
 
-        case 43:
-          _context4.prev = 43;
-          _context4.prev = 44;
+        case 51:
+          _context4.prev = 51;
+          _context4.prev = 52;
 
           if (!_iteratorNormalCompletion && _iterator["return"] != null) {
             _iterator["return"]();
           }
 
-        case 46:
-          _context4.prev = 46;
+        case 54:
+          _context4.prev = 54;
 
           if (!_didIteratorError) {
-            _context4.next = 49;
+            _context4.next = 57;
             break;
           }
 
           throw _iteratorError;
 
-        case 49:
-          return _context4.finish(46);
+        case 57:
+          return _context4.finish(54);
 
-        case 50:
-          return _context4.finish(43);
+        case 58:
+          return _context4.finish(51);
 
-        case 51:
-          // Tính tổng tiền
+        case 59:
           thuchi.tongtien = thuchi.chitiet.reduce(function (sum, item) {
             return sum + item.sotien;
-          }, 0); // Lưu thông tin
-
-          _context4.next = 54;
+          }, 0);
+          _context4.next = 62;
           return regeneratorRuntime.awrap(thuchi.save());
 
-        case 54:
-          _context4.next = 56;
+        case 62:
+          _context4.next = 64;
           return regeneratorRuntime.awrap(mucthuchi.save());
 
-        case 56:
+        case 64:
+          _context4.next = 66;
+          return regeneratorRuntime.awrap(depot.save());
+
+        case 66:
+          _context4.next = 68;
+          return regeneratorRuntime.awrap(lct.save());
+
+        case 68:
           res.json({
             message: 'Thu nợ thành công.'
           });
-          _context4.next = 63;
+          _context4.next = 75;
           break;
 
-        case 59:
-          _context4.prev = 59;
+        case 71:
+          _context4.prev = 71;
           _context4.t1 = _context4["catch"](0);
           console.error(_context4.t1);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 63:
+        case 75:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[0, 59], [20, 39, 43, 51], [44,, 46, 50]]);
+  }, null, null, [[0, 71], [28, 47, 51, 59], [52,, 54, 58]]);
 });
 module.exports = router;

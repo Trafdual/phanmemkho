@@ -7,6 +7,7 @@ const KhachHang = require('../models/KhachHangModel')
 const MucThuChi = require('../models/MucThuChiModel')
 const User = require('../models/UserModel')
 const ThuChi = require('../models/ThuChiModel')
+const LoaiChungTu = require('../models/LoaiChungTuModel')
 
 router.post('/posttranno/:idtrano', async (req, res) => {
   try {
@@ -58,6 +59,8 @@ router.get('/gettrano/:idkho', async (req, res) => {
         if (tn.ghino === true) {
           return {
             _id: tn._id,
+            mahoadon: tn.mahoadon,
+            khachhangid: khachhang._id,
             makhachhang: khachhang.makh,
             namekhachhang: khachhang.name,
             phone: khachhang.phone,
@@ -77,6 +80,7 @@ router.get('/gettrano/:idkho', async (req, res) => {
         groupedData[item.makhachhang] = {
           makhachhang: item.makhachhang,
           namekhachhang: item.namekhachhang,
+          khachhangid: item.khachhangid,
           address: item.address,
           phone: item.phone,
           tongtien: 0,
@@ -84,7 +88,11 @@ router.get('/gettrano/:idkho', async (req, res) => {
         }
       }
       groupedData[item.makhachhang].tongtien += item.tongtien
-      groupedData[item.makhachhang].ids.push(item._id)
+      groupedData[item.makhachhang].ids.push({
+        _id: item._id,
+        mahoadon: item.mahoadon,
+        tongtien: item.tongtien
+      })
     })
 
     const result = Object.values(groupedData)
@@ -104,10 +112,10 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
 
     const user = await User.findById(userID)
 
-    // Kiểm tra xem mục thu chi "công nợ" đã tồn tại chưa
     let mucthuchi = await MucThuChi.findOne({ name: 'công nợ', user: user._id })
+    const lct = await LoaiChungTu.findById(loaichungtu)
+    const depot = await Depot.findById(khoId)
 
-    // Nếu chưa có thì tạo mới
     if (!mucthuchi) {
       mucthuchi = new MucThuChi({
         name: 'công nợ',
@@ -118,7 +126,6 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
       await mucthuchi.save()
     }
 
-    // Tạo phiếu thu chi
     const thuchi = new ThuChi({
       loaichungtu: loaichungtu,
       doituong: khachhangid,
@@ -128,8 +135,9 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
       depot: khoId
     })
     thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5)
+    lct.thuchi.push(thuchi._id)
+    depot.thuchi.push(thuchi._id)
 
-    // Lặp qua danh sách hóa đơn và cập nhật thông tin
     for (const id of ids) {
       const trano = await HoaDon.findById(id)
       if (!trano)
@@ -142,23 +150,21 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
       })
       mucthuchi.thuchi.push(thuchi._id)
 
-      trano.ghino = true
+      trano.ghino = false
       await trano.save()
     }
 
-    // Tính tổng tiền
     thuchi.tongtien = thuchi.chitiet.reduce((sum, item) => sum + item.sotien, 0)
 
-    // Lưu thông tin
     await thuchi.save()
     await mucthuchi.save()
-
+    await depot.save()
+    await lct.save()
     res.json({ message: 'Thu nợ thành công.' })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 module.exports = router
