@@ -577,6 +577,7 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
       depot: kho._id,
       makhodiechuyen: kho1._id
     })
+
     const malsp = 'LH' + loaisp1._id.toString().slice(-5)
     loaisp1.malsp = malsp
 
@@ -587,10 +588,12 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
     })
     kho1.dieuchuyen.push(dieuchuyen._id)
     kho.loaisanpham.push(loaisp1._id)
+    let tongtien = 0
 
     for (const idsanpham of idsanpham1) {
       const sanpham = await SanPham.findById(idsanpham)
       const loaisp = await LoaiSanPham.findById(sanpham.loaisanpham)
+      tongtien += sanpham.price
       kho1.sanpham = kho1.sanpham.filter(sp => sp._id != idsanpham)
       kho.sanpham.push(sanpham._id)
       dieuchuyen.sanpham.push(sanpham._id)
@@ -603,6 +606,8 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
       await dieuchuyen.save()
       await loaisp1.save()
     }
+
+    loaisp1.tongtien = tongtien
     await kho.save()
     await kho1.save()
     await loaisp1.save()
@@ -625,7 +630,7 @@ router.get('/getxuatkho/:khoid', async (req, res) => {
           _id: sp1._id,
           malohang: loaisp.malsp,
           masp: sp1.masp,
-          imel:sp1.imel,
+          imel: sp1.imel,
           tenmay: sp1.name,
           ngaynhap: moment(loaisp.date).format('DD/MM/YYYY'),
           ngayxuat: moment(sp1.datexuat).format('DD/MM/YYYY')
@@ -733,6 +738,5 @@ router.get('/getsanpham', async (req, res) => {
   const sanpham = await SanPham.find().lean()
   res.json(sanpham)
 })
-
 
 module.exports = router
