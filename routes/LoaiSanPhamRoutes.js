@@ -752,16 +752,7 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
       for (const imel of imelList) {
         if (imelTrongKhoSet.has(imel)) {
-          sp.name = name
-          sp.datenhap = loaisanpham.date
-          sp.price = price
-          sp.loaihanghoa = loaihanghoa
-          sp.kho = depot._id
-          sp.loaisanpham = loaisanpham._id
-          sp.dungluongsku = dungluongsku ? dungluongsku._id : null
-          tongtien += Number(price)
-
-          await sp.save()
+          return res.json({message:'Sản phẩm đã tồn tại trong kho'})
         } else {
           sp = new SanPham({
             name,

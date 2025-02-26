@@ -1591,7 +1591,7 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
 
         case 34:
           if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-            _context15.next = 119;
+            _context15.next = 110;
             break;
           }
 
@@ -1646,7 +1646,7 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
           break;
 
         case 60:
-          return _context15.abrupt("continue", 116);
+          return _context15.abrupt("continue", 107);
 
         case 61:
           _context15.next = 63;
@@ -1672,33 +1672,22 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
 
         case 70:
           if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
-            _context15.next = 102;
+            _context15.next = 93;
             break;
           }
 
           imel = _step6.value;
 
           if (!imelTrongKhoSet.has(imel)) {
-            _context15.next = 85;
+            _context15.next = 76;
             break;
           }
 
-          sp.name = _name3;
-          sp.datenhap = loaisanpham.date;
-          sp.price = price;
-          sp.loaihanghoa = loaihanghoa;
-          sp.kho = depot._id;
-          sp.loaisanpham = loaisanpham._id;
-          sp.dungluongsku = dungluongsku ? dungluongsku._id : null;
-          tongtien += Number(price);
-          _context15.next = 83;
-          return regeneratorRuntime.awrap(sp.save());
+          return _context15.abrupt("return", res.json({
+            message: 'Sản phẩm đã tồn tại trong kho'
+          }));
 
-        case 83:
-          _context15.next = 98;
-          break;
-
-        case 85:
+        case 76:
           sp = new SanPham({
             name: _name3,
             imel: imel,
@@ -1711,116 +1700,116 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
           sp.loaisanpham = loaisanpham._id;
           sp.dungluongsku = dungluongsku ? dungluongsku._id : null;
           tongtien += Number(price);
-          _context15.next = 93;
+          _context15.next = 84;
           return regeneratorRuntime.awrap(sp.save());
 
-        case 93:
+        case 84:
           loaisanpham.sanpham.push(sp._id);
           depot.sanpham.push(sp._id);
           dungluongsku.sanpham.push(sp._id);
-          _context15.next = 98;
+          _context15.next = 89;
           return regeneratorRuntime.awrap(dungluongsku.save());
 
-        case 98:
+        case 89:
           updatedProducts.push(sp);
 
-        case 99:
+        case 90:
           _iteratorNormalCompletion6 = true;
           _context15.next = 70;
           break;
 
-        case 102:
-          _context15.next = 108;
+        case 93:
+          _context15.next = 99;
           break;
 
-        case 104:
-          _context15.prev = 104;
+        case 95:
+          _context15.prev = 95;
           _context15.t0 = _context15["catch"](68);
           _didIteratorError6 = true;
           _iteratorError6 = _context15.t0;
 
-        case 108:
-          _context15.prev = 108;
-          _context15.prev = 109;
+        case 99:
+          _context15.prev = 99;
+          _context15.prev = 100;
 
           if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
             _iterator6["return"]();
           }
 
-        case 111:
-          _context15.prev = 111;
+        case 102:
+          _context15.prev = 102;
 
           if (!_didIteratorError6) {
-            _context15.next = 114;
+            _context15.next = 105;
             break;
           }
 
           throw _iteratorError6;
 
-        case 114:
-          return _context15.finish(111);
+        case 105:
+          return _context15.finish(102);
 
-        case 115:
-          return _context15.finish(108);
+        case 106:
+          return _context15.finish(99);
 
-        case 116:
+        case 107:
           _iteratorNormalCompletion5 = true;
           _context15.next = 34;
           break;
 
-        case 119:
-          _context15.next = 125;
+        case 110:
+          _context15.next = 116;
           break;
 
-        case 121:
-          _context15.prev = 121;
+        case 112:
+          _context15.prev = 112;
           _context15.t1 = _context15["catch"](32);
           _didIteratorError5 = true;
           _iteratorError5 = _context15.t1;
 
-        case 125:
-          _context15.prev = 125;
-          _context15.prev = 126;
+        case 116:
+          _context15.prev = 116;
+          _context15.prev = 117;
 
           if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
             _iterator5["return"]();
           }
 
-        case 128:
-          _context15.prev = 128;
+        case 119:
+          _context15.prev = 119;
 
           if (!_didIteratorError5) {
-            _context15.next = 131;
+            _context15.next = 122;
             break;
           }
 
           throw _iteratorError5;
 
-        case 131:
-          return _context15.finish(128);
+        case 122:
+          return _context15.finish(119);
 
-        case 132:
-          return _context15.finish(125);
+        case 123:
+          return _context15.finish(116);
 
-        case 133:
+        case 124:
           loaisanpham.tongtien = tongtien;
 
           if (!(ghino === 'ghino')) {
-            _context15.next = 148;
+            _context15.next = 139;
             break;
           }
 
           loaisanpham.ghino = true;
-          _context15.next = 138;
+          _context15.next = 129;
           return regeneratorRuntime.awrap(TraNo.findOne({
             nhacungcap: nhacungcap._id
           }));
 
-        case 138:
+        case 129:
           trano = _context15.sent;
 
           if (!trano) {
-            _context15.next = 146;
+            _context15.next = 137;
             break;
           }
 
@@ -1846,14 +1835,14 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
           trano.tongtra = trano.donno.reduce(function (sum, item) {
             return sum + item.tiendatra;
           }, 0);
-          _context15.next = 146;
+          _context15.next = 137;
           return regeneratorRuntime.awrap(trano.save());
 
-        case 146:
-          _context15.next = 151;
+        case 137:
+          _context15.next = 142;
           break;
 
-        case 148:
+        case 139:
           loaisanpham.ghino = false;
           if (method === 'Tiền mặt') loaisanpham.method = 'tienmat';
 
@@ -1862,20 +1851,20 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
             loaisanpham.nganhang = nganhangkho._id;
           }
 
-        case 151:
-          _context15.next = 153;
+        case 142:
+          _context15.next = 144;
           return regeneratorRuntime.awrap(loaisanpham.save());
 
-        case 153:
+        case 144:
           nhacungcap.loaisanpham.push(loaisanpham._id);
-          _context15.next = 156;
+          _context15.next = 147;
           return regeneratorRuntime.awrap(nhacungcap.save());
 
-        case 156:
-          _context15.next = 158;
+        case 147:
+          _context15.next = 149;
           return regeneratorRuntime.awrap(depot.save());
 
-        case 158:
+        case 149:
           updatedData = {
             _id: loaisanpham._id,
             malsp: loaisanpham.malsp,
@@ -1887,23 +1876,23 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
             message: "S\u1EA3n ph\u1EA9m \u0111\xE3 \u0111\u01B0\u1EE3c c\u1EADp nh\u1EADt: ".concat(updatedData)
           });
           res.json(updatedData);
-          _context15.next = 167;
+          _context15.next = 158;
           break;
 
-        case 163:
-          _context15.prev = 163;
+        case 154:
+          _context15.prev = 154;
           _context15.t2 = _context15["catch"](0);
           console.error(_context15.t2);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 167:
+        case 158:
         case "end":
           return _context15.stop();
       }
     }
-  }, null, null, [[0, 163], [32, 121, 125, 133], [68, 104, 108, 116], [109,, 111, 115], [126,, 128, 132]]);
+  }, null, null, [[0, 154], [32, 112, 116, 124], [68, 95, 99, 107], [100,, 102, 106], [117,, 119, 123]]);
 });
 router.get('/getfullchitietlo/:malohang', function _callee17(req, res) {
   var malohang, loaisanpham, sanpham, groupedProducts, result;
