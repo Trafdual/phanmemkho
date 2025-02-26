@@ -713,10 +713,8 @@ router.post('/updateloaisanpham4', async (req, res) => {
     let tongtien = 0
 
     for (const product of products) {
-      const { madungluongsku, imelList, name, price, soluong } = product
-      const dungluongsku = await DungLuongSku.findOne({
-        madungluong: madungluongsku
-      })
+      const { iddungluongsku, imelList, name, price, soluong } = product
+      const dungluongsku = await DungLuongSku.findById(iddungluongsku)
 
       if (!imelList || imelList.length === 0) {
         for (let i = 0; i < soluong; i++) {
@@ -737,18 +735,23 @@ router.post('/updateloaisanpham4', async (req, res) => {
           await sanpham.save()
           loaisanpham.sanpham.push(sanpham._id)
           depot.sanpham.push(sanpham._id)
-          if (dungluongsku) dungluongsku.sanpham.push(sanpham._id)
-          if (dungluongsku) await dungluongsku.save()
+          dungluongsku.sanpham.push(sanpham._id)
+          await dungluongsku.save()
 
           updatedProducts.push(sanpham)
         }
         continue
       }
 
-      for (const imel of imelList) {
-        let sp = await SanPham.findOne({ imel })
+      const sanphamTrongKho = await SanPham.find({
+        _id: { $in: depot.sanpham },
+        imel: { $in: imelList }
+      })
 
-        if (sp) {
+      const imelTrongKhoSet = new Set(sanphamTrongKho.map(sp => sp.imel))
+
+      for (const imel of imelList) {
+        if (imelTrongKhoSet.has(imel)) {
           sp.name = name
           sp.datenhap = loaisanpham.date
           sp.price = price
@@ -779,10 +782,9 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
           loaisanpham.sanpham.push(sp._id)
           depot.sanpham.push(sp._id)
-          if (dungluongsku) {
-            dungluongsku.sanpham.push(sp._id)
-            await dungluongsku.save()
-          }
+
+          dungluongsku.sanpham.push(sp._id)
+          await dungluongsku.save()
         }
 
         updatedProducts.push(sp)
@@ -915,7 +917,6 @@ router.post('/deletelohang', async (req, res) => {
       return res.status(404).json({ message: 'Không tìm thấy depot.' })
     }
 
-    // Xóa sản phẩm trong lô hàng
     for (const sp of lohang.sanpham) {
       const sanpham = await SanPham.findById(sp._id)
       if (!sanpham) continue
@@ -931,14 +932,12 @@ router.post('/deletelohang', async (req, res) => {
       await SanPham.findByIdAndDelete(sp._id)
     }
 
-    // Xóa lô hàng khỏi depot
     const index = depot.loaisanpham.indexOf(lohang._id)
     if (index !== -1) {
       depot.loaisanpham.splice(index, 1)
       await depot.save()
     }
 
-    // Xóa lô hàng
     await LoaiSanPham.findByIdAndDelete(lohang._id)
 
     res.json({ success: 'Xóa lô hàng thành công.' })
@@ -994,7 +993,7 @@ router.post('/postimel', async (req, res) => {
       for (const imel of imelList) {
         const sp = await SanPham.findOne({ imel })
         if (sp) {
-          return res.json({message: 'Imel đã tồn tại'})
+          return res.json({ message: 'Imel đã tồn tại' })
         }
 
         const sanpham = new SanPham({
