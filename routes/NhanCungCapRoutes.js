@@ -8,10 +8,14 @@ router.post('/postnhacungcap/:depotId', async (req, res) => {
     const { name, email, phone, address } = req.body
     const nhaCungCap = new NhanCungCap({
       name,
-      email,
-      phone,
-      address
+      phone
     })
+    if (email) {
+      nhaCungCap.email = email
+    }
+    if (address) {
+      nhaCungCap.address = address
+    }
     const mancc = 'NCC' + nhaCungCap._id.toString().slice(-4)
     nhaCungCap.mancc = mancc
     nhaCungCap.depotId = depotId

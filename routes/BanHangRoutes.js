@@ -53,6 +53,7 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
               return {
                 _id: sp1._id,
                 name: sp1.name,
+                idsku:sp1._id,
                 masku: dl.madungluong,
                 price: sp1.price,
                 kho: sp1.kho.toString()
@@ -426,10 +427,10 @@ router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
 router.post('/postyeucaudc/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
-    const { masku, soluong, tenkhochuyen, lido } = req.body
+    const { idsku, soluong, tenkhochuyen, lido } = req.body
     const khonhan = await Depot.findById(idkho)
     const khochuyen = await Depot.findOne({ name: tenkhochuyen })
-    const dungluongsku = await DungLuongSku.findOne({ madungluong: masku })
+    const dungluongsku = await DungLuongSku.findById(idsku)
     const sku = await Sku.findById(dungluongsku.sku)
     const tensanpham =
       dungluongsku.name === '' ? sku.name : `${sku.name} (${dungluongsku.name})`
@@ -490,6 +491,16 @@ router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+// router.post('/huylenhdieuchuyen/:idlenhdieuchuyen',async(req,res)=>{
+//   try {
+//     const idlenhdieuchuyen = req.params.idlenhdieuchuyen
+//     const lenhdc = await LenhDieuChuyen.findById(idlenhdieuchuyen)
+//     lenhdc.
+//   } catch (error) {
+    
+//   }
+// })
 
 router.post('/duyetdieuchuyen/:idlenh', async (req, res) => {
   try {

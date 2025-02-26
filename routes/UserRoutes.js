@@ -153,7 +153,6 @@ router.post('/register', async (req, res) => {
   try {
     const { name, email, password, phone } = req.body
     const vietnamTime = momenttimezone().toDate()
-    // Kiểm tra số điện thoại
     if (!phone || !/^\d{10}$/.test(phone)) {
       return res.json({ message: 'Số điện thoại không hợp lệ' })
     }
@@ -253,7 +252,6 @@ router.post('/register/:id', async (req, res) => {
   try {
     const id = req.params.id
     const { otp } = req.body
-    // Tìm người dùng bằng ID
     const user = await User.findById(id)
     if (!user) {
       return res.status(400).json({ message: 'Người dùng không tồn tại.' })
@@ -271,7 +269,7 @@ router.post('/register/:id', async (req, res) => {
     }
 
     user.isVerified = true
-    user.otp = undefined // Xóa mã OTP sau khi xác minh
+    user.otp = undefined
     user.otpCreatedAt = undefined
     await user.save()
 
@@ -284,12 +282,16 @@ router.post('/register/:id', async (req, res) => {
 
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body
-    const user = await User.findOne({ email })
+    const { emailOrPhone, password } = req.body
+
+    const user = await User.findOne({
+      $or: [{ email: emailOrPhone }, { phone: emailOrPhone }]
+    })
 
     if (!user) {
-      return res.json({ message: 'email chưa được đăng ký' })
+      return res.json({ message: 'Email hoặc số điện thoại chưa được đăng ký' })
     }
+
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
       return res.json({ message: 'Mật khẩu đăng nhập không đúng' })
@@ -297,11 +299,11 @@ router.post('/login', async (req, res) => {
 
     const accountCreationTime = moment(user.date)
     const currentTime = moment()
-    const differenceInMinutes = currentTime.diff(accountCreationTime, 'months')
-
-    if (differenceInMinutes > 8) {
-      return res.json({ message: 'Tài khoản bạn đã hết hạn.' })
+    const differenceInMonths = currentTime.diff(accountCreationTime, 'months')
+    if (differenceInMonths > 8) {
+      return res.json({ message: 'Tài khoản của bạn đã hết hạn.' })
     }
+
     const responseData = {
       success: user.success,
       data: {
@@ -326,6 +328,8 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
+
+module.exports = router
 
 router.get('/user', async (req, res) => {
   try {
