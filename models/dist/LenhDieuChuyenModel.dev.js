@@ -33,10 +33,6 @@ var lenhdcSchema = new mongoose.Schema({
   duyet: {
     type: Boolean,
     "default": false
-  },
-  huy: {
-    type: Boolean,
-    "default": false
   }
 });
 var LenhDieuChuyen = mongoose.model('lenhdieuchuyen', lenhdcSchema);

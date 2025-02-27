@@ -110,10 +110,6 @@ router.get(
   }
 )
 
-router.get('/taokho', async (req, res) => {
-  res.render('khochua')
-})
-
 router.post('/taokho', async (req, res) => {
   try {
     if (req.isAuthenticated()) {
@@ -145,6 +141,68 @@ router.post('/taokho', async (req, res) => {
     }
   } catch (error) {
     console.error('Error verifying OTP:', error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
+router.post('/registeradmin', async (req, res) => {
+  try {
+    const { name, email, password, phone,role } = req.body
+    const vietnamTime = momenttimezone().toDate()
+    if (!phone || !/^\d{10}$/.test(phone)) {
+      return res.json({ message: 'Số điện thoại không hợp lệ' })
+    }
+
+    if (!emailRegex.test(email)) {
+      return res.json({ message: 'email không hợp lệ' })
+    }
+
+    const exitphone = await User.findOne({ phone })
+    if (exitphone) {
+      return res.json({ message: 'số điện thoại này đã được đăng kí' })
+    }
+
+    const existingemail = await User.findOne({ email })
+    if (existingemail) {
+      return res.json({ message: 'email này đã được đăng kí' })
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    const user = new User({
+      name,
+      email,
+      password: hashedPassword,
+      phone,
+      date: vietnamTime,
+      isVerified: false,
+      role
+    })
+
+    await user.save()
+
+    const responseData = {
+      success: user.success,
+      data: {
+        user: [
+          {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            password: user.password,
+            role: user.role,
+            phone: user.phone,
+            date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+          }
+        ]
+      },
+      message: 'thành công'
+    }
+
+    res.json(responseData)
+  } catch (error) {
+    console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
@@ -214,7 +272,7 @@ router.post('/sendemail/:id', async (req, res) => {
     const id = req.params.id
     const user = await User.findById(id)
     const otpCreatedAt = new Date()
-    const otp = Math.floor(100000 + Math.random() * 900000).toString() // Tạo mã OTP ngẫu nhiên
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
     if (!user) {
       return res.status(400).json({ message: 'Người dùng không tồn tại.' })
@@ -238,42 +296,6 @@ router.post('/sendemail/:id', async (req, res) => {
 
     await transporter.sendMail(mailOptions)
     res.json({ message: 'gửi thành công' })
-  } catch (error) {
-    console.error('Error verifying OTP:', error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' })
-  }
-})
-
-router.get('/getregister', async (req, res) => {
-  res.render('register')
-})
-
-router.post('/register/:id', async (req, res) => {
-  try {
-    const id = req.params.id
-    const { otp } = req.body
-    const user = await User.findById(id)
-    if (!user) {
-      return res.status(400).json({ message: 'Người dùng không tồn tại.' })
-    }
-
-    const currentTime = new Date()
-    const otpCreationTime = new Date(user.otpCreatedAt)
-    const timeDifference = currentTime - otpCreationTime
-
-    if (user.otp !== otp) {
-      return res.json({ message: 'Bạn đã nhập sai mã OTP.' })
-    }
-    if (timeDifference > 60 * 1000) {
-      return res.json({ message: 'Mã OTP đã hết hạn.' })
-    }
-
-    user.isVerified = true
-    user.otp = undefined
-    user.otpCreatedAt = undefined
-    await user.save()
-
-    res.json({ message: 'thành công.' })
   } catch (error) {
     console.error('Error verifying OTP:', error)
     res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' })
@@ -344,18 +366,14 @@ router.post('/deletePhone', async (req, res) => {
   try {
     const { phone } = req.body
 
-    // Kiểm tra số điện thoại hợp lệ
     if (!phone || !/^\d{10}$/.test(phone)) {
       return res.status(400).json({ message: 'Số điện thoại không hợp lệ' })
     }
 
-    // Chuyển đổi số điện thoại sang định dạng quốc tế
     const phoneNumber = `+84${phone.slice(1)}`
 
-    // Tìm người dùng qua số điện thoại
     const userRecord = await firebase.auth().getUserByPhoneNumber(phoneNumber)
 
-    // Xóa người dùng
     await firebase.auth().deleteUser(userRecord.uid)
 
     res

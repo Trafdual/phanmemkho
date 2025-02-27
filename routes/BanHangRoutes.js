@@ -12,6 +12,13 @@ const KhachHang = require('../models/KhachHangModel')
 const LenhDieuChuyen = require('../models/LenhDieuChuyenModel')
 const CongNo = require('../models/CongNoModel')
 const NhomKhacHang = require('../models/NhomKhacHangModel')
+
+const parseDate = dateString => {
+  return moment(dateString, 'DD/MM/YYYY').isValid()
+    ? moment(dateString, 'DD/MM/YYYY').toDate()
+    : null
+}
+
 router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
   try {
     const { idsku, idkho, userid } = req.params
@@ -53,7 +60,7 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
               return {
                 _id: sp1._id,
                 name: sp1.name,
-                idsku:sp1._id,
+                idsku: sp1._id,
                 masku: dl.madungluong,
                 price: sp1.price,
                 kho: sp1.kho.toString()
@@ -427,9 +434,9 @@ router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
 router.post('/postyeucaudc/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
-    const { idsku, soluong, tenkhochuyen, lido } = req.body
+    const { idsku, soluong, idkhochuyen, lido } = req.body
     const khonhan = await Depot.findById(idkho)
-    const khochuyen = await Depot.findOne({ name: tenkhochuyen })
+    const khochuyen = await Depot.findById(idkhochuyen)
     const dungluongsku = await DungLuongSku.findById(idsku)
     const sku = await Sku.findById(dungluongsku.sku)
     const tensanpham =
@@ -492,15 +499,35 @@ router.get('/getlenhdieuchuyen/:idkho', async (req, res) => {
   }
 })
 
-// router.post('/huylenhdieuchuyen/:idlenhdieuchuyen',async(req,res)=>{
-//   try {
-//     const idlenhdieuchuyen = req.params.idlenhdieuchuyen
-//     const lenhdc = await LenhDieuChuyen.findById(idlenhdieuchuyen)
-//     lenhdc.
-//   } catch (error) {
-    
-//   }
-// })
+router.post('/huylenhdieuchuyen/:idlenhdieuchuyen', async (req, res) => {
+  try {
+    const idlenhdieuchuyen = req.params.idlenhdieuchuyen
+    const lenhdc = await LenhDieuChuyen.findById(idlenhdieuchuyen)
+    const depot = await Depot.findById(lenhdc.khochuyen)
+    depot.lenhdieuchuyen = depot.lenhdieuchuyen.filter(
+      id => id.toString() !== idlenhdieuchuyen.toString()
+    )
+    await LenhDieuChuyen.findByIdAndDelete(idlenhdieuchuyen)
+
+    await depot.save()
+
+    res.json({ message: 'Hủy lệnh điều chuyển thành công' })
+  } catch (error) {
+    console.error(error)
+  }
+})
+
+router.get('/soluonglenh/:idkho', async (req, res) => {
+  try {
+    const idkho = req.params.idkho
+    const kho = await Depot.findById(idkho).populate('lenhdieuchuyen')
+    const lenhFalse = kho.lenhdieuchuyen.filter(lenh => lenh.duyet === false)
+    res.json({ soluonglenh: lenhFalse.length })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Lỗi máy chủ nội bộ' })
+  }
+})
 
 router.post('/duyetdieuchuyen/:idlenh', async (req, res) => {
   try {
@@ -530,8 +557,14 @@ router.get('/getlenhdctheongay/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
 
-    const begintime = new Date(req.query.begintime)
-    const endtime = new Date(req.query.endtime)
+    const begintime = parseDate(req.query.begintime)
+    const endtime = parseDate(req.query.endtime)
+
+    if (!begintime || !endtime) {
+      return res.status(400).json({
+        error: 'Thiếu thông tin khoảng thời gian.'
+      })
+    }
 
     if (!idkho || isNaN(begintime) || isNaN(endtime)) {
       return res.status(400).json({
@@ -544,7 +577,6 @@ router.get('/getlenhdctheongay/:idkho', async (req, res) => {
     const begintimeOnly = onlyDate(begintime)
     const endtimeOnly = onlyDate(endtime)
 
-    // Tìm kho theo idkho
     const kho = await Depot.findById(idkho)
     if (!kho) {
       return res.status(404).json({ error: 'Không tìm thấy kho.' })

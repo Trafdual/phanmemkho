@@ -10,7 +10,6 @@ const lenhdcSchema = new mongoose.Schema({
   soluong: { type: Number },
   date: { type: Date },
   duyet: { type: Boolean, default: false },
-  huy: { type: Boolean, default: false }
 })
 const LenhDieuChuyen = mongoose.model('lenhdieuchuyen', lenhdcSchema)
 module.exports = LenhDieuChuyen

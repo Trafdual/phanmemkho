@@ -28,6 +28,10 @@ var CongNo = require('../models/CongNoModel');
 
 var NhomKhacHang = require('../models/NhomKhacHangModel');
 
+var parseDate = function parseDate(dateString) {
+  return moment(dateString, 'DD/MM/YYYY').isValid() ? moment(dateString, 'DD/MM/YYYY').toDate() : null;
+};
+
 router.get('/banhang/:idsku/:idkho/:userid', function _callee3(req, res) {
   var _req$params, idsku, idkho, userid, user, allKho, khoHienTai, cacKhoKhac, sku, dungluongskujson;
 
@@ -1140,7 +1144,7 @@ router.get('/getsanphamchon/:idkho/:idsku', function _callee13(req, res) {
   }, null, null, [[0, 13]]);
 });
 router.post('/postyeucaudc/:idkho', function _callee14(req, res) {
-  var idkho, _req$body2, idsku, soluong, tenkhochuyen, lido, khonhan, khochuyen, dungluongsku, sku, tensanpham, lenhdc, malenhdc;
+  var idkho, _req$body2, idsku, soluong, idkhochuyen, lido, khonhan, khochuyen, dungluongsku, sku, tensanpham, lenhdc, malenhdc;
 
   return regeneratorRuntime.async(function _callee14$(_context17) {
     while (1) {
@@ -1148,16 +1152,14 @@ router.post('/postyeucaudc/:idkho', function _callee14(req, res) {
         case 0:
           _context17.prev = 0;
           idkho = req.params.idkho;
-          _req$body2 = req.body, idsku = _req$body2.idsku, soluong = _req$body2.soluong, tenkhochuyen = _req$body2.tenkhochuyen, lido = _req$body2.lido;
+          _req$body2 = req.body, idsku = _req$body2.idsku, soluong = _req$body2.soluong, idkhochuyen = _req$body2.idkhochuyen, lido = _req$body2.lido;
           _context17.next = 5;
           return regeneratorRuntime.awrap(Depot.findById(idkho));
 
         case 5:
           khonhan = _context17.sent;
           _context17.next = 8;
-          return regeneratorRuntime.awrap(Depot.findOne({
-            name: tenkhochuyen
-          }));
+          return regeneratorRuntime.awrap(Depot.findById(idkhochuyen));
 
         case 8:
           khochuyen = _context17.sent;
@@ -1304,164 +1306,250 @@ router.get('/getlenhdieuchuyen/:idkho', function _callee16(req, res) {
       }
     }
   }, null, null, [[0, 12]]);
-}); // router.post('/huylenhdieuchuyen/:idlenhdieuchuyen',async(req,res)=>{
-//   try {
-//     const idlenhdieuchuyen = req.params.idlenhdieuchuyen
-//     const lenhdc = await LenhDieuChuyen.findById(idlenhdieuchuyen)
-//     lenhdc.
-//   } catch (error) {
-//   }
-// })
+});
+router.post('/huylenhdieuchuyen/:idlenhdieuchuyen', function _callee17(req, res) {
+  var idlenhdieuchuyen, lenhdc, _depot;
 
-router.post('/duyetdieuchuyen/:idlenh', function _callee17(req, res) {
-  var idlenh, lenhdc;
   return regeneratorRuntime.async(function _callee17$(_context20) {
     while (1) {
       switch (_context20.prev = _context20.next) {
         case 0:
           _context20.prev = 0;
-          idlenh = req.params.idlenh;
+          idlenhdieuchuyen = req.params.idlenhdieuchuyen;
           _context20.next = 4;
-          return regeneratorRuntime.awrap(LenhDieuChuyen.findById(idlenh));
+          return regeneratorRuntime.awrap(LenhDieuChuyen.findById(idlenhdieuchuyen));
 
         case 4:
           lenhdc = _context20.sent;
+          _context20.next = 7;
+          return regeneratorRuntime.awrap(Depot.findById(lenhdc.khochuyen));
+
+        case 7:
+          _depot = _context20.sent;
+          _depot.lenhdieuchuyen = _depot.lenhdieuchuyen.filter(function (id) {
+            return id.toString() !== idlenhdieuchuyen.toString();
+          });
+          _context20.next = 11;
+          return regeneratorRuntime.awrap(LenhDieuChuyen.findByIdAndDelete(idlenhdieuchuyen));
+
+        case 11:
+          _context20.next = 13;
+          return regeneratorRuntime.awrap(_depot.save());
+
+        case 13:
+          res.json({
+            message: 'Hủy lệnh điều chuyển thành công'
+          });
+          _context20.next = 19;
+          break;
+
+        case 16:
+          _context20.prev = 16;
+          _context20.t0 = _context20["catch"](0);
+          console.error(_context20.t0);
+
+        case 19:
+        case "end":
+          return _context20.stop();
+      }
+    }
+  }, null, null, [[0, 16]]);
+});
+router.get('/soluonglenh/:idkho', function _callee18(req, res) {
+  var idkho, kho, lenhFalse;
+  return regeneratorRuntime.async(function _callee18$(_context21) {
+    while (1) {
+      switch (_context21.prev = _context21.next) {
+        case 0:
+          _context21.prev = 0;
+          idkho = req.params.idkho;
+          _context21.next = 4;
+          return regeneratorRuntime.awrap(Depot.findById(idkho).populate('lenhdieuchuyen'));
+
+        case 4:
+          kho = _context21.sent;
+          lenhFalse = kho.lenhdieuchuyen.filter(function (lenh) {
+            return lenh.duyet === false;
+          });
+          res.json({
+            soluonglenh: lenhFalse.length
+          });
+          _context21.next = 13;
+          break;
+
+        case 9:
+          _context21.prev = 9;
+          _context21.t0 = _context21["catch"](0);
+          console.error(_context21.t0);
+          res.status(500).json({
+            error: 'Lỗi máy chủ nội bộ'
+          });
+
+        case 13:
+        case "end":
+          return _context21.stop();
+      }
+    }
+  }, null, null, [[0, 9]]);
+});
+router.post('/duyetdieuchuyen/:idlenh', function _callee19(req, res) {
+  var idlenh, lenhdc;
+  return regeneratorRuntime.async(function _callee19$(_context22) {
+    while (1) {
+      switch (_context22.prev = _context22.next) {
+        case 0:
+          _context22.prev = 0;
+          idlenh = req.params.idlenh;
+          _context22.next = 4;
+          return regeneratorRuntime.awrap(LenhDieuChuyen.findById(idlenh));
+
+        case 4:
+          lenhdc = _context22.sent;
           lenhdc.duyet = true;
-          _context20.next = 8;
+          _context22.next = 8;
           return regeneratorRuntime.awrap(lenhdc.save());
 
         case 8:
           res.json(lenhdc);
-          _context20.next = 15;
+          _context22.next = 15;
           break;
 
         case 11:
-          _context20.prev = 11;
-          _context20.t0 = _context20["catch"](0);
-          console.error(_context20.t0);
+          _context22.prev = 11;
+          _context22.t0 = _context22["catch"](0);
+          console.error(_context22.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 15:
         case "end":
-          return _context20.stop();
+          return _context22.stop();
       }
     }
   }, null, null, [[0, 11]]);
 });
-router.post('/huydieuchuyen/:idlenh', function _callee18(req, res) {
+router.post('/huydieuchuyen/:idlenh', function _callee20(req, res) {
   var idlenh;
-  return regeneratorRuntime.async(function _callee18$(_context21) {
+  return regeneratorRuntime.async(function _callee20$(_context23) {
     while (1) {
-      switch (_context21.prev = _context21.next) {
+      switch (_context23.prev = _context23.next) {
         case 0:
-          _context21.prev = 0;
+          _context23.prev = 0;
           idlenh = req.params.idlenh;
-          _context21.next = 4;
+          _context23.next = 4;
           return regeneratorRuntime.awrap(LenhDieuChuyen.findByIdAndDelete(idlenh));
 
         case 4:
           res.json({
             message: 'Hủy thành công'
           });
-          _context21.next = 11;
+          _context23.next = 11;
           break;
 
         case 7:
-          _context21.prev = 7;
-          _context21.t0 = _context21["catch"](0);
-          console.error(_context21.t0);
+          _context23.prev = 7;
+          _context23.t0 = _context23["catch"](0);
+          console.error(_context23.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 11:
         case "end":
-          return _context21.stop();
+          return _context23.stop();
       }
     }
   }, null, null, [[0, 7]]);
 });
-router.get('/getlenhdctheongay/:idkho', function _callee20(req, res) {
+router.get('/getlenhdctheongay/:idkho', function _callee22(req, res) {
   var idkho, begintime, endtime, onlyDate, begintimeOnly, endtimeOnly, kho, lenhdieuchuyenjson, filteredLenhdieuchuyen;
-  return regeneratorRuntime.async(function _callee20$(_context23) {
+  return regeneratorRuntime.async(function _callee22$(_context25) {
     while (1) {
-      switch (_context23.prev = _context23.next) {
+      switch (_context25.prev = _context25.next) {
         case 0:
-          _context23.prev = 0;
+          _context25.prev = 0;
           idkho = req.params.idkho;
-          begintime = new Date(req.query.begintime);
-          endtime = new Date(req.query.endtime);
+          begintime = parseDate(req.query.begintime);
+          endtime = parseDate(req.query.endtime);
 
-          if (!(!idkho || isNaN(begintime) || isNaN(endtime))) {
-            _context23.next = 6;
+          if (!(!begintime || !endtime)) {
+            _context25.next = 6;
             break;
           }
 
-          return _context23.abrupt("return", res.status(400).json({
-            error: 'Thiếu thông tin idkho hoặc khoảng thời gian không hợp lệ.'
+          return _context25.abrupt("return", res.status(400).json({
+            error: 'Thiếu thông tin khoảng thời gian.'
           }));
 
         case 6:
+          if (!(!idkho || isNaN(begintime) || isNaN(endtime))) {
+            _context25.next = 8;
+            break;
+          }
+
+          return _context25.abrupt("return", res.status(400).json({
+            error: 'Thiếu thông tin idkho hoặc khoảng thời gian không hợp lệ.'
+          }));
+
+        case 8:
           onlyDate = function onlyDate(date) {
             return new Date(date.getFullYear(), date.getMonth(), date.getDate());
           };
 
           begintimeOnly = onlyDate(begintime);
-          endtimeOnly = onlyDate(endtime); // Tìm kho theo idkho
-
-          _context23.next = 11;
+          endtimeOnly = onlyDate(endtime);
+          _context25.next = 13;
           return regeneratorRuntime.awrap(Depot.findById(idkho));
 
-        case 11:
-          kho = _context23.sent;
+        case 13:
+          kho = _context25.sent;
 
           if (kho) {
-            _context23.next = 14;
+            _context25.next = 16;
             break;
           }
 
-          return _context23.abrupt("return", res.status(404).json({
+          return _context25.abrupt("return", res.status(404).json({
             error: 'Không tìm thấy kho.'
           }));
 
-        case 14:
-          _context23.next = 16;
-          return regeneratorRuntime.awrap(Promise.all(kho.lenhdieuchuyen.map(function _callee19(lenhdc) {
+        case 16:
+          _context25.next = 18;
+          return regeneratorRuntime.awrap(Promise.all(kho.lenhdieuchuyen.map(function _callee21(lenhdc) {
             var lenh, khochuyen, khonhan, dungluongsku, lenhDateOnly;
-            return regeneratorRuntime.async(function _callee19$(_context22) {
+            return regeneratorRuntime.async(function _callee21$(_context24) {
               while (1) {
-                switch (_context22.prev = _context22.next) {
+                switch (_context24.prev = _context24.next) {
                   case 0:
-                    _context22.next = 2;
+                    _context24.next = 2;
                     return regeneratorRuntime.awrap(LenhDieuChuyen.findById(lenhdc._id));
 
                   case 2:
-                    lenh = _context22.sent;
-                    _context22.next = 5;
+                    lenh = _context24.sent;
+                    _context24.next = 5;
                     return regeneratorRuntime.awrap(Depot.findById(lenh.khochuyen));
 
                   case 5:
-                    khochuyen = _context22.sent;
-                    _context22.next = 8;
+                    khochuyen = _context24.sent;
+                    _context24.next = 8;
                     return regeneratorRuntime.awrap(Depot.findById(lenh.khonhan));
 
                   case 8:
-                    khonhan = _context22.sent;
-                    _context22.next = 11;
+                    khonhan = _context24.sent;
+                    _context24.next = 11;
                     return regeneratorRuntime.awrap(DungLuongSku.findById(lenh.sku));
 
                   case 11:
-                    dungluongsku = _context22.sent;
+                    dungluongsku = _context24.sent;
                     lenhDateOnly = onlyDate(new Date(lenh.date));
 
                     if (!(lenhDateOnly >= begintimeOnly && lenhDateOnly <= endtimeOnly)) {
-                      _context22.next = 15;
+                      _context24.next = 15;
                       break;
                     }
 
-                    return _context22.abrupt("return", {
+                    return _context24.abrupt("return", {
                       _id: lenh._id,
                       malenhdc: lenh.malenhdc,
                       tensanpham: lenh.tensanpham,
@@ -1475,75 +1563,9 @@ router.get('/getlenhdctheongay/:idkho', function _callee20(req, res) {
                     });
 
                   case 15:
-                    return _context22.abrupt("return", null);
-
-                  case 16:
-                  case "end":
-                    return _context22.stop();
-                }
-              }
-            });
-          })));
-
-        case 16:
-          lenhdieuchuyenjson = _context23.sent;
-          filteredLenhdieuchuyen = lenhdieuchuyenjson.filter(function (item) {
-            return item !== null;
-          });
-          return _context23.abrupt("return", res.status(200).json(filteredLenhdieuchuyen));
-
-        case 21:
-          _context23.prev = 21;
-          _context23.t0 = _context23["catch"](0);
-          console.error('Lỗi khi lấy lệnh điều chuyển:', _context23.t0);
-          return _context23.abrupt("return", res.status(500).json({
-            error: 'Có lỗi xảy ra, vui lòng thử lại sau.'
-          }));
-
-        case 25:
-        case "end":
-          return _context23.stop();
-      }
-    }
-  }, null, null, [[0, 21]]);
-});
-router.get('/soluonglenhchuaduyet/:idkho', function _callee22(req, res) {
-  var idkho, kho, lenhdieuchuyen, filteredLenhdieuchuyen, soluonglenh;
-  return regeneratorRuntime.async(function _callee22$(_context25) {
-    while (1) {
-      switch (_context25.prev = _context25.next) {
-        case 0:
-          _context25.prev = 0;
-          idkho = req.params.idkho;
-          _context25.next = 4;
-          return regeneratorRuntime.awrap(Depot.findById(idkho));
-
-        case 4:
-          kho = _context25.sent;
-          _context25.next = 7;
-          return regeneratorRuntime.awrap(Promise.all(kho.lenhdieuchuyen.map(function _callee21(lenhdc) {
-            var lenhdc1;
-            return regeneratorRuntime.async(function _callee21$(_context24) {
-              while (1) {
-                switch (_context24.prev = _context24.next) {
-                  case 0:
-                    _context24.next = 2;
-                    return regeneratorRuntime.awrap(LenhDieuChuyen.findById(lenhdc._id));
-
-                  case 2:
-                    lenhdc1 = _context24.sent;
-
-                    if (!(lenhdc1.duyet === false)) {
-                      _context24.next = 5;
-                      break;
-                    }
-
-                    return _context24.abrupt("return", lenhdc1);
-
-                  case 5:
                     return _context24.abrupt("return", null);
 
-                  case 6:
+                  case 16:
                   case "end":
                     return _context24.stop();
                 }
@@ -1551,8 +1573,74 @@ router.get('/soluonglenhchuaduyet/:idkho', function _callee22(req, res) {
             });
           })));
 
+        case 18:
+          lenhdieuchuyenjson = _context25.sent;
+          filteredLenhdieuchuyen = lenhdieuchuyenjson.filter(function (item) {
+            return item !== null;
+          });
+          return _context25.abrupt("return", res.status(200).json(filteredLenhdieuchuyen));
+
+        case 23:
+          _context25.prev = 23;
+          _context25.t0 = _context25["catch"](0);
+          console.error('Lỗi khi lấy lệnh điều chuyển:', _context25.t0);
+          return _context25.abrupt("return", res.status(500).json({
+            error: 'Có lỗi xảy ra, vui lòng thử lại sau.'
+          }));
+
+        case 27:
+        case "end":
+          return _context25.stop();
+      }
+    }
+  }, null, null, [[0, 23]]);
+});
+router.get('/soluonglenhchuaduyet/:idkho', function _callee24(req, res) {
+  var idkho, kho, lenhdieuchuyen, filteredLenhdieuchuyen, soluonglenh;
+  return regeneratorRuntime.async(function _callee24$(_context27) {
+    while (1) {
+      switch (_context27.prev = _context27.next) {
+        case 0:
+          _context27.prev = 0;
+          idkho = req.params.idkho;
+          _context27.next = 4;
+          return regeneratorRuntime.awrap(Depot.findById(idkho));
+
+        case 4:
+          kho = _context27.sent;
+          _context27.next = 7;
+          return regeneratorRuntime.awrap(Promise.all(kho.lenhdieuchuyen.map(function _callee23(lenhdc) {
+            var lenhdc1;
+            return regeneratorRuntime.async(function _callee23$(_context26) {
+              while (1) {
+                switch (_context26.prev = _context26.next) {
+                  case 0:
+                    _context26.next = 2;
+                    return regeneratorRuntime.awrap(LenhDieuChuyen.findById(lenhdc._id));
+
+                  case 2:
+                    lenhdc1 = _context26.sent;
+
+                    if (!(lenhdc1.duyet === false)) {
+                      _context26.next = 5;
+                      break;
+                    }
+
+                    return _context26.abrupt("return", lenhdc1);
+
+                  case 5:
+                    return _context26.abrupt("return", null);
+
+                  case 6:
+                  case "end":
+                    return _context26.stop();
+                }
+              }
+            });
+          })));
+
         case 7:
-          lenhdieuchuyen = _context25.sent;
+          lenhdieuchuyen = _context27.sent;
           filteredLenhdieuchuyen = lenhdieuchuyen.filter(function (item) {
             return item !== null;
           });
@@ -1560,20 +1648,20 @@ router.get('/soluonglenhchuaduyet/:idkho', function _callee22(req, res) {
           res.json({
             soluonglenh: soluonglenh
           });
-          _context25.next = 17;
+          _context27.next = 17;
           break;
 
         case 13:
-          _context25.prev = 13;
-          _context25.t0 = _context25["catch"](0);
-          console.error('Lỗi khi lấy lệnh điều chuyển:', _context25.t0);
-          return _context25.abrupt("return", res.status(500).json({
+          _context27.prev = 13;
+          _context27.t0 = _context27["catch"](0);
+          console.error('Lỗi khi lấy lệnh điều chuyển:', _context27.t0);
+          return _context27.abrupt("return", res.status(500).json({
             error: 'Có lỗi xảy ra, vui lòng thử lại sau.'
           }));
 
         case 17:
         case "end":
-          return _context25.stop();
+          return _context27.stop();
       }
     }
   }, null, null, [[0, 13]]);
