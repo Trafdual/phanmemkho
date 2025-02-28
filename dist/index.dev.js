@@ -73,6 +73,8 @@ var tranoroutes = require('./routes/TraNoRoutes');
 
 var trangchuroutes = require('./routes/TrangChuRoutes');
 
+var apiadminRoutes = require('./routes/ApiAdminRoutes');
+
 var _require2 = require('./routes/sendEvent'),
     router = _require2.router;
 
@@ -148,6 +150,7 @@ app.use('/', nhomkhachang);
 app.use('/', router);
 app.use('/', tranoroutes);
 app.use('/', trangchuroutes);
+app.use('/', apiadminRoutes);
 var port = process.env.PORT || 3015;
 app.use(function (req, res, next) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');

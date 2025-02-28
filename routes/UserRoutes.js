@@ -145,10 +145,9 @@ router.post('/taokho', async (req, res) => {
   }
 })
 
-
 router.post('/registeradmin', async (req, res) => {
   try {
-    const { name, email, password, phone,role } = req.body
+    const { name, email, password, phone, role } = req.body
     const vietnamTime = momenttimezone().toDate()
     if (!phone || !/^\d{10}$/.test(phone)) {
       return res.json({ message: 'Số điện thoại không hợp lệ' })
@@ -209,8 +208,13 @@ router.post('/registeradmin', async (req, res) => {
 
 router.post('/register', async (req, res) => {
   try {
-    const { name, email, password, phone } = req.body
+    const { name, email, password, phone, birthday } = req.body
     const vietnamTime = momenttimezone().toDate()
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
+      return res.json({ message: 'Ngày sinh không hợp lệ' })
+    }
+
     if (!phone || !/^\d{10}$/.test(phone)) {
       return res.json({ message: 'Số điện thoại không hợp lệ' })
     }
@@ -237,7 +241,8 @@ router.post('/register', async (req, res) => {
       password: hashedPassword,
       phone,
       date: vietnamTime,
-      isVerified: false
+      isVerified: false,
+      birthday
     })
 
     await user.save()

@@ -332,18 +332,28 @@ router.post('/registeradmin', function _callee3(req, res) {
   }, null, null, [[0, 27]]);
 });
 router.post('/register', function _callee4(req, res) {
-  var _req$body3, name, email, password, phone, vietnamTime, exitphone, existingemail, hashedPassword, user, responseData;
+  var _req$body3, name, email, password, phone, birthday, vietnamTime, exitphone, existingemail, hashedPassword, user, responseData;
 
   return regeneratorRuntime.async(function _callee4$(_context4) {
     while (1) {
       switch (_context4.prev = _context4.next) {
         case 0:
           _context4.prev = 0;
-          _req$body3 = req.body, name = _req$body3.name, email = _req$body3.email, password = _req$body3.password, phone = _req$body3.phone;
+          _req$body3 = req.body, name = _req$body3.name, email = _req$body3.email, password = _req$body3.password, phone = _req$body3.phone, birthday = _req$body3.birthday;
           vietnamTime = momenttimezone().toDate();
 
-          if (!(!phone || !/^\d{10}$/.test(phone))) {
+          if (/^\d{4}-\d{2}-\d{2}$/.test(birthday)) {
             _context4.next = 5;
+            break;
+          }
+
+          return _context4.abrupt("return", res.json({
+            message: 'Ngày sinh không hợp lệ'
+          }));
+
+        case 5:
+          if (!(!phone || !/^\d{10}$/.test(phone))) {
+            _context4.next = 7;
             break;
           }
 
@@ -351,9 +361,9 @@ router.post('/register', function _callee4(req, res) {
             message: 'Số điện thoại không hợp lệ'
           }));
 
-        case 5:
+        case 7:
           if (emailRegex.test(email)) {
-            _context4.next = 7;
+            _context4.next = 9;
             break;
           }
 
@@ -361,17 +371,17 @@ router.post('/register', function _callee4(req, res) {
             message: 'email không hợp lệ'
           }));
 
-        case 7:
-          _context4.next = 9;
+        case 9:
+          _context4.next = 11;
           return regeneratorRuntime.awrap(User.findOne({
             phone: phone
           }));
 
-        case 9:
+        case 11:
           exitphone = _context4.sent;
 
           if (!exitphone) {
-            _context4.next = 12;
+            _context4.next = 14;
             break;
           }
 
@@ -379,17 +389,17 @@ router.post('/register', function _callee4(req, res) {
             message: 'số điện thoại này đã được đăng kí'
           }));
 
-        case 12:
-          _context4.next = 14;
+        case 14:
+          _context4.next = 16;
           return regeneratorRuntime.awrap(User.findOne({
             email: email
           }));
 
-        case 14:
+        case 16:
           existingemail = _context4.sent;
 
           if (!existingemail) {
-            _context4.next = 17;
+            _context4.next = 19;
             break;
           }
 
@@ -397,11 +407,11 @@ router.post('/register', function _callee4(req, res) {
             message: 'email này đã được đăng kí'
           }));
 
-        case 17:
-          _context4.next = 19;
+        case 19:
+          _context4.next = 21;
           return regeneratorRuntime.awrap(bcrypt.hash(password, 10));
 
-        case 19:
+        case 21:
           hashedPassword = _context4.sent;
           user = new User({
             name: name,
@@ -409,12 +419,13 @@ router.post('/register', function _callee4(req, res) {
             password: hashedPassword,
             phone: phone,
             date: vietnamTime,
-            isVerified: false
+            isVerified: false,
+            birthday: birthday
           });
-          _context4.next = 23;
+          _context4.next = 25;
           return regeneratorRuntime.awrap(user.save());
 
-        case 23:
+        case 25:
           responseData = {
             success: user.success,
             data: {
@@ -431,23 +442,23 @@ router.post('/register', function _callee4(req, res) {
             message: 'thành công'
           };
           res.json(responseData);
-          _context4.next = 31;
+          _context4.next = 33;
           break;
 
-        case 27:
-          _context4.prev = 27;
+        case 29:
+          _context4.prev = 29;
           _context4.t0 = _context4["catch"](0);
           console.error(_context4.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 31:
+        case 33:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[0, 27]]);
+  }, null, null, [[0, 29]]);
 });
 router.post('/sendemail/:id', function _callee5(req, res) {
   var id, user, otpCreatedAt, otp, transporter, mailOptions;

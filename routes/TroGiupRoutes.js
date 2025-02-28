@@ -28,25 +28,43 @@ router.get('/getalltrogiup', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-router.get('/getthemtrogiup', async (req, res) => {
-  res.render('themtrogiup')
-})
-router.post('/posttrogiup', async (req, res) => {
-  try {
-    const { tieude, noidung,image } = req.body
-    const trogiup = new TroGiup({ tieude, noidung,image })
-    await trogiup.save()
-    res.render('trogiup')
-  } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+
+router.post(
+  '/posttrogiup',
+  uploads.fields([{ name: 'image', maxCount: 1 }]),
+  async (req, res) => {
+    try {
+      const { tieude, noidung } = req.body
+      const domain = 'http://localhost:3015'
+
+      const image = req.files['image']
+        ? `${domain}/${req.files['image'][0].filename}`
+        : null
+
+      const trogiup = new TroGiup({ tieude, noidung, image })
+      await trogiup.save()
+      res.render('trogiup')
+    } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+    }
   }
-})
+)
 router.get('/gettrogiup/:id', async (req, res) => {
   try {
     const id = req.params.id
     const trogiup = await TroGiup.findById(id)
     res.json(trogiup)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+router.post('/deletetrogiup', async (req, res) => {
+  try {
+    const { ids } = req.body
+    await TroGiup.deleteMany({ _id: { $in: ids } })
+    res.json({ message: 'Xóa thành công' })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
