@@ -748,7 +748,6 @@ router.get('/getchitietloaisanpham/:idloai', function _callee11(req, res) {
 
         case 9:
           nhacungcap = _context11.sent;
-          // Kiểm tra xem loaisanpham có thuộc tính nganhang hay không
           manganhang = '';
 
           if (!loaisanpham.nganhang) {
@@ -763,11 +762,10 @@ router.get('/getchitietloaisanpham/:idloai', function _callee11(req, res) {
           nganhangkho = _context11.sent;
 
           if (nganhangkho) {
-            manganhang = nganhangkho.manganhangkho; // Lấy mã ngân hàng nếu tìm thấy
+            manganhang = nganhangkho.manganhangkho;
           }
 
         case 16:
-          // Tạo đối tượng JSON cho phản hồi
           loaisanphamjson = {
             _id: loaisanpham._id,
             name: loaisanpham.name,
@@ -777,10 +775,8 @@ router.get('/getchitietloaisanpham/:idloai', function _callee11(req, res) {
             average: loaisanpham.average,
             method: loaisanpham.method,
             manganhang: manganhang,
-            // Mặc định rỗng nếu không có nganhang
             malsp: loaisanpham.malsp,
             manhacungcap: nhacungcap ? nhacungcap.mancc : '',
-            // Đảm bảo nếu nhà cung cấp không tồn tại
             ghino: loaisanpham.ghino,
             loaihanghoa: loaisanpham.loaihanghoa
           }; // Trả về dữ liệu JSON

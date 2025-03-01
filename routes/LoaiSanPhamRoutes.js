@@ -328,7 +328,6 @@ router.post('/putloaisanpham/:idloai', async (req, res) => {
       }
     }
 
-    // Cập nhật loaisanpham sau tất cả các thay đổi
     await LoaiSanPham.findByIdAndUpdate(idloai, loaisanpham)
     await NhanCungCap.findByIdAndUpdate(nhacungcap1._id, nhacungcap1)
     await NhanCungCap.findByIdAndUpdate(nhacungcap._id, nhacungcap)
@@ -365,19 +364,16 @@ router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
       return res.status(404).json({ message: 'Loại sản phẩm không tìm thấy.' })
     }
 
-    // Tìm nhà cung cấp
     const nhacungcap = await NhanCungCap.findById(loaisanpham.nhacungcap)
 
-    // Kiểm tra xem loaisanpham có thuộc tính nganhang hay không
     let manganhang = ''
     if (loaisanpham.nganhang) {
       const nganhangkho = await NganHang.findById(loaisanpham.nganhang)
       if (nganhangkho) {
-        manganhang = nganhangkho.manganhangkho // Lấy mã ngân hàng nếu tìm thấy
+        manganhang = nganhangkho.manganhangkho 
       }
     }
 
-    // Tạo đối tượng JSON cho phản hồi
     const loaisanphamjson = {
       _id: loaisanpham._id,
       name: loaisanpham.name,
@@ -386,9 +382,9 @@ router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
       date: loaisanpham.date,
       average: loaisanpham.average,
       method: loaisanpham.method,
-      manganhang: manganhang, // Mặc định rỗng nếu không có nganhang
+      manganhang: manganhang, 
       malsp: loaisanpham.malsp,
-      manhacungcap: nhacungcap ? nhacungcap.mancc : '', // Đảm bảo nếu nhà cung cấp không tồn tại
+      manhacungcap: nhacungcap ? nhacungcap.mancc : '', 
       ghino: loaisanpham.ghino,
       loaihanghoa: loaisanpham.loaihanghoa
     }
