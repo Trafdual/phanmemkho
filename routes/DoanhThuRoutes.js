@@ -1,5 +1,6 @@
 const router = require('express').Router()
 const ThuChi = require('../models/ThuChiModel')
+const CongNo = require('../models/CongNoModel')
 const HoaDon = require('../models/HoaDonModel')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const Depot = require('../models/DepotModel')
@@ -9,12 +10,31 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
     const { fromDate, endDate, fromDatetruoc, endDatetruoc } = req.query
     const from = new Date(fromDate)
     const end = new Date(endDate)
+    end.setHours(23, 59, 59, 999)
     const fromtruoc = new Date(fromDatetruoc)
     const endtruoc = new Date(endDatetruoc)
-    const depot = await Depot.findById(depotId).populate('hoadon') // `hoadon` là mảng ObjectId
+    endtruoc.setHours(23, 59, 59, 999)
+    const depot = await Depot.findById(depotId).populate('hoadon')
     if (!depot) {
       return res.status(404).json({ message: 'Depot không tồn tại.' })
     }
+
+    const congno = await CongNo.find({
+      depot: depot._id,
+      date: { $lt: from, $lte: end }
+    })
+
+    const tongCongNo = congno.reduce((sum, item) => sum + item.amount, 0)
+
+    const congnotruoc = await CongNo.find({
+      depot: depot._id,
+      date: { $gte: fromtruoc, $lte: endtruoc }
+    })
+
+    const tongCongNoTruoc = congnotruoc.reduce(
+      (sum, item) => sum + item.amount,
+      0
+    )
 
     const hoadon = depot.hoadon.filter(
       hd => new Date(hd.date) >= from && new Date(hd.date) <= end
@@ -32,6 +52,20 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
       date: { $gte: from, $lte: end }
     })
 
+    const { tongThu, tongChi } = thuchi.reduce(
+      (acc, tc) => {
+        if (tc.loaitien === 'Tiền thu') {
+          acc.tongThu += tc.tongtien
+        } else if (tc.loaitien === 'Tiền chi') {
+          acc.tongChi += tc.tongtien
+        }
+        return acc
+      },
+      { tongThu: 0, tongChi: 0 }
+    )
+
+    const tongThuChi = tongThu - tongChi
+
     const loaisanphamtruoc = await LoaiSanPham.find({
       depot: depotId,
       date: { $gte: fromtruoc, $lte: endtruoc }
@@ -40,6 +74,20 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
       depot: depotId,
       date: { $gte: fromtruoc, $lte: endtruoc }
     })
+
+    const { tongThu: tongThutruoc, tongChi: tongChitruoc } = thuchitruoc.reduce(
+      (acc, tc) => {
+        if (tc.loaitien === 'Tiền thu') {
+          acc.tongThu += tc.tongtien || 0
+        } else if (tc.loaitien === 'Tiền chi') {
+          acc.tongChi += tc.tongtien || 0
+        }
+        return acc
+      },
+      { tongThu: 0, tongChi: 0 }
+    )
+
+    const tongThuChitruoc = tongThutruoc - tongChitruoc
 
     const doanhthu = hoadon.reduce((total, hd) => total + hd.tongtien, 0)
     const doanhthutruoc = hoadontruoc.reduce(
@@ -54,21 +102,23 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
       (total, lsp) => total + lsp.tongtien,
       0
     )
-    const thuchidoanhthu = thuchi.reduce((total, tc) => total + tc.tongtien, 0)
-    const thuchidoanhthutruoc = thuchitruoc.reduce(
-      (total, tc) => total + tc.tongtien,
-      0
-    )
-    const doanhthutong = doanhthu - loaisanphamdoanhthu - thuchidoanhthu
+
+    const doanhthutong =
+      doanhthu - loaisanphamdoanhthu + tongThuChi - tongCongNo
     const doanhthutongtruoc =
-      doanhthutruoc - loaisanphamdoanhthutruoc - thuchidoanhthutruoc
+      doanhthutruoc -
+      loaisanphamdoanhthutruoc +
+      tongThuChitruoc -
+      tongCongNoTruoc
     const doanhthujson = {
       doanhthu,
       doanhthutruoc,
       loaisanphamdoanhthu,
       loaisanphamdoanhthutruoc,
-      thuchidoanhthu,
-      thuchidoanhthutruoc,
+      tongThuChi,
+      tongThuChitruoc,
+      tongCongNo,
+      tongCongNoTruoc,
       doanhthutong,
       doanhthutongtruoc
     }
