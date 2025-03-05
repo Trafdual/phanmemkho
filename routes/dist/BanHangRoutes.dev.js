@@ -1363,10 +1363,31 @@ router.get('/soluonglenh/:idkho', function _callee18(req, res) {
         case 0:
           _context21.prev = 0;
           idkho = req.params.idkho;
-          _context21.next = 4;
-          return regeneratorRuntime.awrap(Depot.findById(idkho).populate('lenhdieuchuyen'));
+
+          if (!(!idkho || idkho === 'null' || idkho === 'undefined')) {
+            _context21.next = 4;
+            break;
+          }
+
+          return _context21.abrupt("return", res.status(400).json({
+            error: 'ID kho không hợp lệ'
+          }));
 
         case 4:
+          if (idkho.match(/^[0-9a-fA-F]{24}$/)) {
+            _context21.next = 6;
+            break;
+          }
+
+          return _context21.abrupt("return", res.status(400).json({
+            error: 'ID kho không hợp lệ'
+          }));
+
+        case 6:
+          _context21.next = 8;
+          return regeneratorRuntime.awrap(Depot.findById(idkho).populate('lenhdieuchuyen'));
+
+        case 8:
           kho = _context21.sent;
           lenhFalse = kho.lenhdieuchuyen.filter(function (lenh) {
             return lenh.duyet === false;
@@ -1374,23 +1395,23 @@ router.get('/soluonglenh/:idkho', function _callee18(req, res) {
           res.json({
             soluonglenh: lenhFalse.length
           });
-          _context21.next = 13;
+          _context21.next = 17;
           break;
 
-        case 9:
-          _context21.prev = 9;
+        case 13:
+          _context21.prev = 13;
           _context21.t0 = _context21["catch"](0);
           console.error(_context21.t0);
           res.status(500).json({
             error: 'Lỗi máy chủ nội bộ'
           });
 
-        case 13:
+        case 17:
         case "end":
           return _context21.stop();
       }
     }
-  }, null, null, [[0, 9]]);
+  }, null, null, [[0, 13]]);
 });
 router.post('/duyetdieuchuyen/:idlenh', function _callee19(req, res) {
   var idlenh, lenhdc;

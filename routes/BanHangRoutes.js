@@ -520,6 +520,14 @@ router.post('/huylenhdieuchuyen/:idlenhdieuchuyen', async (req, res) => {
 router.get('/soluonglenh/:idkho', async (req, res) => {
   try {
     const idkho = req.params.idkho
+    if (!idkho || idkho === 'null' || idkho === 'undefined') {
+      return res.status(400).json({ error: 'ID kho không hợp lệ' })
+    }
+    
+    if (!idkho.match(/^[0-9a-fA-F]{24}$/)) {
+      return res.status(400).json({ error: 'ID kho không hợp lệ' })
+    }
+
     const kho = await Depot.findById(idkho).populate('lenhdieuchuyen')
     const lenhFalse = kho.lenhdieuchuyen.filter(lenh => lenh.duyet === false)
     res.json({ soluonglenh: lenhFalse.length })

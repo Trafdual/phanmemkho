@@ -75,6 +75,8 @@ var trangchuroutes = require('./routes/TrangChuRoutes');
 
 var apiadminRoutes = require('./routes/ApiAdminRoutes');
 
+var menuitemroutes = require('./routes/MenuItemRoutes');
+
 var _require2 = require('./routes/sendEvent'),
     router = _require2.router;
 
@@ -151,11 +153,75 @@ app.use('/', router);
 app.use('/', tranoroutes);
 app.use('/', trangchuroutes);
 app.use('/', apiadminRoutes);
+app.use('/', menuitemroutes);
 var port = process.env.PORT || 3015;
 app.use(function (req, res, next) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   next();
-});
+}); // const inputPath = path.join(__dirname, '/javascript/register.js'); // Đường dẫn tới tệp JS của bạn
+// const outputPath = path.join(__dirname, '/javascript/register.obfuscated.js'); // Đường dẫn tới tệp JS sau khi obfuscate
+// // Đọc tệp JS gốc
+// fs.readFile(inputPath, 'utf8', (err, data) => {
+//     if (err) {
+//         return console.log('Error reading file:', err);
+//     }
+//     // Obfuscate mã JS
+//     const obfuscatedCode = JavaScriptObfuscator.obfuscate(data, {
+//         compact: true,
+//         controlFlowFlattening: true,
+//         controlFlowFlatteningThreshold: 0.75,
+//         numbersToExpressions: true,
+//         simplify: true,
+//         shuffleStringArray: true,
+//         splitStrings: true,
+//         stringArrayThreshold: 0.75
+//     }).getObfuscatedCode();
+//     // Ghi tệp JS đã obfuscate
+//     fs.writeFile(outputPath, obfuscatedCode, (err) => {
+//         if (err) {
+//             return console.log('Error writing file:', err);
+//         }
+//         console.log('The file was obfuscated and saved as', outputPath);
+//     });
+// });
+//
+// async function fetchLinks (url) {
+//   const browser = await puppeteer.launch()
+//   const page = await browser.newPage()
+//   await page.goto(url, { waitUntil: 'networkidle2' })
+//   const links = await page.evaluate(() => {
+//     const anchors = Array.from(document.querySelectorAll('a'))
+//     return anchors
+//       .map(anchor => anchor.href)
+//       .filter(href => href.startsWith('http'))
+//   })
+//   await browser.close()
+//   return links
+// }
+// function createSitemap (links, filePath) {
+//   const urlSet = links
+//     .map(
+//       link => `
+//     <url>
+//       <loc>${link}</loc>
+//       <changefreq>daily</changefreq>
+//       <priority>0.7</priority>
+//     </url>
+//   `
+//     )
+//     .join('\n')
+//   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+//   <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+//     ${urlSet}
+//   </urlset>`
+//   fs.writeFileSync(filePath, sitemap)
+// }
+// const websiteUrl = 'https://baominhmobile.com/'
+// fetchLinks(websiteUrl).then(links => {
+//   createSitemap(links, 'sitemap.xml')
+//   console.log('Sitemap created')
+// })
+
 app.listen(port, function () {
   try {
     console.log('kết nối thành công 3015');
