@@ -24,6 +24,8 @@ var nodemailer = require('nodemailer');
 
 var passport = require('passport');
 
+var NhanVien = require('../models/NhanVienModel');
+
 firebase.initializeApp({
   credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
 });
@@ -628,7 +630,6 @@ router.post('/login', function _callee6(req, res) {
     }
   }, null, null, [[0, 23]]);
 });
-module.exports = router;
 router.get('/user', function _callee7(req, res) {
   var user;
   return regeneratorRuntime.async(function _callee7$(_context7) {
@@ -736,17 +737,21 @@ router.get('/test', function _callee9(req, res) {
   });
 });
 router.post('/loginadmin', function _callee10(req, res) {
-  var _req$body5, email, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, token, _token, _token2;
+  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, nhanvien;
 
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
       switch (_context10.prev = _context10.next) {
         case 0:
           _context10.prev = 0;
-          _req$body5 = req.body, email = _req$body5.email, password = _req$body5.password;
+          _req$body5 = req.body, emailOrPhone = _req$body5.emailOrPhone, password = _req$body5.password;
           _context10.next = 4;
           return regeneratorRuntime.awrap(User.findOne({
-            email: email
+            $or: [{
+              email: emailOrPhone
+            }, {
+              phone: emailOrPhone
+            }]
           }));
 
         case 4:
@@ -757,8 +762,8 @@ router.post('/loginadmin', function _callee10(req, res) {
             break;
           }
 
-          return _context10.abrupt("return", res.render('login', {
-            UserError: 'Email này không đúng'
+          return _context10.abrupt("return", res.json({
+            message: 'Email hoặc số điện thoại chưa được đăng ký'
           }));
 
         case 7:
@@ -781,111 +786,88 @@ router.post('/loginadmin', function _callee10(req, res) {
             break;
           }
 
-          return _context10.abrupt("return", res.render('login', {
-            PassError: 'Mật khẩu không đúng'
+          return _context10.abrupt("return", res.json({
+            message: 'Mật khẩu không chính xác'
           }));
 
         case 15:
+          responseData = {
+            success: user.success,
+            data: {
+              user: [{
+                _id: user._id,
+                name: user.name,
+                password: user.password,
+                role: user.role,
+                isVerified: user.isVerified,
+                date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+              }]
+            }
+          };
+
           if (!(user.role === 'admin')) {
-            _context10.next = 23;
+            _context10.next = 20;
             break;
           }
 
-          token = jwt.sign({
-            userId: user._id,
-            role: user.role
-          }, 'mysecretkey', {
-            expiresIn: '1h'
-          });
-          req.session.userId = user._id;
-          req.session.token = token;
-          req.session.depotId = user.depot;
-          return _context10.abrupt("return", res.redirect('/admin'));
+          return _context10.abrupt("return", res.json(responseData));
 
-        case 23:
+        case 20:
           if (!(user.role === 'manager')) {
+            _context10.next = 24;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json(responseData));
+
+        case 24:
+          _context10.next = 26;
+          return regeneratorRuntime.awrap(NhanVien.findOne({
+            user: user._id
+          }));
+
+        case 26:
+          nhanvien = _context10.sent;
+
+          if (!(nhanvien.khoa === true)) {
+            _context10.next = 29;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json({
+            message: 'Tài khoản của bạn đã bị khóa'
+          }));
+
+        case 29:
+          if (!(nhanvien.quyen.length === 0)) {
             _context10.next = 31;
             break;
           }
 
-          _token = jwt.sign({
-            userId: user._id,
-            role: user.role
-          }, 'mysecretkey', {
-            expiresIn: '1h'
-          });
-          req.session.userId = user._id;
-          req.session.token = _token;
-          req.session.depotId = user.depot;
-          return _context10.abrupt("return", res.redirect('/manager'));
-
-        case 31:
-          if (!(user.role === 'staff')) {
-            _context10.next = 39;
-            break;
-          }
-
-          _token2 = jwt.sign({
-            userId: user._id,
-            role: user.role
-          }, 'mysecretkey', {
-            expiresIn: '1h'
-          });
-          req.session.userId = user._id;
-          req.session.token = _token2;
-          req.session.depotId = user.depot;
-          return _context10.abrupt("return", res.redirect('/manager'));
-
-        case 39:
-          return _context10.abrupt("return", res.render('login', {
-            RoleError: 'Bạn không có quyền truy cập trang web'
+          return _context10.abrupt("return", res.json({
+            message: 'Bạn không có quyền truy cập trang web'
           }));
 
-        case 40:
-          _context10.next = 46;
+        case 31:
+          return _context10.abrupt("return", res.json(responseData));
+
+        case 32:
+          _context10.next = 38;
           break;
 
-        case 42:
-          _context10.prev = 42;
+        case 34:
+          _context10.prev = 34;
           _context10.t0 = _context10["catch"](0);
           console.error(_context10.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 46:
+        case 38:
         case "end":
           return _context10.stop();
       }
     }
-  }, null, null, [[0, 42]]);
-});
-router.get('/manager', checkAuth, function _callee11(req, res) {
-  return regeneratorRuntime.async(function _callee11$(_context11) {
-    while (1) {
-      switch (_context11.prev = _context11.next) {
-        case 0:
-          res.render('manager');
-
-        case 1:
-        case "end":
-          return _context11.stop();
-      }
-    }
-  });
-});
-router.get('/loginemail', function _callee12(req, res) {
-  return regeneratorRuntime.async(function _callee12$(_context12) {
-    while (1) {
-      switch (_context12.prev = _context12.next) {
-        case 0:
-          res.render('login');
-
-        case 1:
-        case "end":
-          return _context12.stop();
-      }
-    }
-  });
+  }, null, null, [[0, 34]]);
 });
 module.exports = router;

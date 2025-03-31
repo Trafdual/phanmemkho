@@ -10,6 +10,7 @@ const moment = require('moment')
 const firebase = require('firebase-admin')
 const nodemailer = require('nodemailer')
 const passport = require('passport')
+const NhanVien = require('../models/NhanVienModel')
 
 firebase.initializeApp({
   credential: firebase.credential.cert(
@@ -356,8 +357,6 @@ router.post('/login', async (req, res) => {
   }
 })
 
-module.exports = router
-
 router.get('/user', async (req, res) => {
   try {
     const user = await User.find().lean()
@@ -401,13 +400,13 @@ router.get('/test', async (req, res) => {
 
 router.post('/loginadmin', async (req, res) => {
   try {
-    const { email, password } = req.body
-    const user = await User.findOne({ email })
+    const { emailOrPhone, password } = req.body
+    const user = await User.findOne({
+      $or: [{ email: emailOrPhone }, { phone: emailOrPhone }]
+    })
 
     if (!user) {
-      return res.render('login', {
-        UserError: 'Email này không đúng'
-      })
+      return res.json({ message: 'Email hoặc số điện thoại chưa được đăng ký' })
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
@@ -416,46 +415,39 @@ router.post('/loginadmin', async (req, res) => {
       const isPasswordValidCrypto = decrypt(encryptedPassword) === password
 
       if (!isPasswordValidCrypto) {
-        return res.render('login', {
-          PassError: 'Mật khẩu không đúng'
-        })
+        return res.json({ message: 'Mật khẩu không chính xác' })
+      }
+    }
+
+    const responseData = {
+      success: user.success,
+      data: {
+        user: [
+          {
+            _id: user._id,
+            name: user.name,
+            password: user.password,
+            role: user.role,
+            isVerified: user.isVerified,
+            date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+          }
+        ]
       }
     }
 
     if (user.role === 'admin') {
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        'mysecretkey',
-        { expiresIn: '1h' }
-      )
-      req.session.userId = user._id
-      req.session.token = token
-      req.session.depotId = user.depot
-      return res.redirect('/admin')
+      return res.json(responseData)
     } else if (user.role === 'manager') {
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        'mysecretkey',
-        { expiresIn: '1h' }
-      )
-      req.session.userId = user._id
-      req.session.token = token
-      req.session.depotId = user.depot
-      return res.redirect('/manager')
-    } else if (user.role === 'staff') {
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        'mysecretkey',
-        { expiresIn: '1h' }
-      )
-      req.session.userId = user._id
-      req.session.token = token
-      req.session.depotId = user.depot
-      return res.redirect('/manager')
+      return res.json(responseData)
     } else {
-      return res.render('login', {
-        RoleError: 'Bạn không có quyền truy cập trang web'
-      })
+      const nhanvien = await NhanVien.findOne({ user: user._id })
+      if (nhanvien.khoa === true) {
+        return res.json({ message: 'Tài khoản của bạn đã bị khóa' })
+      }
+      if (nhanvien.quyen.length === 0) {
+        return res.json({ message: 'Bạn không có quyền truy cập trang web' })
+      }
+      return res.json(responseData)
     }
   } catch (error) {
     console.error(error)
@@ -463,11 +455,5 @@ router.post('/loginadmin', async (req, res) => {
   }
 })
 
-router.get('/manager', checkAuth, async (req, res) => {
-  res.render('manager')
-})
 
-router.get('/loginemail', async (req, res) => {
-  res.render('login')
-})
 module.exports = router

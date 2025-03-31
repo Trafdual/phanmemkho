@@ -83,7 +83,7 @@ router.post('/posttrogiup', uploads.fields([{
         case 0:
           _context3.prev = 0;
           _req$body = req.body, tieude = _req$body.tieude, noidung = _req$body.noidung;
-          domain = 'http://localhost:3015';
+          domain = 'https://baotech.shop';
           image = req.files['image'] ? "".concat(domain, "/").concat(req.files['image'][0].filename) : null;
           trogiup = new TroGiup({
             tieude: tieude,

@@ -63,6 +63,10 @@ var userSchema = new mongoose.Schema({
   nhomkhachhang: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'nhomkhachhang'
+  }],
+  nhanvien: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'nhanvien'
   }]
 });
 var User = mongoose.model('user', userSchema);
