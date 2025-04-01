@@ -102,7 +102,7 @@ router.get('/getnhanvien/:userid', async (req, res) => {
     const userid = req.params.userid
     const user = await User.findById(userid)
 
-    let { page = 1, limit = 10 } = req.query
+    let { page = 1, limit = 10, status } = req.query
     page = parseInt(page)
     limit = parseInt(limit)
 
@@ -110,15 +110,28 @@ router.get('/getnhanvien/:userid', async (req, res) => {
       return res.status(400).json({ message: 'Page và limit phải lớn hơn 0' })
     }
 
+    let filteredNhanvien = await Promise.all(
+      user.nhanvien.map(async nv => {
+        const nhanvien = await NhanVien.findById(nv._id)
+        if (!nhanvien) return null
+
+        if (status === 'active' && nhanvien.khoa === true) return null
+        if (status === 'locked' && nhanvien.khoa === false) return null
+
+        return nhanvien._id
+      })
+    )
+
+    filteredNhanvien = filteredNhanvien.filter(nv => nv !== null)
+
+    const totalEmployees = filteredNhanvien.length
     const startIndex = (page - 1) * limit
     const endIndex = startIndex + limit
-
-    const totalEmployees = user.nhanvien.length
-    const paginatedNhanvien = user.nhanvien.slice(startIndex, endIndex)
+    const paginatedNhanvien = filteredNhanvien.slice(startIndex, endIndex)
 
     const nhanvien = await Promise.all(
-      paginatedNhanvien.map(async nv => {
-        const nhanvien1 = await NhanVien.findById(nv._id)
+      paginatedNhanvien.map(async nvId => {
+        const nhanvien1 = await NhanVien.findById(nvId)
         const usernv = await User.findById(nhanvien1.user)
         const encryptedPassword = JSON.parse(usernv.password)
 
@@ -131,7 +144,9 @@ router.get('/getnhanvien/:userid', async (req, res) => {
           phone: usernv.phone,
           birthday: moment(usernv.birthday).format('DD/MM/YYYY'),
           date: moment(usernv.date).format('HH:mm DD/MM/YYYY'),
-          chucvu: nhanvien1.chucvu
+          chucvu: nhanvien1.chucvu,
+          khoa: nhanvien1.khoa, 
+          quyen: nhanvien1.quyen
         }
       })
     )
@@ -149,25 +164,49 @@ router.get('/getnhanvien/:userid', async (req, res) => {
   }
 })
 
-router.post('/khoanhanvien/:nhanvienid', async (req, res) => {
+router.post('/khoanhanvien', async (req, res) => {
   try {
-    const nhanvienid = req.params.nhanvienid
-    const nhanvien = await NhanVien.findById(nhanvienid)
-    nhanvien.khoa = true
-    await nhanvien.save()
-    res.json(nhanvien)
+    const { ids } = req.body
+    if (!ids || !Array.isArray(ids)) {
+      return res
+        .status(400)
+        .json({ message: 'Danh sách nhân viên không hợp lệ.' })
+    }
+
+    const result = await NhanVien.updateMany(
+      { _id: { $in: ids } },
+      { $set: { khoa: true } }
+    )
+
+    res.json({
+      message: 'Đã khóa nhân viên.',
+      updatedCount: result.modifiedCount
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-router.post('/mokhoanhanvien/:nhanvienid', async (req, res) => {
+
+router.post('/mokhoanhanvien', async (req, res) => {
   try {
-    const nhanvienid = req.params.nhanvienid
-    const nhanvien = await NhanVien.findById(nhanvienid)
-    nhanvien.khoa = false
-    await nhanvien.save()
-    res.json(nhanvien)
+    const { ids } = req.body
+
+    if (!ids || !Array.isArray(ids)) {
+      return res
+        .status(400)
+        .json({ message: 'Danh sách nhân viên không hợp lệ.' })
+    }
+
+    const result = await NhanVien.updateMany(
+      { _id: { $in: ids } },
+      { $set: { khoa: false } }
+    )
+
+    res.json({
+      message: 'Đã mở khóa nhân viên.',
+      updatedCount: result.modifiedCount
+    })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
@@ -177,11 +216,16 @@ router.post('/mokhoanhanvien/:nhanvienid', async (req, res) => {
 router.post('/addquyennv/:nhanvienid', async (req, res) => {
   try {
     const nhanvienid = req.params.nhanvienid
-    let { quyen } = req.body 
+    let { quyen } = req.body
+
+    // Danh sách quyền hợp lệ
+    const validRoles = ['quanly', 'nhaphang', 'banhang', 'ketoan']
 
     if (!Array.isArray(quyen)) {
-      quyen = [quyen] 
+      quyen = [quyen]
     }
+
+    quyen = quyen.filter(q => validRoles.includes(q))
 
     const nhanvien = await NhanVien.findById(nhanvienid)
     if (!nhanvien) {
@@ -189,9 +233,8 @@ router.post('/addquyennv/:nhanvienid', async (req, res) => {
     }
 
     const quyenMoi = quyen.filter(q => !nhanvien.quyen.includes(q))
-
     if (quyenMoi.length > 0) {
-      nhanvien.quyen.push(...quyenMoi) 
+      nhanvien.quyen.push(...quyenMoi)
       await nhanvien.save()
     }
 
@@ -202,7 +245,69 @@ router.post('/addquyennv/:nhanvienid', async (req, res) => {
   }
 })
 
+router.post('/removequyennv/:nhanvienid', async (req, res) => {
+  try {
+    const nhanvienid = req.params.nhanvienid
+    let { quyen } = req.body
 
+    if (!Array.isArray(quyen)) {
+      quyen = [quyen]
+    }
+
+    const nhanvien = await NhanVien.findById(nhanvienid)
+    if (!nhanvien) {
+      return res.status(404).json({ message: 'Nhân viên không tồn tại.' })
+    }
+
+    nhanvien.quyen = nhanvien.quyen.filter(q => !quyen.includes(q))
+    await nhanvien.save()
+
+    res.json(nhanvien)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/quyennv/:nhanvienid', async (req, res) => {
+  try {
+    const nhanvienid = req.params.nhanvienid
+    const nhanvien = await NhanVien.findById(nhanvienid)
+
+    if (!nhanvien) {
+      return res.status(404).json({ message: 'Nhân viên không tồn tại.' })
+    }
+
+    res.json({ quyen: nhanvien.quyen })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+
+
+router.get('/chitietnv/:nhanvineid', async (req, res) => {
+  try {
+    const nhanvienid = req.params.nhanvineid
+    const nhanvien = await NhanVien.findById(nhanvienid)
+    const user = await User.findById(nhanvien.user)
+    const nhanvienjson = {
+      _id: nhanvien._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      birthday: moment(user.birthday).format('YYYY-MM-DD'),
+      chucvu: nhanvien.chucvu,
+      hovaten: nhanvien.name,
+      password: decrypt(JSON.parse(user.password))
+    }
+    res.json(nhanvienjson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 router.post('/putnhanvien/:nhanvienid', async (req, res) => {
   try {
     const nhanvienid = req.params.nhanvienid
