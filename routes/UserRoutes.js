@@ -429,7 +429,9 @@ router.post('/loginadmin', async (req, res) => {
             password: user.password,
             role: user.role,
             isVerified: user.isVerified,
-            date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+            date: moment(user.date).format('DD/MM/YYYY HH:mm:ss'),
+            quyen: [],
+            warning: ''
           }
         ]
       }
@@ -438,15 +440,50 @@ router.post('/loginadmin', async (req, res) => {
     if (user.role === 'admin') {
       return res.json(responseData)
     } else if (user.role === 'manager') {
+      const accountCreationTime = moment(user.date)
+      const expiryDate = accountCreationTime.add(1, 'years')
+      const currentTime = moment()
+      const daysRemaining = expiryDate.diff(currentTime, 'days')
+
+      if (daysRemaining <= 15 && daysRemaining > 0) {
+        responseData.data.user[0].warning = `Tài khoản của bạn sẽ hết hạn sau ${daysRemaining} ngày. Vui lòng gia hạn sớm.`
+      } else if (daysRemaining <= 0) {
+        return res.json({
+          message:
+            'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
+        })
+      }
+
       return res.json(responseData)
     } else {
       const nhanvien = await NhanVien.findOne({ user: user._id })
+
+      const depot = await Depot.findById(nhanvien.depot)
+
+      const admin = await User.findById(depot.user[0]._id)
+
+      const accountCreationTime = moment(admin.date)
+      const currentTime = moment()
+      const expiryDate = accountCreationTime.add(1, 'years')
+      const daysRemaining = expiryDate.diff(currentTime, 'days')
+
+      if (daysRemaining <= 15 && daysRemaining > 0) {
+        responseData.data.user[0].warning = `Tài khoản của bạn sẽ hết hạn sau ${daysRemaining} ngày. Vui lòng gia hạn sớm.`
+      } else if (daysRemaining <= 0) {
+        return res.json({
+          message:
+            'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
+        })
+      }
+
       if (nhanvien.khoa === true) {
         return res.json({ message: 'Tài khoản của bạn đã bị khóa' })
       }
       if (nhanvien.quyen.length === 0) {
         return res.json({ message: 'Bạn không có quyền truy cập trang web' })
       }
+      responseData.data.user[0].quyen = nhanvien.quyen
+
       return res.json(responseData)
     }
   } catch (error) {
@@ -454,6 +491,5 @@ router.post('/loginadmin', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 module.exports = router

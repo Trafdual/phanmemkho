@@ -93,9 +93,36 @@ app.use(
     }
   })
 )
-app.use(cors())
+
 app.use(passport.initialize())
 app.use(passport.session())
+
+app.use(
+  cors({
+    origin: ['http://localhost:3006', 'https://baotech.shop'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+  })
+)
+
+app.use((req, res, next) => {
+  const allowedOrigins = ['http://localhost:3006', 'https://baotech.shop']
+
+  const origin = req.headers.origin
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin)
+  } else {
+    res.status(400).json({ message: 'cors không hợp lệ' })
+  }
+
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+  next()
+})
 
 app.use('/', userRoutes)
 app.use('/', depotroutes)

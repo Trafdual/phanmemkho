@@ -151,41 +151,46 @@ router.post('/postnhanvien/:depotid', function _callee(req, res) {
           admin = _context.sent;
           depot.user.push(user._id);
           user.depot = admin.depot;
+          user.sku = admin.sku;
+          user.nganhangkho = admin.nganhangkho;
+          user.mucthuchi = admin.mucthuchi;
+          user.loaichungtu = admin.loaichungtu;
+          user.nhomkhachhang = admin.nhomkhachhang;
           admin.nhanvien.push(nhanvien._id);
-          _context.next = 36;
+          _context.next = 41;
           return regeneratorRuntime.awrap(user.save());
 
-        case 36:
-          _context.next = 38;
+        case 41:
+          _context.next = 43;
           return regeneratorRuntime.awrap(nhanvien.save());
 
-        case 38:
-          _context.next = 40;
+        case 43:
+          _context.next = 45;
           return regeneratorRuntime.awrap(admin.save());
 
-        case 40:
-          _context.next = 42;
+        case 45:
+          _context.next = 47;
           return regeneratorRuntime.awrap(depot.save());
 
-        case 42:
+        case 47:
           res.json(nhanvien);
-          _context.next = 49;
+          _context.next = 54;
           break;
 
-        case 45:
-          _context.prev = 45;
+        case 50:
+          _context.prev = 50;
           _context.t0 = _context["catch"](0);
           console.error(_context.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 49:
+        case 54:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 45]]);
+  }, null, null, [[0, 50]]);
 });
 router.get('/getnhanvien/:userid', function _callee4(req, res) {
   var userid, user, _req$query, _req$query$page, page, _req$query$limit, limit, status, filteredNhanvien, totalEmployees, startIndex, endIndex, paginatedNhanvien, nhanvien;
@@ -292,7 +297,8 @@ router.get('/getnhanvien/:userid', function _callee4(req, res) {
                     return _context3.abrupt("return", {
                       _id: nhanvien1._id,
                       manhanvien: nhanvien1.manhanvien,
-                      name: nhanvien1.name,
+                      name: usernv.name,
+                      hovaten: nhanvien1.name,
                       email: usernv.email,
                       password: decrypt(encryptedPassword),
                       phone: usernv.phone,
@@ -455,9 +461,8 @@ router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
         case 0:
           _context7.prev = 0;
           nhanvienid = req.params.nhanvienid;
-          quyen = req.body.quyen; // Danh sách quyền hợp lệ
-
-          validRoles = ['quanly', 'nhaphang', 'banhang', 'ketoan'];
+          quyen = req.body.quyen;
+          validRoles = ['quanly', 'banhang', 'ketoan'];
 
           if (!Array.isArray(quyen)) {
             quyen = [quyen];

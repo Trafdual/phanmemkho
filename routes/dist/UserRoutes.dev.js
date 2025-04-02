@@ -737,7 +737,7 @@ router.get('/test', function _callee9(req, res) {
   });
 });
 router.post('/loginadmin', function _callee10(req, res) {
-  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, nhanvien;
+  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining;
 
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
@@ -800,7 +800,9 @@ router.post('/loginadmin', function _callee10(req, res) {
                 password: user.password,
                 role: user.role,
                 isVerified: user.isVerified,
-                date: moment(user.date).format('DD/MM/YYYY HH:mm:ss')
+                date: moment(user.date).format('DD/MM/YYYY HH:mm:ss'),
+                quyen: [],
+                warning: ''
               }]
             }
           };
@@ -814,23 +816,82 @@ router.post('/loginadmin', function _callee10(req, res) {
 
         case 20:
           if (!(user.role === 'manager')) {
-            _context10.next = 24;
+            _context10.next = 34;
             break;
           }
 
+          accountCreationTime = moment(user.date);
+          expiryDate = accountCreationTime.add(1, 'years');
+          currentTime = moment();
+          daysRemaining = expiryDate.diff(currentTime, 'days');
+
+          if (!(daysRemaining <= 15 && daysRemaining > 0)) {
+            _context10.next = 29;
+            break;
+          }
+
+          responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
+          _context10.next = 31;
+          break;
+
+        case 29:
+          if (!(daysRemaining <= 0)) {
+            _context10.next = 31;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json({
+            message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
+          }));
+
+        case 31:
           return _context10.abrupt("return", res.json(responseData));
 
-        case 24:
-          _context10.next = 26;
+        case 34:
+          _context10.next = 36;
           return regeneratorRuntime.awrap(NhanVien.findOne({
             user: user._id
           }));
 
-        case 26:
+        case 36:
           nhanvien = _context10.sent;
+          _context10.next = 39;
+          return regeneratorRuntime.awrap(Depot.findById(nhanvien.depot));
 
+        case 39:
+          depot = _context10.sent;
+          _context10.next = 42;
+          return regeneratorRuntime.awrap(User.findById(depot.user[0]._id));
+
+        case 42:
+          admin = _context10.sent;
+          _accountCreationTime = moment(admin.date);
+          _currentTime = moment();
+          _expiryDate = _accountCreationTime.add(1, 'years');
+          _daysRemaining = _expiryDate.diff(_currentTime, 'days');
+
+          if (!(_daysRemaining <= 15 && _daysRemaining > 0)) {
+            _context10.next = 51;
+            break;
+          }
+
+          responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(_daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
+          _context10.next = 53;
+          break;
+
+        case 51:
+          if (!(_daysRemaining <= 0)) {
+            _context10.next = 53;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json({
+            message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
+          }));
+
+        case 53:
           if (!(nhanvien.khoa === true)) {
-            _context10.next = 29;
+            _context10.next = 55;
             break;
           }
 
@@ -838,9 +899,9 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã bị khóa'
           }));
 
-        case 29:
+        case 55:
           if (!(nhanvien.quyen.length === 0)) {
-            _context10.next = 31;
+            _context10.next = 57;
             break;
           }
 
@@ -848,26 +909,27 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Bạn không có quyền truy cập trang web'
           }));
 
-        case 31:
+        case 57:
+          responseData.data.user[0].quyen = nhanvien.quyen;
           return _context10.abrupt("return", res.json(responseData));
 
-        case 32:
-          _context10.next = 38;
+        case 59:
+          _context10.next = 65;
           break;
 
-        case 34:
-          _context10.prev = 34;
+        case 61:
+          _context10.prev = 61;
           _context10.t0 = _context10["catch"](0);
           console.error(_context10.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 38:
+        case 65:
         case "end":
           return _context10.stop();
       }
     }
-  }, null, null, [[0, 34]]);
+  }, null, null, [[0, 61]]);
 });
 module.exports = router;

@@ -1,3 +1,4 @@
+const { KinesisVideoSignalingChannels } = require('aws-sdk')
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
@@ -24,7 +25,9 @@ const userSchema = new mongoose.Schema({
   nhomkhachhang: [
     { type: mongoose.Schema.Types.ObjectId, ref: 'nhomkhachhang' }
   ],
-  nhanvien: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhanvien' }]
+  nhanvien: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhanvien' }],
+  khoa: { type: Boolean, default: false },
+  message: { type: String }
 })
 
 const User = mongoose.model('user', userSchema)

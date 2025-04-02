@@ -84,6 +84,11 @@ router.post('/postnhanvien/:depotid', async (req, res) => {
     const admin = await User.findById(depot.user[0]._id)
     depot.user.push(user._id)
     user.depot = admin.depot
+    user.sku = admin.sku
+    user.nganhangkho = admin.nganhangkho
+    user.mucthuchi = admin.mucthuchi
+    user.loaichungtu = admin.loaichungtu
+    user.nhomkhachhang = admin.nhomkhachhang
     admin.nhanvien.push(nhanvien._id)
     await user.save()
     await nhanvien.save()
@@ -138,14 +143,15 @@ router.get('/getnhanvien/:userid', async (req, res) => {
         return {
           _id: nhanvien1._id,
           manhanvien: nhanvien1.manhanvien,
-          name: nhanvien1.name,
+          name: usernv.name,
+          hovaten:nhanvien1.name,
           email: usernv.email,
           password: decrypt(encryptedPassword),
           phone: usernv.phone,
           birthday: moment(usernv.birthday).format('DD/MM/YYYY'),
           date: moment(usernv.date).format('HH:mm DD/MM/YYYY'),
           chucvu: nhanvien1.chucvu,
-          khoa: nhanvien1.khoa, 
+          khoa: nhanvien1.khoa,
           quyen: nhanvien1.quyen
         }
       })
@@ -218,8 +224,7 @@ router.post('/addquyennv/:nhanvienid', async (req, res) => {
     const nhanvienid = req.params.nhanvienid
     let { quyen } = req.body
 
-    // Danh sách quyền hợp lệ
-    const validRoles = ['quanly', 'nhaphang', 'banhang', 'ketoan']
+    const validRoles = ['quanly', 'banhang', 'ketoan']
 
     if (!Array.isArray(quyen)) {
       quyen = [quyen]
@@ -284,8 +289,6 @@ router.get('/quyennv/:nhanvienid', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
-
 
 router.get('/chitietnv/:nhanvineid', async (req, res) => {
   try {

@@ -1,5 +1,8 @@
 "use strict";
 
+var _require = require('aws-sdk'),
+    KinesisVideoSignalingChannels = _require.KinesisVideoSignalingChannels;
+
 var mongoose = require('mongoose');
 
 var userSchema = new mongoose.Schema({
@@ -67,7 +70,14 @@ var userSchema = new mongoose.Schema({
   nhanvien: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'nhanvien'
-  }]
+  }],
+  khoa: {
+    type: Boolean,
+    "default": false
+  },
+  message: {
+    type: String
+  }
 });
 var User = mongoose.model('user', userSchema);
 module.exports = User;
