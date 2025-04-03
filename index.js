@@ -113,7 +113,7 @@ app.use((req, res, next) => {
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
   } else {
-    res.status(400).json({ message: 'cors không hợp lệ' })
+    return res.status(400).json({ message: 'cors không hợp lệ' })
   }
 
   res.setHeader('X-Frame-Options', 'DENY')

@@ -141,7 +141,7 @@ app.use(function (req, res, next) {
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   } else {
-    res.status(400).json({
+    return res.status(400).json({
       message: 'cors không hợp lệ'
     });
   }
