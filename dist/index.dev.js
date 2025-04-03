@@ -135,7 +135,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(function (req, res, next) {
-  var allowedOrigins = ['http://localhost:3006', 'https://baotech.shop'];
+  var allowedOrigins = ['http://localhost:3006', 'https://baotech.vn'];
   var origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {

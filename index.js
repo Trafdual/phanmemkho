@@ -107,7 +107,7 @@ app.use(
 )
 
 app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:3006', 'https://baotech.shop']
+  const allowedOrigins = ['http://localhost:3006', 'https://baotech.vn']
 
   const origin = req.headers.origin
   if (allowedOrigins.includes(origin)) {
