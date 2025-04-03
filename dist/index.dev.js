@@ -129,7 +129,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(cors({
-  origin: ['http://localhost:3006', 'https://baotech.shop'],
+  origin: ['http://localhost:3006', 'https://baotech.vn'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
