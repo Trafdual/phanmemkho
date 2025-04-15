@@ -13,7 +13,7 @@ router.post('/upload', uploads.single('image'), function (req, res) {
     });
   }
 
-  var fileUrl = "http://localhost:8080/".concat(req.file.filename);
+  var fileUrl = "".concat(req.file.filename);
   res.json({
     url: fileUrl
   });
@@ -75,7 +75,7 @@ router.post('/posttrogiup', uploads.fields([{
   name: 'image',
   maxCount: 1
 }]), function _callee3(req, res) {
-  var _req$body, tieude, noidung, domain, image, trogiup;
+  var _req$body, tieude, noidung, image, trogiup;
 
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
@@ -83,35 +83,34 @@ router.post('/posttrogiup', uploads.fields([{
         case 0:
           _context3.prev = 0;
           _req$body = req.body, tieude = _req$body.tieude, noidung = _req$body.noidung;
-          domain = 'https://baotech.shop';
-          image = req.files['image'] ? "".concat(domain, "/").concat(req.files['image'][0].filename) : null;
+          image = req.files['image'] ? "".concat(req.files['image'][0].filename) : null;
           trogiup = new TroGiup({
             tieude: tieude,
             noidung: noidung,
             image: image
           });
-          _context3.next = 7;
+          _context3.next = 6;
           return regeneratorRuntime.awrap(trogiup.save());
 
-        case 7:
+        case 6:
           res.render('trogiup');
-          _context3.next = 14;
+          _context3.next = 13;
           break;
 
-        case 10:
-          _context3.prev = 10;
+        case 9:
+          _context3.prev = 9;
           _context3.t0 = _context3["catch"](0);
           console.error(_context3.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 14:
+        case 13:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 10]]);
+  }, null, null, [[0, 9]]);
 });
 router.get('/gettrogiup/:id', function _callee4(req, res) {
   var id, trogiup;

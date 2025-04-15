@@ -6,7 +6,7 @@ router.post('/upload', uploads.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No file uploaded' })
   }
-  const fileUrl = `http://localhost:8080/${req.file.filename}`
+  const fileUrl = `${req.file.filename}`
   res.json({ url: fileUrl })
 })
 
@@ -35,10 +35,9 @@ router.post(
   async (req, res) => {
     try {
       const { tieude, noidung } = req.body
-      const domain = 'https://baotech.shop'
 
       const image = req.files['image']
-        ? `${domain}/${req.files['image'][0].filename}`
+        ? `${req.files['image'][0].filename}`
         : null
 
       const trogiup = new TroGiup({ tieude, noidung, image })

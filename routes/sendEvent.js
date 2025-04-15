@@ -4,6 +4,9 @@ let clients = []
 
 router.get('/events', (req, res) => {
   console.log('Client connected to events API')
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
+  res.setHeader('Access-Control-Allow-Credentials', 'true')
+
   res.setHeader('Content-Type', 'text/event-stream')
   res.setHeader('Cache-Control', 'no-cache')
   res.setHeader('Connection', 'keep-alive')
@@ -11,7 +14,6 @@ router.get('/events', (req, res) => {
   try {
     clients.push(res)
 
-    // Dọn dẹp khi client ngắt kết nối
     req.on('close', () => {
       clients = clients.filter(client => client !== res)
       console.log('Client disconnected from events API')
@@ -31,4 +33,4 @@ const sendEvent = data => {
   })
 }
 
-module.exports = {router,sendEvent}
+module.exports = { router, sendEvent }
