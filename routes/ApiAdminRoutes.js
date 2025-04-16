@@ -11,15 +11,20 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 router.get('/getuser/:iduser', async (req, res) => {
   try {
     const iduser = req.params.iduser
+    const khoa = req.query.khoa
     const page = parseInt(req.query.page) || 1
     const limit = parseInt(req.query.limit) || 10
     const skip = (page - 1) * limit
+
 
     const users = await User.find({
       _id: {
         $ne: iduser
       },
-      role: 'manager'
+      role: {
+        $in: ['manager', 'admin']
+      },
+      khoa: khoa
     })
       .skip(skip)
       .limit(limit)
@@ -229,7 +234,7 @@ router.get('/getchitietuser/:iduser', async (req, res) => {
   }
 })
 
-router.post('/updaterole/:iduser', async(req,res)=>{
+router.post('/updaterole/:iduser', async (req, res) => {
   try {
     const iduser = req.params.iduser
     const { role } = req.body
@@ -242,8 +247,7 @@ router.post('/updaterole/:iduser', async(req,res)=>{
     res.json(user)
   } catch (error) {
     console.error('Lỗi khi cập nhật người dùng:', error)
-res.status(500).json({ message: 'Đã xảy ra lỗi trong quá trình xử lý.' })
-
+    res.status(500).json({ message: 'Đã xảy ra lỗi trong quá trình xử lý.' })
   }
 })
 

@@ -18,27 +18,31 @@ var NhomKhacHang = require('../models/NhomKhacHangModel');
 
 var emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 router.get('/getuser/:iduser', function _callee2(req, res) {
-  var iduser, page, limit, skip, users, userjson, totalEmployees;
+  var iduser, khoa, page, limit, skip, users, userjson, totalEmployees;
   return regeneratorRuntime.async(function _callee2$(_context2) {
     while (1) {
       switch (_context2.prev = _context2.next) {
         case 0:
           _context2.prev = 0;
           iduser = req.params.iduser;
+          khoa = req.query.khoa;
           page = parseInt(req.query.page) || 1;
           limit = parseInt(req.query.limit) || 10;
           skip = (page - 1) * limit;
-          _context2.next = 7;
+          _context2.next = 8;
           return regeneratorRuntime.awrap(User.find({
             _id: {
               $ne: iduser
             },
-            role: 'manager'
+            role: {
+              $in: ['manager', 'admin']
+            },
+            khoa: khoa
           }).skip(skip).limit(limit).lean());
 
-        case 7:
+        case 8:
           users = _context2.sent;
-          _context2.next = 10;
+          _context2.next = 11;
           return regeneratorRuntime.awrap(Promise.all(users.map(function _callee(u) {
             return regeneratorRuntime.async(function _callee$(_context) {
               while (1) {
@@ -62,9 +66,9 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
             });
           })));
 
-        case 10:
+        case 11:
           userjson = _context2.sent;
-          _context2.next = 13;
+          _context2.next = 14;
           return regeneratorRuntime.awrap(User.countDocuments({
             role: 'manager',
             _id: {
@@ -72,7 +76,7 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
             }
           }));
 
-        case 13:
+        case 14:
           totalEmployees = _context2.sent;
           res.json({
             page: page,
@@ -81,23 +85,23 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
             totalPages: Math.ceil(totalEmployees / limit),
             data: userjson
           });
-          _context2.next = 21;
+          _context2.next = 22;
           break;
 
-        case 17:
-          _context2.prev = 17;
+        case 18:
+          _context2.prev = 18;
           _context2.t0 = _context2["catch"](0);
           console.log(_context2.t0);
           res.status(500).json({
             message: 'Internal Server Error'
           });
 
-        case 21:
+        case 22:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 17]]);
+  }, null, null, [[0, 18]]);
 });
 router.post('/registeradmin', function _callee3(req, res) {
   var _req$body, name, email, password, phone, birthday, role, vietnamTime, exitphone, existingemail, hashedPassword, user;

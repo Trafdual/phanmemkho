@@ -37,6 +37,7 @@ const tranoroutes = require('./routes/TraNoRoutes')
 const trangchuroutes = require('./routes/TrangChuRoutes')
 const apiadminRoutes = require('./routes/ApiAdminRoutes')
 const menuitemroutes = require('./routes/MenuItemRoutes')
+const useradminroutes = require('./routes/admin/UserAdminRoutes')
 const { router } = require('./routes/sendEvent')
 require('./routes/passport')
 require('./routes/passportface')
@@ -149,6 +150,8 @@ app.use('/', tranoroutes)
 app.use('/', trangchuroutes)
 app.use('/', apiadminRoutes)
 app.use('/', menuitemroutes)
+
+app.use('/admin', useradminroutes)
 
 const port = process.env.PORT || 3015
 

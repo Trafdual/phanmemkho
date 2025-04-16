@@ -77,6 +77,8 @@ var apiadminRoutes = require('./routes/ApiAdminRoutes');
 
 var menuitemroutes = require('./routes/MenuItemRoutes');
 
+var useradminroutes = require('./routes/admin/UserAdminRoutes');
+
 var _require2 = require('./routes/sendEvent'),
     router = _require2.router;
 
@@ -177,6 +179,7 @@ app.use('/', tranoroutes);
 app.use('/', trangchuroutes);
 app.use('/', apiadminRoutes);
 app.use('/', menuitemroutes);
+app.use('/admin', useradminroutes);
 var port = process.env.PORT || 3015;
 app.use(function (req, res, next) {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
