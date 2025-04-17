@@ -57,7 +57,7 @@ var baocaoroutes = require('./routes/BaoCaoRoutes');
 
 var banhangRoutes = require('./routes/BanHangRoutes');
 
-var trogiupRoutes = require('./routes/TroGiupRoutes');
+var trogiupRoutes = require('./routes/admin/TroGiupRoutes');
 
 var thuchiRoutes = require('./routes/ThuChiRoutes');
 

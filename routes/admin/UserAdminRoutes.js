@@ -1,11 +1,6 @@
 const router = require('express').Router()
 const User = require('../../models/UserModel')
 const Depot = require('../../models/DepotModel')
-const NganHang = require('../../models/NganHangKhoModel')
-const Sku = require('../../models/SkuModel')
-const MucThuChi = require('../../models/MucThuChiModel')
-const LoaiChungTu = require('../../models/LoaiChungTuModel')
-const NhomKhacHang = require('../../models/NhomKhacHangModel')
 const NhanVien = require('../../models/NhanVienModel')
 
 router.get('/getkhochua/:iduser', async (req, res) => {

@@ -1,6 +1,6 @@
 const router = require('express').Router()
-const TroGiup = require('../models/TroGiupModel')
-const uploads = require('./uploads')
+const TroGiup = require('../../models/TroGiupModel')
+const uploads = require('../uploads')
 
 router.post('/upload', uploads.single('image'), (req, res) => {
   if (!req.file) {

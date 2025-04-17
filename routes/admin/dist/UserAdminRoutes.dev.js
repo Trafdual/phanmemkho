@@ -6,16 +6,6 @@ var User = require('../../models/UserModel');
 
 var Depot = require('../../models/DepotModel');
 
-var NganHang = require('../../models/NganHangKhoModel');
-
-var Sku = require('../../models/SkuModel');
-
-var MucThuChi = require('../../models/MucThuChiModel');
-
-var LoaiChungTu = require('../../models/LoaiChungTuModel');
-
-var NhomKhacHang = require('../../models/NhomKhacHangModel');
-
 var NhanVien = require('../../models/NhanVienModel');
 
 router.get('/getkhochua/:iduser', function _callee2(req, res) {
