@@ -79,6 +79,8 @@ var menuitemroutes = require('./routes/MenuItemRoutes');
 
 var useradminroutes = require('./routes/admin/UserAdminRoutes');
 
+var theloaitrogiuproutes = require('./routes/admin/TheLoaiTroGiupRoutes');
+
 var _require2 = require('./routes/sendEvent'),
     router = _require2.router;
 
@@ -179,6 +181,7 @@ app.use('/', tranoroutes);
 app.use('/', trangchuroutes);
 app.use('/', apiadminRoutes);
 app.use('/', menuitemroutes);
+app.use('/admin', theloaitrogiuproutes);
 app.use('/admin', useradminroutes);
 var port = process.env.PORT || 3015;
 app.use(function (req, res, next) {

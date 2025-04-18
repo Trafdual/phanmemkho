@@ -29,7 +29,6 @@ router.get('/theloaitrogiup', async (req, res) => {
       data: theloaitg,
       total,
       page,
-      limit,
       totalPages: Math.ceil(total / limit)
     })
   } catch (error) {
@@ -53,7 +52,7 @@ router.post('/posttheloaitrogiup', async (req, res) => {
   }
 })
 
-router.post('/updatetrogiup/:idtltrogiup', async (req, res) => {
+router.post('/updatetltrogiup/:idtltrogiup', async (req, res) => {
   try {
     const idtltrogiup = req.params.idtltrogiup
     const { name } = req.body
@@ -72,23 +71,48 @@ router.post('/updatetrogiup/:idtltrogiup', async (req, res) => {
   }
 })
 
-router.post('/deletetheloaitg/:idtltrogiup', async (req, res) => {
+router.get('/chitiettltrogiup/:idtltrogiup', async (req, res) => {
   try {
     const idtltrogiup = req.params.idtltrogiup
     const theloaitrogiup = await TheloaiTrogiup.findById(idtltrogiup)
+    if (!theloaitrogiup) {
+      return res.json({ error: 'không tìm thấy thể loại trợ giúp' })
+    }
 
-    await Promise.all(
-      theloaitrogiup.trogiup.map(async tg => {
-        await TroGiup.findByIdAndDelete(tg._id)
-      })
-    )
-
-    await TheloaiTrogiup.findByIdAndDelete(idtltrogiup)
-    res.json({message:'xóa thành công'})
+    res.json(theloaitrogiup)
   } catch (error) {
     console.log(error)
     res.status(500).json({ message: 'Lỗi server' })
   }
 })
+
+router.post('/deletetheloaitg', async (req, res) => {
+  try {
+    const { ids } = req.body
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Không có ID nào được cung cấp' })
+    }
+
+    for (const id of ids) {
+      const theloai = await TheloaiTrogiup.findById(id)
+      if (theloai) {
+        await Promise.all(
+          theloai.trogiup.map(async tg => {
+            await TroGiup.findByIdAndDelete(tg._id)
+          })
+        )
+
+        await TheloaiTrogiup.findByIdAndDelete(id)
+      }
+    }
+
+    res.json({ message: 'Đã xoá các thể loại trợ giúp thành công' })
+  } catch (error) {
+    console.log('Lỗi xóa hàng loạt:', error)
+    res.status(500).json({ message: 'Lỗi server khi xóa thể loại trợ giúp' })
+  }
+})
+
 
 module.exports = router
