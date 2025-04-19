@@ -1,13 +1,5 @@
 "use strict";
 
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { if (!(Symbol.iterator in Object(arr) || Object.prototype.toString.call(arr) === "[object Arguments]")) { return; } var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
-
 var router = require('express').Router();
 
 var mongoose = require('mongoose');
@@ -76,7 +68,7 @@ router.post('/postnhacungcap/:depotId', function _callee(req, res) {
   }, null, null, [[0, 20]]);
 });
 router.get('/getnhacungcap/:depotId', function _callee3(req, res) {
-  var depotId, depot, nhacungcap;
+  var depotId, depot, nhacungcap, filtered;
   return regeneratorRuntime.async(function _callee3$(_context3) {
     while (1) {
       switch (_context3.prev = _context3.next) {
@@ -96,10 +88,28 @@ router.get('/getnhacungcap/:depotId', function _callee3(req, res) {
                 switch (_context2.prev = _context2.next) {
                   case 0:
                     _context2.next = 2;
-                    return regeneratorRuntime.awrap(NhanCungCap.findById(nhacungcap._id));
+                    return regeneratorRuntime.awrap(NhanCungCap.findOne({
+                      _id: nhacungcap._id,
+                      $or: [{
+                        status: 1
+                      }, {
+                        status: {
+                          $exists: false
+                        }
+                      }]
+                    }));
 
                   case 2:
                     nhaCungCap = _context2.sent;
+
+                    if (nhaCungCap) {
+                      _context2.next = 5;
+                      break;
+                    }
+
+                    return _context2.abrupt("return", null);
+
+                  case 5:
                     return _context2.abrupt("return", {
                       _id: nhaCungCap._id,
                       mancc: nhaCungCap.mancc || '',
@@ -109,7 +119,7 @@ router.get('/getnhacungcap/:depotId', function _callee3(req, res) {
                       address: nhaCungCap.address
                     });
 
-                  case 4:
+                  case 6:
                   case "end":
                     return _context2.stop();
                 }
@@ -119,353 +129,221 @@ router.get('/getnhacungcap/:depotId', function _callee3(req, res) {
 
         case 7:
           nhacungcap = _context3.sent;
-          res.json(nhacungcap);
-          _context3.next = 15;
+          filtered = nhacungcap.filter(function (item) {
+            return item !== null;
+          });
+          res.json(filtered);
+          _context3.next = 16;
           break;
 
-        case 11:
-          _context3.prev = 11;
+        case 12:
+          _context3.prev = 12;
           _context3.t0 = _context3["catch"](0);
           console.error(_context3.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 15:
+        case 16:
         case "end":
           return _context3.stop();
       }
     }
-  }, null, null, [[0, 11]]);
+  }, null, null, [[0, 12]]);
 });
-router.get('/getncc/:depotId', function _callee5(req, res) {
-  var depotId, depot, nhacungcap;
-  return regeneratorRuntime.async(function _callee5$(_context5) {
-    while (1) {
-      switch (_context5.prev = _context5.next) {
-        case 0:
-          _context5.prev = 0;
-          depotId = req.params.depotId;
-          _context5.next = 4;
-          return regeneratorRuntime.awrap(Depot.findById(depotId));
-
-        case 4:
-          depot = _context5.sent;
-          _context5.next = 7;
-          return regeneratorRuntime.awrap(Promise.all(depot.nhacungcap.map(function _callee4(nhacungcap) {
-            var nhaCungCap;
-            return regeneratorRuntime.async(function _callee4$(_context4) {
-              while (1) {
-                switch (_context4.prev = _context4.next) {
-                  case 0:
-                    _context4.next = 2;
-                    return regeneratorRuntime.awrap(NhanCungCap.findById(nhacungcap._id));
-
-                  case 2:
-                    nhaCungCap = _context4.sent;
-                    return _context4.abrupt("return", {
-                      mancc: nhaCungCap.mancc || ''
-                    });
-
-                  case 4:
-                  case "end":
-                    return _context4.stop();
-                }
-              }
-            });
-          })));
-
-        case 7:
-          nhacungcap = _context5.sent;
-          res.json(nhacungcap);
-          _context5.next = 15;
-          break;
-
-        case 11:
-          _context5.prev = 11;
-          _context5.t0 = _context5["catch"](0);
-          console.error(_context5.t0);
-          res.status(500).json({
-            message: 'Đã xảy ra lỗi.'
-          });
-
-        case 15:
-        case "end":
-          return _context5.stop();
-      }
-    }
-  }, null, null, [[0, 11]]);
-});
-router.post('/editnhacungcap/:idncc', function _callee6(req, res) {
+router.post('/editnhacungcap/:idncc', function _callee4(req, res) {
   var idncc, _req$body2, name, email, phone, address, nhaCungCap;
 
-  return regeneratorRuntime.async(function _callee6$(_context6) {
+  return regeneratorRuntime.async(function _callee4$(_context4) {
     while (1) {
-      switch (_context6.prev = _context6.next) {
+      switch (_context4.prev = _context4.next) {
         case 0:
-          _context6.prev = 0;
+          _context4.prev = 0;
           idncc = req.params.idncc;
           _req$body2 = req.body, name = _req$body2.name, email = _req$body2.email, phone = _req$body2.phone, address = _req$body2.address;
-          _context6.next = 5;
+          _context4.next = 5;
           return regeneratorRuntime.awrap(NhanCungCap.findById(idncc));
 
         case 5:
-          nhaCungCap = _context6.sent;
+          nhaCungCap = _context4.sent;
           nhaCungCap.name = name;
           nhaCungCap.email = email;
           nhaCungCap.phone = phone;
           nhaCungCap.address = address;
-          _context6.next = 12;
+          _context4.next = 12;
           return regeneratorRuntime.awrap(nhaCungCap.save());
 
         case 12:
           res.json(nhaCungCap);
-          _context6.next = 19;
+          _context4.next = 19;
           break;
 
         case 15:
-          _context6.prev = 15;
-          _context6.t0 = _context6["catch"](0);
-          console.error(_context6.t0);
+          _context4.prev = 15;
+          _context4.t0 = _context4["catch"](0);
+          console.error(_context4.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 19:
         case "end":
-          return _context6.stop();
+          return _context4.stop();
       }
     }
   }, null, null, [[0, 15]]);
 });
-router.post('/deletencc', function _callee7(req, res) {
-  var ids, nhacungcaps, depotMap, updateDepotPromises, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step;
+router.post('/deleteanncc', function _callee5(req, res) {
+  var ids, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _iterator, _step, id, nhacungcap;
 
-  return regeneratorRuntime.async(function _callee7$(_context8) {
+  return regeneratorRuntime.async(function _callee5$(_context5) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context5.prev = _context5.next) {
         case 0:
-          _context8.prev = 0;
+          _context5.prev = 0;
           ids = req.body.ids;
-
-          if (!(!Array.isArray(ids) || ids.length === 0)) {
-            _context8.next = 4;
-            break;
-          }
-
-          return _context8.abrupt("return", res.status(400).json({
-            message: 'Danh sách id không hợp lệ.'
-          }));
-
-        case 4:
-          _context8.next = 6;
-          return regeneratorRuntime.awrap(NhanCungCap.find({
-            _id: {
-              $in: ids
-            }
-          }));
-
-        case 6:
-          nhacungcaps = _context8.sent;
-
-          if (!(nhacungcaps.length === 0)) {
-            _context8.next = 9;
-            break;
-          }
-
-          return _context8.abrupt("return", res.status(404).json({
-            message: 'Không tìm thấy nhà cung cấp nào.'
-          }));
-
-        case 9:
-          depotMap = new Map();
-          nhacungcaps.forEach(function (ncc) {
-            if (ncc.depotId) {
-              if (!depotMap.has(ncc.depotId)) {
-                depotMap.set(ncc.depotId, []);
-              }
-
-              depotMap.get(ncc.depotId).push(ncc._id.toString());
-            }
-          });
-          _context8.next = 13;
-          return regeneratorRuntime.awrap(NhanCungCap.deleteMany({
-            _id: {
-              $in: ids
-            }
-          }));
-
-        case 13:
-          updateDepotPromises = [];
           _iteratorNormalCompletion = true;
           _didIteratorError = false;
           _iteratorError = undefined;
-          _context8.prev = 17;
+          _context5.prev = 5;
+          _iterator = ids[Symbol.iterator]();
 
-          _loop = function _loop() {
-            var _step$value, depotId, nccIds, depot;
-
-            return regeneratorRuntime.async(function _loop$(_context7) {
-              while (1) {
-                switch (_context7.prev = _context7.next) {
-                  case 0:
-                    _step$value = _slicedToArray(_step.value, 2), depotId = _step$value[0], nccIds = _step$value[1];
-                    _context7.next = 3;
-                    return regeneratorRuntime.awrap(Depot.findById(depotId));
-
-                  case 3:
-                    depot = _context7.sent;
-
-                    if (depot) {
-                      depot.nhacungcap = depot.nhacungcap.filter(function (item) {
-                        return !nccIds.includes(item._id.toString());
-                      });
-                      updateDepotPromises.push(depot.save());
-                    }
-
-                  case 5:
-                  case "end":
-                    return _context7.stop();
-                }
-              }
-            });
-          };
-
-          _iterator = depotMap.entries()[Symbol.iterator]();
-
-        case 20:
+        case 7:
           if (_iteratorNormalCompletion = (_step = _iterator.next()).done) {
-            _context8.next = 26;
+            _context5.next = 18;
             break;
           }
 
-          _context8.next = 23;
-          return regeneratorRuntime.awrap(_loop());
+          id = _step.value;
+          _context5.next = 11;
+          return regeneratorRuntime.awrap(NhanCungCap.findById(id));
 
-        case 23:
+        case 11:
+          nhacungcap = _context5.sent;
+          nhacungcap.status = -1;
+          _context5.next = 15;
+          return regeneratorRuntime.awrap(nhacungcap.save());
+
+        case 15:
           _iteratorNormalCompletion = true;
-          _context8.next = 20;
+          _context5.next = 7;
           break;
 
-        case 26:
-          _context8.next = 32;
+        case 18:
+          _context5.next = 24;
           break;
 
-        case 28:
-          _context8.prev = 28;
-          _context8.t0 = _context8["catch"](17);
+        case 20:
+          _context5.prev = 20;
+          _context5.t0 = _context5["catch"](5);
           _didIteratorError = true;
-          _iteratorError = _context8.t0;
+          _iteratorError = _context5.t0;
 
-        case 32:
-          _context8.prev = 32;
-          _context8.prev = 33;
+        case 24:
+          _context5.prev = 24;
+          _context5.prev = 25;
 
           if (!_iteratorNormalCompletion && _iterator["return"] != null) {
             _iterator["return"]();
           }
 
-        case 35:
-          _context8.prev = 35;
+        case 27:
+          _context5.prev = 27;
 
           if (!_didIteratorError) {
-            _context8.next = 38;
+            _context5.next = 30;
             break;
           }
 
           throw _iteratorError;
 
-        case 38:
-          return _context8.finish(35);
+        case 30:
+          return _context5.finish(27);
 
-        case 39:
-          return _context8.finish(32);
+        case 31:
+          return _context5.finish(24);
 
-        case 40:
-          _context8.next = 42;
-          return regeneratorRuntime.awrap(Promise.all(updateDepotPromises));
-
-        case 42:
+        case 32:
           res.json({
-            message: 'Xóa nhà cung cấp thành công'
+            message: 'xóa thành công'
           });
-          _context8.next = 49;
+          _context5.next = 39;
           break;
 
-        case 45:
-          _context8.prev = 45;
-          _context8.t1 = _context8["catch"](0);
-          console.error('Lỗi khi xóa nhà cung cấp:', _context8.t1);
+        case 35:
+          _context5.prev = 35;
+          _context5.t1 = _context5["catch"](0);
+          console.error(_context5.t1);
           res.status(500).json({
-            message: 'Đã xảy ra lỗi khi xóa nhà cung cấp.'
+            message: 'Đã xảy ra lỗi.'
           });
 
-        case 49:
+        case 39:
         case "end":
-          return _context8.stop();
+          return _context5.stop();
       }
     }
-  }, null, null, [[0, 45], [17, 28, 32, 40], [33,, 35, 39]]);
+  }, null, null, [[0, 35], [5, 20, 24, 32], [25,, 27, 31]]);
 });
-router.get('/getchitietncc/:idncc', function _callee8(req, res) {
+router.get('/getchitietncc/:idncc', function _callee6(req, res) {
   var idncc, nhacungcap;
-  return regeneratorRuntime.async(function _callee8$(_context9) {
+  return regeneratorRuntime.async(function _callee6$(_context6) {
     while (1) {
-      switch (_context9.prev = _context9.next) {
+      switch (_context6.prev = _context6.next) {
         case 0:
-          _context9.prev = 0;
+          _context6.prev = 0;
           idncc = req.params.idncc;
-          _context9.next = 4;
+          _context6.next = 4;
           return regeneratorRuntime.awrap(NhanCungCap.findById(idncc));
 
         case 4:
-          nhacungcap = _context9.sent;
+          nhacungcap = _context6.sent;
           res.json(nhacungcap);
-          _context9.next = 12;
+          _context6.next = 12;
           break;
 
         case 8:
-          _context9.prev = 8;
-          _context9.t0 = _context9["catch"](0);
-          console.error(_context9.t0);
+          _context6.prev = 8;
+          _context6.t0 = _context6["catch"](0);
+          console.error(_context6.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 12:
         case "end":
-          return _context9.stop();
+          return _context6.stop();
       }
     }
   }, null, null, [[0, 8]]);
 });
-router.post('/dropDatabase', function _callee9(req, res) {
-  return regeneratorRuntime.async(function _callee9$(_context10) {
+router.post('/dropDatabase', function _callee7(req, res) {
+  return regeneratorRuntime.async(function _callee7$(_context7) {
     while (1) {
-      switch (_context10.prev = _context10.next) {
+      switch (_context7.prev = _context7.next) {
         case 0:
-          _context10.prev = 0;
-          _context10.next = 3;
+          _context7.prev = 0;
+          _context7.next = 3;
           return regeneratorRuntime.awrap(mongoose.connection.dropDatabase());
 
         case 3:
           res.json({
             message: 'Đã xóa toàn bộ cơ sở dữ liệu thành công!'
           });
-          _context10.next = 10;
+          _context7.next = 10;
           break;
 
         case 6:
-          _context10.prev = 6;
-          _context10.t0 = _context10["catch"](0);
-          console.error('Lỗi khi xóa database:', _context10.t0);
+          _context7.prev = 6;
+          _context7.t0 = _context7["catch"](0);
+          console.error('Lỗi khi xóa database:', _context7.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi khi xóa database.'
           });
 
         case 10:
         case "end":
-          return _context10.stop();
+          return _context7.stop();
       }
     }
   }, null, null, [[0, 6]]);

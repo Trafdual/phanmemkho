@@ -110,9 +110,12 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
     const depot = await Depot.findById(depotID)
     const loaisanpham = await Promise.all(
       depot.loaisanpham.map(async loaisanpham => {
-        const loaisp = await LoaiSanPham.findById(loaisanpham._id).populate(
-          'sanpham'
-        )
+        const loaisp = await LoaiSanPham.findOne({
+          _id: loaisanpham._id,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        }).populate('sanpham')
+
+        if (!loaisp) return null
 
         return {
           _id: loaisp._id,
@@ -124,7 +127,9 @@ router.get('/getloaisanpham2/:depotID', async (req, res) => {
         }
       })
     )
-    res.json(loaisanpham)
+    const filtered = loaisanpham.filter(item => item !== null)
+
+    res.json(filtered)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
@@ -370,7 +375,7 @@ router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
     if (loaisanpham.nganhang) {
       const nganhangkho = await NganHang.findById(loaisanpham.nganhang)
       if (nganhangkho) {
-        manganhang = nganhangkho.manganhangkho 
+        manganhang = nganhangkho.manganhangkho
       }
     }
 
@@ -382,9 +387,9 @@ router.get('/getchitietloaisanpham/:idloai', async (req, res) => {
       date: loaisanpham.date,
       average: loaisanpham.average,
       method: loaisanpham.method,
-      manganhang: manganhang, 
+      manganhang: manganhang,
       malsp: loaisanpham.malsp,
-      manhacungcap: nhacungcap ? nhacungcap.mancc : '', 
+      manhacungcap: nhacungcap ? nhacungcap.mancc : '',
       ghino: loaisanpham.ghino,
       loaihanghoa: loaisanpham.loaihanghoa
     }
@@ -748,7 +753,7 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
       for (const imel of imelList) {
         if (imelTrongKhoSet.has(imel)) {
-          return res.json({message:'Sản phẩm đã tồn tại trong kho'})
+          return res.json({ message: 'Sản phẩm đã tồn tại trong kho' })
         } else {
           sp = new SanPham({
             name,
@@ -928,6 +933,21 @@ router.post('/deletelohang', async (req, res) => {
     await LoaiSanPham.findByIdAndDelete(lohang._id)
 
     res.json({ success: 'Xóa lô hàng thành công.' })
+  } catch (error) {
+    res.status(500).json({ message: `Lỗi: ${error.message}` })
+    console.error(error)
+  }
+})
+
+router.post('/deleteanlo', async (req, res) => {
+  try {
+    const { ids } = req.body
+    for (const id of ids) {
+      const loaisanpham = await LoaiSanPham.findById(id)
+      loaisanpham.status = -1
+      await loaisanpham.save()
+    }
+    res.json({ message: 'xóa thành công' })
   } catch (error) {
     res.status(500).json({ message: `Lỗi: ${error.message}` })
     console.error(error)

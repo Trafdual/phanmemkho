@@ -6,17 +6,18 @@ const loaisanphamSchema = new mongoose.Schema({
   sanpham: [{ type: mongoose.Schema.Types.ObjectId, ref: 'sanpham' }],
   tongtien: { type: Number },
   date: { type: Date },
-  hour:{type:Date},
+  hour: { type: Date },
   nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
-  makhodiechuyen:{type:mongoose.Schema.Types.ObjectId, ref:'depot'},
+  makhodiechuyen: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   ghino: { type: Boolean, default: false },
-  method:{type:String},
-  nganhang:{type: mongoose.Schema.Types.ObjectId, ref: 'nganhang'},
-  conlai:{type:Number},
-  trano:{type: mongoose.Schema.Types.ObjectId, ref: 'trano'},
-  diengiai:{type:String},
-  loaihanghoa:{type:String}
+  method: { type: String },
+  nganhang: { type: mongoose.Schema.Types.ObjectId, ref: 'nganhang' },
+  conlai: { type: Number },
+  trano: { type: mongoose.Schema.Types.ObjectId, ref: 'trano' },
+  diengiai: { type: String },
+  loaihanghoa: { type: String },
+  status: { type: Number, default: 1 }
 })
 const LoaiSanPham = mongoose.model('loaisanpham', loaisanphamSchema)
 module.exports = LoaiSanPham

@@ -1,8 +1,5 @@
 "use strict";
 
-var _require = require('aws-sdk'),
-    KinesisVideoSignalingChannels = _require.KinesisVideoSignalingChannels;
-
 var mongoose = require('mongoose');
 
 var userSchema = new mongoose.Schema({

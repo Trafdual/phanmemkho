@@ -5,7 +5,8 @@ const nganhangkhoSchema = new mongoose.Schema({
   name: { type: String },
   sotaikhoan: { type: String },
   chusohuu: { type: String },
-  user:{type:mongoose.Schema.Types.ObjectId,ref:'user'}
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+  status: { type: Number, default: 1 }
 })
 const NganHang = mongoose.model('nganhang', nganhangkhoSchema)
 module.exports = NganHang

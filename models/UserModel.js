@@ -1,4 +1,3 @@
-const { KinesisVideoSignalingChannels } = require('aws-sdk')
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({

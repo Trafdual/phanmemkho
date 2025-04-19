@@ -215,4 +215,33 @@ router.get('/doituongthuchi/:idkho', async (req, res) => {
   }
 })
 
+router.post('/deletethuchi', async (req, res) => {
+  try {
+    const { ids } = req.body
+    for (const id of ids) {
+      const thuchi = await ThuChi.findById(id)
+      if (!thuchi || !thuchi.chitiet || thuchi.chitiet.length === 0) {
+        continue
+      }
+      const mucthuchi = await MucThuChi.findById(
+        thuchi.chitiet[0].mucthuchi._id
+      )
+      if (!mucthuchi) {
+        console.warn(`Mục thu chi không tồn tại với id: ${id}`)
+        continue
+      }
+
+      mucthuchi.thuchi = mucthuchi.thuchi.filter(
+        tc => tc._id.toString() !== thuchi._id.toString()
+      )
+      await mucthuchi.save()
+      await ThuChi.findByIdAndDelete(id)
+    }
+    res.json({ message: 'xóa thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 module.exports = router
