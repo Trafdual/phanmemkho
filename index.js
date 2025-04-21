@@ -101,29 +101,35 @@ app.use(passport.session())
 
 app.use(
   cors({
-    origin: ['http://localhost:3006', 'https://baotech.vn'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   })
 )
 
-app.use((req, res, next) => {
-  const allowedOrigins = ['http://localhost:3006', 'https://baotech.vn']
+const allowedOrigins = ['http://localhost:3006', 'https://baotech.vn']
+const allowedIPs = ['::1', '171.241.24.194']
 
+const normalizeIP = ip => {
+  if (ip?.startsWith('::ffff:')) {
+    return ip.split('::ffff:')[1]
+  }
+  return ip
+}
+
+app.use((req, res, next) => {
   const origin = req.headers.origin
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin)
-  } else {
-    return res.status(400).json({ message: 'cors không hợp lệ' })
+  const clientIP = normalizeIP(req.ip)
+
+  if (origin && allowedOrigins.includes(origin)) {
+    return next()
   }
 
-  res.setHeader('X-Frame-Options', 'DENY')
-  res.setHeader('X-Content-Type-Options', 'nosniff')
-  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE')
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  if (allowedIPs.includes(clientIP)) {
+    return next()
+  }
 
-  next()
+  return res.status(403).json({ message: 'Bạn không có quyền truy cập API' })
 })
 
 app.use('/', userRoutes)

@@ -453,7 +453,7 @@ router.post('/mokhoanhanvien', function _callee6(req, res) {
   }, null, null, [[0, 10]]);
 });
 router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
-  var nhanvienid, quyen, validRoles, nhanvien, quyenMoi, _nhanvien$quyen;
+  var nhanvienid, _req$body2, quyen, userid, validRoles, user, nhanvien, usernv, quyenMoi, _nhanvien$quyen;
 
   return regeneratorRuntime.async(function _callee7$(_context7) {
     while (1) {
@@ -461,7 +461,7 @@ router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
         case 0:
           _context7.prev = 0;
           nhanvienid = req.params.nhanvienid;
-          quyen = req.body.quyen;
+          _req$body2 = req.body, quyen = _req$body2.quyen, userid = _req$body2.userid;
           validRoles = ['quanly', 'banhang', 'ketoan'];
 
           if (!Array.isArray(quyen)) {
@@ -472,13 +472,29 @@ router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
             return validRoles.includes(q);
           });
           _context7.next = 8;
-          return regeneratorRuntime.awrap(NhanVien.findById(nhanvienid));
+          return regeneratorRuntime.awrap(User.findById(userid));
 
         case 8:
+          user = _context7.sent;
+
+          if (user) {
+            _context7.next = 11;
+            break;
+          }
+
+          return _context7.abrupt("return", res.status(404).json({
+            message: 'tài khoản không tồn tại.'
+          }));
+
+        case 11:
+          _context7.next = 13;
+          return regeneratorRuntime.awrap(NhanVien.findById(nhanvienid));
+
+        case 13:
           nhanvien = _context7.sent;
 
           if (nhanvien) {
-            _context7.next = 11;
+            _context7.next = 16;
             break;
           }
 
@@ -486,40 +502,66 @@ router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
             message: 'Nhân viên không tồn tại.'
           }));
 
-        case 11:
+        case 16:
+          _context7.next = 18;
+          return regeneratorRuntime.awrap(User.findById(nhanvien.user));
+
+        case 18:
+          usernv = _context7.sent;
+
+          if (usernv) {
+            _context7.next = 21;
+            break;
+          }
+
+          return _context7.abrupt("return", res.status(404).json({
+            message: 'tài khoản Nhân viên không tồn tại.'
+          }));
+
+        case 21:
           quyenMoi = quyen.filter(function (q) {
             return !nhanvien.quyen.includes(q);
           });
 
           if (!(quyenMoi.length > 0)) {
-            _context7.next = 16;
+            _context7.next = 26;
             break;
           }
 
           (_nhanvien$quyen = nhanvien.quyen).push.apply(_nhanvien$quyen, _toConsumableArray(quyenMoi));
 
-          _context7.next = 16;
+          _context7.next = 26;
           return regeneratorRuntime.awrap(nhanvien.save());
 
-        case 16:
+        case 26:
+          if (!(quyen.includes('ketoan') || quyen.includes('quanly'))) {
+            _context7.next = 30;
+            break;
+          }
+
+          usernv.nhanvien = user.nhanvien;
+          _context7.next = 30;
+          return regeneratorRuntime.awrap(usernv.save());
+
+        case 30:
           res.json(nhanvien);
-          _context7.next = 23;
+          _context7.next = 37;
           break;
 
-        case 19:
-          _context7.prev = 19;
+        case 33:
+          _context7.prev = 33;
           _context7.t0 = _context7["catch"](0);
           console.error(_context7.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 23:
+        case 37:
         case "end":
           return _context7.stop();
       }
     }
-  }, null, null, [[0, 19]]);
+  }, null, null, [[0, 33]]);
 });
 router.post('/removequyennv/:nhanvienid', function _callee8(req, res) {
   var nhanvienid, quyen, nhanvien;
@@ -670,7 +712,7 @@ router.get('/chitietnv/:nhanvineid', function _callee10(req, res) {
   }, null, null, [[0, 12]]);
 });
 router.post('/putnhanvien/:nhanvienid', function _callee11(req, res) {
-  var nhanvienid, _req$body2, name, phone, birthday, hovaten, cccd, chucvu, email, nhanvien, user;
+  var nhanvienid, _req$body3, name, phone, birthday, hovaten, cccd, chucvu, email, nhanvien, user;
 
   return regeneratorRuntime.async(function _callee11$(_context11) {
     while (1) {
@@ -678,7 +720,7 @@ router.post('/putnhanvien/:nhanvienid', function _callee11(req, res) {
         case 0:
           _context11.prev = 0;
           nhanvienid = req.params.nhanvienid;
-          _req$body2 = req.body, name = _req$body2.name, phone = _req$body2.phone, birthday = _req$body2.birthday, hovaten = _req$body2.hovaten, cccd = _req$body2.cccd, chucvu = _req$body2.chucvu, email = _req$body2.email;
+          _req$body3 = req.body, name = _req$body3.name, phone = _req$body3.phone, birthday = _req$body3.birthday, hovaten = _req$body3.hovaten, cccd = _req$body3.cccd, chucvu = _req$body3.chucvu, email = _req$body3.email;
           _context11.next = 5;
           return regeneratorRuntime.awrap(NhanVien.findById(nhanvienid));
 

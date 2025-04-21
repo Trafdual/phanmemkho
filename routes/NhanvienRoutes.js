@@ -144,7 +144,7 @@ router.get('/getnhanvien/:userid', async (req, res) => {
           _id: nhanvien1._id,
           manhanvien: nhanvien1.manhanvien,
           name: usernv.name,
-          hovaten:nhanvien1.name,
+          hovaten: nhanvien1.name,
           email: usernv.email,
           password: decrypt(encryptedPassword),
           phone: usernv.phone,
@@ -222,7 +222,7 @@ router.post('/mokhoanhanvien', async (req, res) => {
 router.post('/addquyennv/:nhanvienid', async (req, res) => {
   try {
     const nhanvienid = req.params.nhanvienid
-    let { quyen } = req.body
+    let { quyen, userid } = req.body
 
     const validRoles = ['quanly', 'banhang', 'ketoan']
 
@@ -232,15 +232,32 @@ router.post('/addquyennv/:nhanvienid', async (req, res) => {
 
     quyen = quyen.filter(q => validRoles.includes(q))
 
+    const user = await User.findById(userid)
+    if (!user) {
+      return res.status(404).json({ message: 'tài khoản không tồn tại.' })
+    }
+
     const nhanvien = await NhanVien.findById(nhanvienid)
     if (!nhanvien) {
       return res.status(404).json({ message: 'Nhân viên không tồn tại.' })
+    }
+
+    const usernv = await User.findById(nhanvien.user)
+    if (!usernv) {
+      return res
+        .status(404)
+        .json({ message: 'tài khoản Nhân viên không tồn tại.' })
     }
 
     const quyenMoi = quyen.filter(q => !nhanvien.quyen.includes(q))
     if (quyenMoi.length > 0) {
       nhanvien.quyen.push(...quyenMoi)
       await nhanvien.save()
+    }
+
+    if (quyen.includes('ketoan') || quyen.includes('quanly')) {
+      usernv.nhanvien = user.nhanvien
+      await usernv.save()
     }
 
     res.json(nhanvien)

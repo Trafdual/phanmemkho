@@ -830,188 +830,512 @@ router.post('/postsku2/:idsku', function _callee9(req, res) {
     }
   }, null, null, [[0, 97], [28, 41, 45, 53], [46,, 48, 52], [56, 78, 82, 90], [83,, 85, 89]]);
 });
-router.post('/deletesku', function _callee10(req, res) {
-  var ids, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, id, sku;
-
+router.post('/updatesku/:idsku', function _callee10(req, res) {
+  var idsku, name, sku;
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
       switch (_context10.prev = _context10.next) {
         case 0:
           _context10.prev = 0;
+          idsku = req.params.idsku;
+          name = req.body.name;
+          _context10.next = 5;
+          return regeneratorRuntime.awrap(Sku.findById(idsku));
+
+        case 5:
+          sku = _context10.sent;
+
+          if (sku) {
+            _context10.next = 8;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json({
+            error: 'sku không tồn tại'
+          }));
+
+        case 8:
+          sku.name = name;
+          _context10.next = 11;
+          return regeneratorRuntime.awrap(sku.save());
+
+        case 11:
+          res.json({
+            message: 'cập nhật thành công'
+          });
+          _context10.next = 18;
+          break;
+
+        case 14:
+          _context10.prev = 14;
+          _context10.t0 = _context10["catch"](0);
+          console.error(_context10.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 18:
+        case "end":
+          return _context10.stop();
+      }
+    }
+  }, null, null, [[0, 14]]);
+});
+router.get('/getchitietsku/:idsku', function _callee11(req, res) {
+  var idsku, sku;
+  return regeneratorRuntime.async(function _callee11$(_context11) {
+    while (1) {
+      switch (_context11.prev = _context11.next) {
+        case 0:
+          _context11.prev = 0;
+          idsku = req.params.idsku;
+          _context11.next = 4;
+          return regeneratorRuntime.awrap(Sku.findById(idsku));
+
+        case 4:
+          sku = _context11.sent;
+
+          if (sku) {
+            _context11.next = 7;
+            break;
+          }
+
+          return _context11.abrupt("return", res.json({
+            error: 'sku không tồn tại'
+          }));
+
+        case 7:
+          res.json(sku);
+          _context11.next = 14;
+          break;
+
+        case 10:
+          _context11.prev = 10;
+          _context11.t0 = _context11["catch"](0);
+          console.error(_context11.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 14:
+        case "end":
+          return _context11.stop();
+      }
+    }
+  }, null, null, [[0, 10]]);
+});
+router.post('/deletesku', function _callee12(req, res) {
+  var ids, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, id, sku;
+
+  return regeneratorRuntime.async(function _callee12$(_context12) {
+    while (1) {
+      switch (_context12.prev = _context12.next) {
+        case 0:
+          _context12.prev = 0;
           ids = req.body.ids;
           _iteratorNormalCompletion5 = true;
           _didIteratorError5 = false;
           _iteratorError5 = undefined;
-          _context10.prev = 5;
+          _context12.prev = 5;
           _iterator5 = ids[Symbol.iterator]();
 
         case 7:
           if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
-            _context10.next = 18;
+            _context12.next = 18;
             break;
           }
 
           id = _step5.value;
-          _context10.next = 11;
+          _context12.next = 11;
           return regeneratorRuntime.awrap(Sku.findById(id));
 
         case 11:
-          sku = _context10.sent;
+          sku = _context12.sent;
           sku.status = -1;
-          _context10.next = 15;
+          _context12.next = 15;
           return regeneratorRuntime.awrap(sku.save());
 
         case 15:
           _iteratorNormalCompletion5 = true;
-          _context10.next = 7;
+          _context12.next = 7;
           break;
 
         case 18:
-          _context10.next = 24;
+          _context12.next = 24;
           break;
 
         case 20:
-          _context10.prev = 20;
-          _context10.t0 = _context10["catch"](5);
+          _context12.prev = 20;
+          _context12.t0 = _context12["catch"](5);
           _didIteratorError5 = true;
-          _iteratorError5 = _context10.t0;
+          _iteratorError5 = _context12.t0;
 
         case 24:
-          _context10.prev = 24;
-          _context10.prev = 25;
+          _context12.prev = 24;
+          _context12.prev = 25;
 
           if (!_iteratorNormalCompletion5 && _iterator5["return"] != null) {
             _iterator5["return"]();
           }
 
         case 27:
-          _context10.prev = 27;
+          _context12.prev = 27;
 
           if (!_didIteratorError5) {
-            _context10.next = 30;
+            _context12.next = 30;
             break;
           }
 
           throw _iteratorError5;
 
         case 30:
-          return _context10.finish(27);
+          return _context12.finish(27);
 
         case 31:
-          return _context10.finish(24);
+          return _context12.finish(24);
 
         case 32:
           res.json({
             message: 'xóa thành công'
           });
-          _context10.next = 39;
+          _context12.next = 39;
           break;
 
         case 35:
-          _context10.prev = 35;
-          _context10.t1 = _context10["catch"](0);
-          console.error(_context10.t1);
+          _context12.prev = 35;
+          _context12.t1 = _context12["catch"](0);
+          console.error(_context12.t1);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 39:
         case "end":
-          return _context10.stop();
+          return _context12.stop();
       }
     }
   }, null, null, [[0, 35], [5, 20, 24, 32], [25,, 27, 31]]);
 });
-router.post('/deletedungluongsku', function _callee11(req, res) {
+router.post('/deletedungluongsku', function _callee13(req, res) {
   var ids, _iteratorNormalCompletion6, _didIteratorError6, _iteratorError6, _iterator6, _step6, id, dungluongsku;
 
-  return regeneratorRuntime.async(function _callee11$(_context11) {
+  return regeneratorRuntime.async(function _callee13$(_context13) {
     while (1) {
-      switch (_context11.prev = _context11.next) {
+      switch (_context13.prev = _context13.next) {
         case 0:
-          _context11.prev = 0;
+          _context13.prev = 0;
           ids = req.body.ids;
           _iteratorNormalCompletion6 = true;
           _didIteratorError6 = false;
           _iteratorError6 = undefined;
-          _context11.prev = 5;
+          _context13.prev = 5;
           _iterator6 = ids[Symbol.iterator]();
 
         case 7:
           if (_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done) {
-            _context11.next = 18;
+            _context13.next = 18;
             break;
           }
 
           id = _step6.value;
-          _context11.next = 11;
+          _context13.next = 11;
           return regeneratorRuntime.awrap(DungLuongSku.findById(id));
 
         case 11:
-          dungluongsku = _context11.sent;
+          dungluongsku = _context13.sent;
           dungluongsku.status = -1;
-          _context11.next = 15;
+          _context13.next = 15;
           return regeneratorRuntime.awrap(dungluongsku.save());
 
         case 15:
           _iteratorNormalCompletion6 = true;
-          _context11.next = 7;
+          _context13.next = 7;
           break;
 
         case 18:
-          _context11.next = 24;
+          _context13.next = 24;
           break;
 
         case 20:
-          _context11.prev = 20;
-          _context11.t0 = _context11["catch"](5);
+          _context13.prev = 20;
+          _context13.t0 = _context13["catch"](5);
           _didIteratorError6 = true;
-          _iteratorError6 = _context11.t0;
+          _iteratorError6 = _context13.t0;
 
         case 24:
-          _context11.prev = 24;
-          _context11.prev = 25;
+          _context13.prev = 24;
+          _context13.prev = 25;
 
           if (!_iteratorNormalCompletion6 && _iterator6["return"] != null) {
             _iterator6["return"]();
           }
 
         case 27:
-          _context11.prev = 27;
+          _context13.prev = 27;
 
           if (!_didIteratorError6) {
-            _context11.next = 30;
+            _context13.next = 30;
             break;
           }
 
           throw _iteratorError6;
 
         case 30:
-          return _context11.finish(27);
+          return _context13.finish(27);
 
         case 31:
-          return _context11.finish(24);
+          return _context13.finish(24);
 
         case 32:
           res.json({
             message: 'xóa thành công'
           });
-          _context11.next = 39;
+          _context13.next = 39;
           break;
 
         case 35:
-          _context11.prev = 35;
-          _context11.t1 = _context11["catch"](0);
-          console.error(_context11.t1);
+          _context13.prev = 35;
+          _context13.t1 = _context13["catch"](0);
+          console.error(_context13.t1);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 39:
         case "end":
-          return _context11.stop();
+          return _context13.stop();
       }
     }
   }, null, null, [[0, 35], [5, 20, 24, 32], [25,, 27, 31]]);
+});
+router.post('/postdungluongsku/:idsku', function _callee14(req, res) {
+  var idsku, namedungluong, sku, dl, _iteratorNormalCompletion7, _didIteratorError7, _iteratorError7, _iterator7, _step7, dlName, _dl3;
+
+  return regeneratorRuntime.async(function _callee14$(_context14) {
+    while (1) {
+      switch (_context14.prev = _context14.next) {
+        case 0:
+          _context14.prev = 0;
+          idsku = req.params.idsku;
+          namedungluong = req.body.namedungluong;
+          _context14.next = 5;
+          return regeneratorRuntime.awrap(Sku.findById(idsku));
+
+        case 5:
+          sku = _context14.sent;
+
+          if (sku) {
+            _context14.next = 8;
+            break;
+          }
+
+          return _context14.abrupt("return", res.status(404).json({
+            message: 'sku không tồn tại.'
+          }));
+
+        case 8:
+          if (!(!namedungluong || namedungluong.length === 0)) {
+            _context14.next = 15;
+            break;
+          }
+
+          dl = new DungLuongSku({
+            name: '',
+            madungluong: sku.masku,
+            sku: sku._id
+          });
+          _context14.next = 12;
+          return regeneratorRuntime.awrap(dl.save());
+
+        case 12:
+          sku.dungluong.push(dl._id);
+          _context14.next = 43;
+          break;
+
+        case 15:
+          _iteratorNormalCompletion7 = true;
+          _didIteratorError7 = false;
+          _iteratorError7 = undefined;
+          _context14.prev = 18;
+          _iterator7 = namedungluong[Symbol.iterator]();
+
+        case 20:
+          if (_iteratorNormalCompletion7 = (_step7 = _iterator7.next()).done) {
+            _context14.next = 29;
+            break;
+          }
+
+          dlName = _step7.value;
+          _dl3 = new DungLuongSku({
+            name: dlName,
+            madungluong: "".concat(sku.masku, "-").concat(dlName),
+            sku: sku._id
+          });
+          _context14.next = 25;
+          return regeneratorRuntime.awrap(_dl3.save());
+
+        case 25:
+          sku.dungluong.push(_dl3._id);
+
+        case 26:
+          _iteratorNormalCompletion7 = true;
+          _context14.next = 20;
+          break;
+
+        case 29:
+          _context14.next = 35;
+          break;
+
+        case 31:
+          _context14.prev = 31;
+          _context14.t0 = _context14["catch"](18);
+          _didIteratorError7 = true;
+          _iteratorError7 = _context14.t0;
+
+        case 35:
+          _context14.prev = 35;
+          _context14.prev = 36;
+
+          if (!_iteratorNormalCompletion7 && _iterator7["return"] != null) {
+            _iterator7["return"]();
+          }
+
+        case 38:
+          _context14.prev = 38;
+
+          if (!_didIteratorError7) {
+            _context14.next = 41;
+            break;
+          }
+
+          throw _iteratorError7;
+
+        case 41:
+          return _context14.finish(38);
+
+        case 42:
+          return _context14.finish(35);
+
+        case 43:
+          _context14.next = 45;
+          return regeneratorRuntime.awrap(sku.save());
+
+        case 45:
+          res.json(sku);
+          _context14.next = 52;
+          break;
+
+        case 48:
+          _context14.prev = 48;
+          _context14.t1 = _context14["catch"](0);
+          console.error(_context14.t1);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 52:
+        case "end":
+          return _context14.stop();
+      }
+    }
+  }, null, null, [[0, 48], [18, 31, 35, 43], [36,, 38, 42]]);
+});
+router.post('/editdungluongsku/:iddungluongsku', function _callee15(req, res) {
+  var iddungluongsku, namedungluong, dungluongsku, sku;
+  return regeneratorRuntime.async(function _callee15$(_context15) {
+    while (1) {
+      switch (_context15.prev = _context15.next) {
+        case 0:
+          _context15.prev = 0;
+          iddungluongsku = req.params.iddungluongsku;
+          namedungluong = req.body.namedungluong;
+          _context15.next = 5;
+          return regeneratorRuntime.awrap(DungLuongSku.findById(iddungluongsku));
+
+        case 5:
+          dungluongsku = _context15.sent;
+
+          if (dungluongsku) {
+            _context15.next = 8;
+            break;
+          }
+
+          return _context15.abrupt("return", res.status(404).json({
+            message: 'dung lượng sku không tồn tại.'
+          }));
+
+        case 8:
+          _context15.next = 10;
+          return regeneratorRuntime.awrap(Sku.findById(dungluongsku.sku));
+
+        case 10:
+          sku = _context15.sent;
+
+          if (sku) {
+            _context15.next = 13;
+            break;
+          }
+
+          return _context15.abrupt("return", res.status(404).json({
+            message: 'sku không tồn tại.'
+          }));
+
+        case 13:
+          dungluongsku.name = namedungluong;
+          dungluongsku.madungluong = "".concat(sku.masku, "-").concat(namedungluong);
+          _context15.next = 17;
+          return regeneratorRuntime.awrap(dungluongsku.save());
+
+        case 17:
+          res.json(dungluongsku);
+          _context15.next = 24;
+          break;
+
+        case 20:
+          _context15.prev = 20;
+          _context15.t0 = _context15["catch"](0);
+          console.error(_context15.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 24:
+        case "end":
+          return _context15.stop();
+      }
+    }
+  }, null, null, [[0, 20]]);
+});
+router.get('/getchitietdl/:iddlsku', function _callee16(req, res) {
+  var iddlsku, dungluongsku;
+  return regeneratorRuntime.async(function _callee16$(_context16) {
+    while (1) {
+      switch (_context16.prev = _context16.next) {
+        case 0:
+          _context16.prev = 0;
+          iddlsku = req.params.iddlsku;
+          _context16.next = 4;
+          return regeneratorRuntime.awrap(DungLuongSku.findById(iddlsku));
+
+        case 4:
+          dungluongsku = _context16.sent;
+          res.json(dungluongsku);
+          _context16.next = 12;
+          break;
+
+        case 8:
+          _context16.prev = 8;
+          _context16.t0 = _context16["catch"](0);
+          console.error(_context16.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 12:
+        case "end":
+          return _context16.stop();
+      }
+    }
+  }, null, null, [[0, 8]]);
 });
 module.exports = router;

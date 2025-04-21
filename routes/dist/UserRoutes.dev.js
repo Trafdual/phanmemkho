@@ -737,7 +737,7 @@ router.get('/test', function _callee9(req, res) {
   });
 });
 router.post('/loginadmin', function _callee10(req, res) {
-  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining;
+  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining, token;
 
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
@@ -911,25 +911,32 @@ router.post('/loginadmin', function _callee10(req, res) {
 
         case 57:
           responseData.data.user[0].quyen = nhanvien.quyen;
+          token = jwt.sign({
+            userId: user._id,
+            role: user.role
+          }, 'mysecretkey', {
+            expiresIn: '2h'
+          });
+          responseData.token = token;
           return _context10.abrupt("return", res.json(responseData));
 
-        case 59:
-          _context10.next = 65;
+        case 61:
+          _context10.next = 67;
           break;
 
-        case 61:
-          _context10.prev = 61;
+        case 63:
+          _context10.prev = 63;
           _context10.t0 = _context10["catch"](0);
           console.error(_context10.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 65:
+        case 67:
         case "end":
           return _context10.stop();
       }
     }
-  }, null, null, [[0, 61]]);
+  }, null, null, [[0, 63]]);
 });
 module.exports = router;

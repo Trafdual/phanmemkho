@@ -282,6 +282,36 @@ router.post('/postsku2/:idsku', async (req, res) => {
   }
 })
 
+router.post('/updatesku/:idsku', async (req, res) => {
+  try {
+    const idsku = req.params.idsku
+    const { name } = req.body
+    const sku = await Sku.findById(idsku)
+    if (!sku) {
+      return res.json({ error: 'sku không tồn tại' })
+    }
+    sku.name = name
+    await sku.save()
+    res.json({ message: 'cập nhật thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchitietsku/:idsku', async (req, res) => {
+  try {
+    const idsku = req.params.idsku
+    const sku = await Sku.findById(idsku)
+    if (!sku) {
+      return res.json({ error: 'sku không tồn tại' })
+    }
+    res.json(sku)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
 
 router.post('/deletesku', async (req, res) => {
   try {
@@ -307,6 +337,84 @@ router.post('/deletedungluongsku', async (req, res) => {
       await dungluongsku.save()
     }
     res.json({ message: 'xóa thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/postdungluongsku/:idsku', async (req, res) => {
+  try {
+    const idsku = req.params.idsku
+    const { namedungluong } = req.body
+
+    const sku = await Sku.findById(idsku)
+
+    if (!sku) {
+      return res.status(404).json({ message: 'sku không tồn tại.' })
+    }
+
+    if (!namedungluong || namedungluong.length === 0) {
+      const dl = new DungLuongSku({
+        name: '',
+        madungluong: sku.masku,
+        sku: sku._id
+      })
+      await dl.save()
+      sku.dungluong.push(dl._id)
+    } else {
+      for (const dlName of namedungluong) {
+        const dl = new DungLuongSku({
+          name: dlName,
+          madungluong: `${sku.masku}-${dlName}`,
+          sku: sku._id
+        })
+        await dl.save()
+        sku.dungluong.push(dl._id)
+      }
+    }
+
+    await sku.save()
+
+    res.json(sku)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/editdungluongsku/:iddungluongsku', async (req, res) => {
+  try {
+    const iddungluongsku = req.params.iddungluongsku
+    const { namedungluong } = req.body
+
+    const dungluongsku = await DungLuongSku.findById(iddungluongsku)
+
+    if (!dungluongsku) {
+      return res.status(404).json({ message: 'dung lượng sku không tồn tại.' })
+    }
+
+    const sku = await Sku.findById(dungluongsku.sku)
+    if (!sku) {
+      return res.status(404).json({ message: 'sku không tồn tại.' })
+    }
+
+    dungluongsku.name = namedungluong
+    dungluongsku.madungluong = `${sku.masku}-${namedungluong}`
+    await dungluongsku.save()
+
+    res.json(dungluongsku)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchitietdl/:iddlsku', async (req, res) => {
+  try {
+    const iddlsku = req.params.iddlsku
+    const dungluongsku = await DungLuongSku.findById(iddlsku)
+    res.json(dungluongsku)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
