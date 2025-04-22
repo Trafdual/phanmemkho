@@ -219,7 +219,7 @@ router.get('/getthuchichuyenkhoan/:depotid', function _callee4(req, res) {
   }, null, null, [[0, 12]]);
 });
 router.get('/gettatcathuchi/:depotid', function _callee6(req, res) {
-  var depotid, depot, thuchi;
+  var depotid, depot, thuchi, filteredThuChi;
   return regeneratorRuntime.async(function _callee6$(_context6) {
     while (1) {
       switch (_context6.prev = _context6.next) {
@@ -266,6 +266,12 @@ router.get('/gettatcathuchi/:depotid', function _callee6(req, res) {
 
                   case 12:
                     loaichungtu = _context5.sent;
+
+                    if (!(loaichungtu.name === 'Phiếu chi')) {
+                      _context5.next = 15;
+                      break;
+                    }
+
                     return _context5.abrupt("return", {
                       _id: thuchitien._id,
                       mathuchi: thuchitien.mathuchi,
@@ -278,7 +284,10 @@ router.get('/gettatcathuchi/:depotid', function _callee6(req, res) {
                       loaitien: thuchitien.loaitien
                     });
 
-                  case 14:
+                  case 15:
+                    return _context5.abrupt("return", null);
+
+                  case 16:
                   case "end":
                     return _context5.stop();
                 }
@@ -288,24 +297,27 @@ router.get('/gettatcathuchi/:depotid', function _callee6(req, res) {
 
         case 7:
           thuchi = _context6.sent;
-          res.json(thuchi);
-          _context6.next = 15;
+          filteredThuChi = thuchi.filter(function (item) {
+            return item !== null;
+          });
+          res.json(filteredThuChi);
+          _context6.next = 16;
           break;
 
-        case 11:
-          _context6.prev = 11;
+        case 12:
+          _context6.prev = 12;
           _context6.t0 = _context6["catch"](0);
           console.error(_context6.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 15:
+        case 16:
         case "end":
           return _context6.stop();
       }
     }
-  }, null, null, [[0, 11]]);
+  }, null, null, [[0, 12]]);
 });
 router.post('/postthuchi/:depotid', function _callee8(req, res) {
   var depotid, _req$body, date, maloaict, tongtien, madoituong, lydo, method, loaitien, products, depot, loaichungtu, doituong, thuchi, productPromises;

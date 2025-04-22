@@ -92,20 +92,25 @@ router.get('/gettatcathuchi/:depotid', async (req, res) => {
           doituong = await KhachHang.findById(thuchitien.doituong)
         }
         const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
-        return {
-          _id: thuchitien._id,
-          mathuchi: thuchitien.mathuchi,
-          date: moment(thuchitien.date).format('DD/MM/YYYY'),
-          loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
-          tongtien: thuchitien.tongtien,
-          doituong: doituong.name || '',
-          lydo: thuchitien.lydo,
-          method: thuchitien.method,
-          loaitien: thuchitien.loaitien
+        if (loaichungtu.name === 'Phiếu chi') {
+          return {
+            _id: thuchitien._id,
+            mathuchi: thuchitien.mathuchi,
+            date: moment(thuchitien.date).format('DD/MM/YYYY'),
+            loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
+            tongtien: thuchitien.tongtien,
+            doituong: doituong.name || '',
+            lydo: thuchitien.lydo,
+            method: thuchitien.method,
+            loaitien: thuchitien.loaitien
+          }
         }
+        return null
       })
     )
-    res.json(thuchi)
+
+    const filteredThuChi = thuchi.filter(item => item !== null)
+    res.json(filteredThuChi)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
