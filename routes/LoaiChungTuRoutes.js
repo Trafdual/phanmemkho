@@ -31,6 +31,47 @@ router.get('/getloaichungtu/:userId', async (req, res) => {
   }
 })
 
+router.get('/getloaichungtuadmin/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const skip = (page - 1) * limit
+
+    const user = await User.findById(userId)
+
+    const loaichungtu = await Promise.all(
+      user.loaichungtu.map(async lct => {
+        const lct1 = await LoaiChungTu.findOne({
+          _id: lct._id,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        })
+        if (!lct1) return null
+        return {
+          _id: lct1._id,
+          maloaict: lct1.maloaict,
+          name: lct1.name,
+          method: lct1.method
+        }
+      })
+    )
+
+    const filtered = loaichungtu.filter(item => item !== null)
+
+    const paginated = filtered.slice(skip, skip + limit)
+
+    res.json({
+      data: paginated,
+      currentPage: page,
+      totalPages: Math.ceil(filtered.length / limit),
+      totalItems: filtered.length
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/postloaichungtu/:userid', async (req, res) => {
   try {
     const userId = req.params.userid
@@ -54,6 +95,40 @@ router.post('/postloaichungtu/:userid', async (req, res) => {
 
     user.loaichungtu.push(loaichungtu._id)
     await user.save()
+    res.json(loaichungtu)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchitietloaichungtu/:idloaichungtu', async (req, res) => {
+  try {
+    const idloaichungtu = req.params.idloaichungtu
+
+    const loaichungtu = await LoaiChungTu.findById(idloaichungtu)
+    if (!loaichungtu) {
+      return res.json({ error: 'không tìm thấy loại chứng từ' })
+    }
+    res.json(loaichungtu)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/updateloaichungtu/:idloaichungtu', async (req, res) => {
+  try {
+    const idloaichungtu = req.params.idloaichungtu
+    const { name, method } = req.body
+
+    const loaichungtu = await LoaiChungTu.findById(idloaichungtu)
+    if (!loaichungtu) {
+      return res.json({ error: 'không tìm thấy loại chứng từ' })
+    }
+    loaichungtu.name = name
+    loaichungtu.method = method
+    await loaichungtu.save()
     res.json(loaichungtu)
   } catch (error) {
     console.error(error)

@@ -443,6 +443,7 @@ router.post('/loginadmin', async (req, res) => {
         expiresIn: '2h'
       }
     )
+    
     responseData.token = token
 
     if (user.role === 'admin') {

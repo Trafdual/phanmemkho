@@ -80,6 +80,38 @@ router.get('/getthuchichuyenkhoan/:depotid', async (req, res) => {
   }
 })
 
+router.get('/gettatcathuchi/:depotid', async (req, res) => {
+  try {
+    const depotid = req.params.depotid
+    const depot = await Depot.findById(depotid)
+    const thuchi = await Promise.all(
+      depot.thuchi.map(async tc => {
+        const thuchitien = await ThuChi.findById(tc._id)
+        let doituong = await NhaCungCap.findById(thuchitien.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(thuchitien.doituong)
+        }
+        const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
+        return {
+          _id: thuchitien._id,
+          mathuchi: thuchitien.mathuchi,
+          date: moment(thuchitien.date).format('DD/MM/YYYY'),
+          loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
+          tongtien: thuchitien.tongtien,
+          doituong: doituong.name || '',
+          lydo: thuchitien.lydo,
+          method: thuchitien.method,
+          loaitien: thuchitien.loaitien
+        }
+      })
+    )
+    res.json(thuchi)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/postthuchi/:depotid', async (req, res) => {
   try {
     const { depotid } = req.params
