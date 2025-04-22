@@ -436,6 +436,14 @@ router.post('/loginadmin', async (req, res) => {
         ]
       }
     }
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      'mysecretkey',
+      {
+        expiresIn: '2h'
+      }
+    )
+    responseData.token = token
 
     if (user.role === 'admin') {
       return res.json(responseData)
@@ -483,14 +491,6 @@ router.post('/loginadmin', async (req, res) => {
         return res.json({ message: 'Bạn không có quyền truy cập trang web' })
       }
       responseData.data.user[0].quyen = nhanvien.quyen
-      const token = jwt.sign(
-        { userId: user._id, role: user.role },
-        'mysecretkey',
-        {
-          expiresIn: '2h'
-        }
-      )
-      responseData.token = token
 
       return res.json(responseData)
     }

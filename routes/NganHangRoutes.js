@@ -65,6 +65,85 @@ router.get('/getnganhang/:userId', async (req, res) => {
   }
 })
 
+router.get('/getnganhangadmin/:userId', async (req, res) => {
+  try {
+    const userId = req.params.userId
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const skip = (page - 1) * limit
+
+    const user = await User.findById(userId)
+
+    const nganhang = await Promise.all(
+      user.nganhangkho.map(async nganhang => {
+        const nganHangkho = await NganHang.findOne({
+          _id: nganhang._id,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        })
+        if (!nganHangkho) return null
+
+        return {
+          _id: nganHangkho._id,
+          manganhangkho: nganHangkho.manganhangkho,
+          name: nganHangkho.name,
+          sotaikhoan: nganHangkho.sotaikhoan,
+          chusohuu: nganHangkho.chusohuu
+        }
+      })
+    )
+
+    const filtered = nganhang.filter(item => item !== null)
+    const totalItems = filtered.length
+    const totalPages = Math.ceil(totalItems / limit)
+
+    const paginatedData = filtered.slice(skip, skip + limit)
+
+    res.json({
+      totalItems,
+      totalPages,
+      currentPage: page,
+      data: paginatedData
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchitietnganhang/:idnganhang', async (req, res) => {
+  try {
+    const idnganhang = req.params.idnganhang
+    const nganhang = await NganHang.findById(idnganhang)
+    res.json(nganhang)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/updatenganhang/:idnganhang', async (req, res) => {
+  try {
+    const idnganhang = req.params.idnganhang
+    const nganhang = await NganHang.findById(idnganhang)
+    const { name, sotaikhoan, chusohuu } = req.body
+
+    if (!nganhang) {
+      return res.json({ message: 'ngân hàng không tồn tại' })
+    }
+
+    nganhang.name = name
+    nganhang.sotaikhoan = sotaikhoan
+    nganhang.chusohuu = chusohuu
+
+    await nganhang.save()
+
+    res.json(nganhang)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/deletenganhang', async (req, res) => {
   try {
     const { ids } = req.body

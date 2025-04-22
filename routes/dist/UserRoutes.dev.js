@@ -737,7 +737,7 @@ router.get('/test', function _callee9(req, res) {
   });
 });
 router.post('/loginadmin', function _callee10(req, res) {
-  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining, token;
+  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, token, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining;
 
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
@@ -806,17 +806,24 @@ router.post('/loginadmin', function _callee10(req, res) {
               }]
             }
           };
+          token = jwt.sign({
+            userId: user._id,
+            role: user.role
+          }, 'mysecretkey', {
+            expiresIn: '2h'
+          });
+          responseData.token = token;
 
           if (!(user.role === 'admin')) {
-            _context10.next = 20;
+            _context10.next = 22;
             break;
           }
 
           return _context10.abrupt("return", res.json(responseData));
 
-        case 20:
+        case 22:
           if (!(user.role === 'manager')) {
-            _context10.next = 34;
+            _context10.next = 36;
             break;
           }
 
@@ -826,17 +833,17 @@ router.post('/loginadmin', function _callee10(req, res) {
           daysRemaining = expiryDate.diff(currentTime, 'days');
 
           if (!(daysRemaining <= 15 && daysRemaining > 0)) {
-            _context10.next = 29;
+            _context10.next = 31;
             break;
           }
 
           responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
-          _context10.next = 31;
+          _context10.next = 33;
           break;
 
-        case 29:
+        case 31:
           if (!(daysRemaining <= 0)) {
-            _context10.next = 31;
+            _context10.next = 33;
             break;
           }
 
@@ -844,26 +851,26 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
           }));
 
-        case 31:
+        case 33:
           return _context10.abrupt("return", res.json(responseData));
 
-        case 34:
-          _context10.next = 36;
+        case 36:
+          _context10.next = 38;
           return regeneratorRuntime.awrap(NhanVien.findOne({
             user: user._id
           }));
 
-        case 36:
+        case 38:
           nhanvien = _context10.sent;
-          _context10.next = 39;
+          _context10.next = 41;
           return regeneratorRuntime.awrap(Depot.findById(nhanvien.depot));
 
-        case 39:
+        case 41:
           depot = _context10.sent;
-          _context10.next = 42;
+          _context10.next = 44;
           return regeneratorRuntime.awrap(User.findById(depot.user[0]._id));
 
-        case 42:
+        case 44:
           admin = _context10.sent;
           _accountCreationTime = moment(admin.date);
           _currentTime = moment();
@@ -871,17 +878,17 @@ router.post('/loginadmin', function _callee10(req, res) {
           _daysRemaining = _expiryDate.diff(_currentTime, 'days');
 
           if (!(_daysRemaining <= 15 && _daysRemaining > 0)) {
-            _context10.next = 51;
+            _context10.next = 53;
             break;
           }
 
           responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(_daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
-          _context10.next = 53;
+          _context10.next = 55;
           break;
 
-        case 51:
+        case 53:
           if (!(_daysRemaining <= 0)) {
-            _context10.next = 53;
+            _context10.next = 55;
             break;
           }
 
@@ -889,9 +896,9 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
           }));
 
-        case 53:
+        case 55:
           if (!(nhanvien.khoa === true)) {
-            _context10.next = 55;
+            _context10.next = 57;
             break;
           }
 
@@ -899,9 +906,9 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã bị khóa'
           }));
 
-        case 55:
+        case 57:
           if (!(nhanvien.quyen.length === 0)) {
-            _context10.next = 57;
+            _context10.next = 59;
             break;
           }
 
@@ -909,15 +916,8 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Bạn không có quyền truy cập trang web'
           }));
 
-        case 57:
+        case 59:
           responseData.data.user[0].quyen = nhanvien.quyen;
-          token = jwt.sign({
-            userId: user._id,
-            role: user.role
-          }, 'mysecretkey', {
-            expiresIn: '2h'
-          });
-          responseData.token = token;
           return _context10.abrupt("return", res.json(responseData));
 
         case 61:

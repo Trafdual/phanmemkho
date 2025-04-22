@@ -62,6 +62,86 @@ router.get('/getmucthuchi/:userId', async (req, res) => {
   }
 })
 
+router.get('/getmucthuchiadmin/:userId', async (req, res) => {
+  try {
+    const userid = req.params.userId
+    const page = parseInt(req.query.page) || 1
+    const limit = parseInt(req.query.limit) || 10
+    const skip = (page - 1) * limit
+
+    const user = await User.findById(userid)
+
+    const mucthuchi = await Promise.all(
+      user.mucthuchi.map(async muc => {
+        const mtc = await MucThuChi.findOne({
+          _id: muc._id,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        })
+
+        if (!mtc) return null
+
+        return {
+          _id: mtc._id,
+          mamuc: mtc.mamuc,
+          name: mtc.name,
+          loaimuc: mtc.loaimuc
+        }
+      })
+    )
+
+    const filtered = mucthuchi.filter(item => item !== null)
+
+    const paginated = filtered.slice(skip, skip + limit)
+
+    res.json({
+      data: paginated,
+      currentPage: page,
+      totalPages: Math.ceil(filtered.length / limit),
+      totalItems: filtered.length
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getchittietmuctc/:idmucthuchi', async (req, res) => {
+  try {
+    const idmucthuchi = req.params.idmucthuchi
+
+    const mucthuchi = await MucThuChi.findById(idmucthuchi)
+    if (!mucthuchi) {
+      return res.json({ error: 'không tìm thấy mục thu chi' })
+    }
+
+    res.json(mucthuchi)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/updatemuctc/:idmucthuchi', async (req, res) => {
+  try {
+    const idmucthuchi = req.params.idmucthuchi
+    const { name, loaimuc } = req.body
+
+    const mucthuchi = await MucThuChi.findById(idmucthuchi)
+    if (!mucthuchi) {
+      return res.json({ error: 'không tìm thấy mục thu chi' })
+    }
+    mucthuchi.name = name
+    mucthuchi.loaimuc = loaimuc
+
+    await mucthuchi.save()
+
+    res.json(mucthuchi)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
 router.post('/deletemucthuchi', async (req, res) => {
   try {
     const { ids } = req.body

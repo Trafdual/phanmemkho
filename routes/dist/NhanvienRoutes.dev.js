@@ -535,36 +535,41 @@ router.post('/addquyennv/:nhanvienid', function _callee7(req, res) {
 
         case 26:
           if (!(quyen.includes('ketoan') || quyen.includes('quanly'))) {
-            _context7.next = 30;
+            _context7.next = 31;
             break;
           }
 
           usernv.nhanvien = user.nhanvien;
-          _context7.next = 30;
+
+          if (!usernv.nhanvien.includes(user._id)) {
+            usernv.nhanvien.push(user._id);
+          }
+
+          _context7.next = 31;
           return regeneratorRuntime.awrap(usernv.save());
 
-        case 30:
+        case 31:
           res.json(nhanvien);
-          _context7.next = 37;
+          _context7.next = 38;
           break;
 
-        case 33:
-          _context7.prev = 33;
+        case 34:
+          _context7.prev = 34;
           _context7.t0 = _context7["catch"](0);
           console.error(_context7.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 37:
+        case 38:
         case "end":
           return _context7.stop();
       }
     }
-  }, null, null, [[0, 33]]);
+  }, null, null, [[0, 34]]);
 });
 router.post('/removequyennv/:nhanvienid', function _callee8(req, res) {
-  var nhanvienid, quyen, nhanvien;
+  var nhanvienid, quyen, nhanvien, usernv, stillHasImportantRoles;
   return regeneratorRuntime.async(function _callee8$(_context8) {
     while (1) {
       switch (_context8.prev = _context8.next) {
@@ -593,31 +598,61 @@ router.post('/removequyennv/:nhanvienid', function _callee8(req, res) {
           }));
 
         case 9:
+          _context8.next = 11;
+          return regeneratorRuntime.awrap(User.findById(nhanvien.user));
+
+        case 11:
+          usernv = _context8.sent;
+
+          if (usernv) {
+            _context8.next = 14;
+            break;
+          }
+
+          return _context8.abrupt("return", res.status(404).json({
+            message: 'tài khoản Nhân viên không tồn tại.'
+          }));
+
+        case 14:
           nhanvien.quyen = nhanvien.quyen.filter(function (q) {
             return !quyen.includes(q);
           });
-          _context8.next = 12;
+          stillHasImportantRoles = nhanvien.quyen.some(function (q) {
+            return q === 'ketoan' || q === 'quanly';
+          });
+
+          if (stillHasImportantRoles) {
+            _context8.next = 20;
+            break;
+          }
+
+          usernv.nhanvien = [];
+          _context8.next = 20;
+          return regeneratorRuntime.awrap(usernv.save());
+
+        case 20:
+          _context8.next = 22;
           return regeneratorRuntime.awrap(nhanvien.save());
 
-        case 12:
+        case 22:
           res.json(nhanvien);
-          _context8.next = 19;
+          _context8.next = 29;
           break;
 
-        case 15:
-          _context8.prev = 15;
+        case 25:
+          _context8.prev = 25;
           _context8.t0 = _context8["catch"](0);
           console.error(_context8.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 19:
+        case 29:
         case "end":
           return _context8.stop();
       }
     }
-  }, null, null, [[0, 15]]);
+  }, null, null, [[0, 25]]);
 });
 router.get('/quyennv/:nhanvienid', function _callee9(req, res) {
   var nhanvienid, nhanvien;

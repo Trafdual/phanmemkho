@@ -257,6 +257,10 @@ router.post('/addquyennv/:nhanvienid', async (req, res) => {
 
     if (quyen.includes('ketoan') || quyen.includes('quanly')) {
       usernv.nhanvien = user.nhanvien
+
+      if (!usernv.nhanvien.includes(user._id)) {
+        usernv.nhanvien.push(user._id)
+      }
       await usernv.save()
     }
 
@@ -280,8 +284,22 @@ router.post('/removequyennv/:nhanvienid', async (req, res) => {
     if (!nhanvien) {
       return res.status(404).json({ message: 'Nhân viên không tồn tại.' })
     }
+    const usernv = await User.findById(nhanvien.user)
+    if (!usernv) {
+      return res
+        .status(404)
+        .json({ message: 'tài khoản Nhân viên không tồn tại.' })
+    }
 
     nhanvien.quyen = nhanvien.quyen.filter(q => !quyen.includes(q))
+    const stillHasImportantRoles = nhanvien.quyen.some(
+      q => q === 'ketoan' || q === 'quanly'
+    )
+    if (!stillHasImportantRoles) {
+      usernv.nhanvien = []
+      await usernv.save()
+    }
+
     await nhanvien.save()
 
     res.json(nhanvien)

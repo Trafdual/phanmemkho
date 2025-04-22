@@ -224,94 +224,279 @@ router.get('/getmucthuchi/:userId', function _callee3(req, res) {
     }
   }, null, null, [[0, 12]]);
 });
-router.post('/deletemucthuchi', function _callee4(req, res) {
+router.get('/getmucthuchiadmin/:userId', function _callee5(req, res) {
+  var userid, page, limit, skip, user, mucthuchi, filtered, paginated;
+  return regeneratorRuntime.async(function _callee5$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          userid = req.params.userId;
+          page = parseInt(req.query.page) || 1;
+          limit = parseInt(req.query.limit) || 10;
+          skip = (page - 1) * limit;
+          _context5.next = 7;
+          return regeneratorRuntime.awrap(User.findById(userid));
+
+        case 7:
+          user = _context5.sent;
+          _context5.next = 10;
+          return regeneratorRuntime.awrap(Promise.all(user.mucthuchi.map(function _callee4(muc) {
+            var mtc;
+            return regeneratorRuntime.async(function _callee4$(_context4) {
+              while (1) {
+                switch (_context4.prev = _context4.next) {
+                  case 0:
+                    _context4.next = 2;
+                    return regeneratorRuntime.awrap(MucThuChi.findOne({
+                      _id: muc._id,
+                      $or: [{
+                        status: 1
+                      }, {
+                        status: {
+                          $exists: false
+                        }
+                      }]
+                    }));
+
+                  case 2:
+                    mtc = _context4.sent;
+
+                    if (mtc) {
+                      _context4.next = 5;
+                      break;
+                    }
+
+                    return _context4.abrupt("return", null);
+
+                  case 5:
+                    return _context4.abrupt("return", {
+                      _id: mtc._id,
+                      mamuc: mtc.mamuc,
+                      name: mtc.name,
+                      loaimuc: mtc.loaimuc
+                    });
+
+                  case 6:
+                  case "end":
+                    return _context4.stop();
+                }
+              }
+            });
+          })));
+
+        case 10:
+          mucthuchi = _context5.sent;
+          filtered = mucthuchi.filter(function (item) {
+            return item !== null;
+          });
+          paginated = filtered.slice(skip, skip + limit);
+          res.json({
+            data: paginated,
+            currentPage: page,
+            totalPages: Math.ceil(filtered.length / limit),
+            totalItems: filtered.length
+          });
+          _context5.next = 20;
+          break;
+
+        case 16:
+          _context5.prev = 16;
+          _context5.t0 = _context5["catch"](0);
+          console.error(_context5.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 20:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[0, 16]]);
+});
+router.get('/getchittietmuctc/:idmucthuchi', function _callee6(req, res) {
+  var idmucthuchi, mucthuchi;
+  return regeneratorRuntime.async(function _callee6$(_context6) {
+    while (1) {
+      switch (_context6.prev = _context6.next) {
+        case 0:
+          _context6.prev = 0;
+          idmucthuchi = req.params.idmucthuchi;
+          _context6.next = 4;
+          return regeneratorRuntime.awrap(MucThuChi.findById(idmucthuchi));
+
+        case 4:
+          mucthuchi = _context6.sent;
+
+          if (mucthuchi) {
+            _context6.next = 7;
+            break;
+          }
+
+          return _context6.abrupt("return", res.json({
+            error: 'không tìm thấy mục thu chi'
+          }));
+
+        case 7:
+          res.json(mucthuchi);
+          _context6.next = 14;
+          break;
+
+        case 10:
+          _context6.prev = 10;
+          _context6.t0 = _context6["catch"](0);
+          console.error(_context6.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 14:
+        case "end":
+          return _context6.stop();
+      }
+    }
+  }, null, null, [[0, 10]]);
+});
+router.post('/updatemuctc/:idmucthuchi', function _callee7(req, res) {
+  var idmucthuchi, _req$body2, name, loaimuc, mucthuchi;
+
+  return regeneratorRuntime.async(function _callee7$(_context7) {
+    while (1) {
+      switch (_context7.prev = _context7.next) {
+        case 0:
+          _context7.prev = 0;
+          idmucthuchi = req.params.idmucthuchi;
+          _req$body2 = req.body, name = _req$body2.name, loaimuc = _req$body2.loaimuc;
+          _context7.next = 5;
+          return regeneratorRuntime.awrap(MucThuChi.findById(idmucthuchi));
+
+        case 5:
+          mucthuchi = _context7.sent;
+
+          if (mucthuchi) {
+            _context7.next = 8;
+            break;
+          }
+
+          return _context7.abrupt("return", res.json({
+            error: 'không tìm thấy mục thu chi'
+          }));
+
+        case 8:
+          mucthuchi.name = name;
+          mucthuchi.loaimuc = loaimuc;
+          _context7.next = 12;
+          return regeneratorRuntime.awrap(mucthuchi.save());
+
+        case 12:
+          res.json(mucthuchi);
+          _context7.next = 19;
+          break;
+
+        case 15:
+          _context7.prev = 15;
+          _context7.t0 = _context7["catch"](0);
+          console.error(_context7.t0);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 19:
+        case "end":
+          return _context7.stop();
+      }
+    }
+  }, null, null, [[0, 15]]);
+});
+router.post('/deletemucthuchi', function _callee8(req, res) {
   var ids, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, id, mucthuchi;
 
-  return regeneratorRuntime.async(function _callee4$(_context4) {
+  return regeneratorRuntime.async(function _callee8$(_context8) {
     while (1) {
-      switch (_context4.prev = _context4.next) {
+      switch (_context8.prev = _context8.next) {
         case 0:
-          _context4.prev = 0;
+          _context8.prev = 0;
           ids = req.body.ids;
           _iteratorNormalCompletion2 = true;
           _didIteratorError2 = false;
           _iteratorError2 = undefined;
-          _context4.prev = 5;
+          _context8.prev = 5;
           _iterator2 = ids[Symbol.iterator]();
 
         case 7:
           if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-            _context4.next = 18;
+            _context8.next = 18;
             break;
           }
 
           id = _step2.value;
-          _context4.next = 11;
+          _context8.next = 11;
           return regeneratorRuntime.awrap(MucThuChi.findById(id));
 
         case 11:
-          mucthuchi = _context4.sent;
+          mucthuchi = _context8.sent;
           mucthuchi.status = -1;
-          _context4.next = 15;
+          _context8.next = 15;
           return regeneratorRuntime.awrap(mucthuchi.save());
 
         case 15:
           _iteratorNormalCompletion2 = true;
-          _context4.next = 7;
+          _context8.next = 7;
           break;
 
         case 18:
-          _context4.next = 24;
+          _context8.next = 24;
           break;
 
         case 20:
-          _context4.prev = 20;
-          _context4.t0 = _context4["catch"](5);
+          _context8.prev = 20;
+          _context8.t0 = _context8["catch"](5);
           _didIteratorError2 = true;
-          _iteratorError2 = _context4.t0;
+          _iteratorError2 = _context8.t0;
 
         case 24:
-          _context4.prev = 24;
-          _context4.prev = 25;
+          _context8.prev = 24;
+          _context8.prev = 25;
 
           if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
             _iterator2["return"]();
           }
 
         case 27:
-          _context4.prev = 27;
+          _context8.prev = 27;
 
           if (!_didIteratorError2) {
-            _context4.next = 30;
+            _context8.next = 30;
             break;
           }
 
           throw _iteratorError2;
 
         case 30:
-          return _context4.finish(27);
+          return _context8.finish(27);
 
         case 31:
-          return _context4.finish(24);
+          return _context8.finish(24);
 
         case 32:
           res.json({
             message: 'xóa thành công'
           });
-          _context4.next = 39;
+          _context8.next = 39;
           break;
 
         case 35:
-          _context4.prev = 35;
-          _context4.t1 = _context4["catch"](0);
-          console.error(_context4.t1);
+          _context8.prev = 35;
+          _context8.t1 = _context8["catch"](0);
+          console.error(_context8.t1);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
         case 39:
         case "end":
-          return _context4.stop();
+          return _context8.stop();
       }
     }
   }, null, null, [[0, 35], [5, 20, 24, 32], [25,, 27, 31]]);
