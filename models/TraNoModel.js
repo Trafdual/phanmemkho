@@ -4,17 +4,20 @@ const tranoSchema = new mongoose.Schema({
   matrano: { type: String },
   hinhthuc: { type: String },
   nhacungcap: { type: mongoose.Schema.Types.ObjectId, ref: 'nhacungcap' },
-  ngaytra: { type: Date },
-  tongtra:{type:Number},
-  tongno:{type:Number},
+  ngaytrahet: { type: Date },
+  tongtra: { type: Number },
+  tongno: { type: Number },
   donno: [
     {
       loaisanpham: { type: mongoose.Schema.Types.ObjectId, ref: 'loaisanpham' },
       tienno: { type: Number },
       tienphaitra: { type: Number },
-      tiendatra: { type: Number }
+      tiendatra: { type: Number },
+      ngaytra: { type: Date }
     }
-  ]
+  ],
+  created: { type: Date },
+  datra: { type: Boolean, default: false }
 })
 const TraNo = mongoose.model('trano', tranoSchema)
 module.exports = TraNo

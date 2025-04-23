@@ -787,7 +787,12 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
     if (ghino === 'ghino') {
       loaisanpham.ghino = true
-      const trano = await TraNo.findOne({ nhacungcap: nhacungcap._id })
+
+      let trano = await TraNo.findOne({
+        nhacungcap: nhacungcap._id,
+        $or: [{ datra: false }, { datra: { $exists: false } }]
+      })
+
       if (trano) {
         const donno = trano.donno.find(
           dn => dn.loaisanpham.toString() === loaisanpham._id.toString()
@@ -803,13 +808,23 @@ router.post('/updateloaisanpham4', async (req, res) => {
             tiendatra: 0
           })
         }
-        trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
-        trano.tongtra = trano.donno.reduce(
-          (sum, item) => sum + item.tiendatra,
-          0
-        )
-        await trano.save()
+      } else {
+        trano = new TraNo({
+          nhacungcap: nhacungcap._id,
+          donno: [
+            {
+              loaisanpham: loaisanpham._id,
+              tienno: loaisanpham.tongtien,
+              tienphaitra: loaisanpham.tongtien,
+              tiendatra: 0
+            }
+          ]
+        })
       }
+      trano.tongno = trano.donno.reduce((sum, item) => sum + item.tienno, 0)
+      trano.tongtra = trano.donno.reduce((sum, item) => sum + item.tiendatra, 0)
+
+      await trano.save()
     } else {
       loaisanpham.ghino = false
       if (method === 'Tiền mặt') loaisanpham.method = 'tienmat'
@@ -834,6 +849,27 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
     sendEvent({ message: `Sản phẩm đã được cập nhật: ${updatedData}` })
     res.json(updatedData)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getnonhacungcap/:nhacungcapid', async (req, res) => {
+  try {
+    const nhacungcapid = req.params.nhacungcapid
+    const nhacungcap = await NhanCungCap.findById(nhacungcapid)
+    const trano = await TraNo.find({ nhacungcap: nhacungcap._id })
+    const tranojson = trano.map(tn => {
+      return {
+        _id: tn._id,
+        matrano: tn.matrano,
+        tongno: tn.tongno,
+        datra: tn.datra
+      }
+    })
+
+    res.json(tranojson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

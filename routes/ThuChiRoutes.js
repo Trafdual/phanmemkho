@@ -7,6 +7,11 @@ const NhaCungCap = require('../models/NhanCungCapModel')
 const KhachHang = require('../models/KhachHangModel')
 const moment = require('moment')
 
+const parseDate = dateString => {
+  return moment(dateString, 'DD/MM/YYYY').isValid()
+    ? moment(dateString, 'DD/MM/YYYY').toDate()
+    : null
+}
 router.get('/getthuchitienmat/:depotid', async (req, res) => {
   try {
     const depotid = req.params.depotid
@@ -80,7 +85,7 @@ router.get('/getthuchichuyenkhoan/:depotid', async (req, res) => {
   }
 })
 
-router.get('/gettatcathuchi/:depotid', async (req, res) => {
+router.get('/getphieuchi/:depotid', async (req, res) => {
   try {
     const depotid = req.params.depotid
     const depot = await Depot.findById(depotid)
@@ -111,6 +116,155 @@ router.get('/gettatcathuchi/:depotid', async (req, res) => {
 
     const filteredThuChi = thuchi.filter(item => item !== null)
     res.json(filteredThuChi)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getphieuchitheodate/:depotid', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query
+    const begintime = parseDate(startDate)
+    const endtime = parseDate(endDate)
+
+    const depotid = req.params.depotid
+    const depot = await Depot.findById(depotid)
+
+    const thuchiIds = depot.thuchi.map(tc => tc._id)
+
+    const query = {
+      _id: { $in: thuchiIds }
+    }
+
+    if (startDate && endDate) {
+      query.date = {
+        $gte: moment(begintime).startOf('day').toDate(),
+        $lte: moment(endtime).endOf('day').toDate()
+      }
+    }
+
+    const allThuChi = await ThuChi.find(query).lean()
+
+    const result = await Promise.all(
+      allThuChi.map(async tc => {
+        const loaichungtu = await LoaiChungTu.findById(tc.loaichungtu)
+        if (!loaichungtu || loaichungtu.name !== 'Phiếu chi') return null
+
+        let doituong = await NhaCungCap.findById(tc.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(tc.doituong)
+        }
+
+        return {
+          _id: tc._id,
+          mathuchi: tc.mathuchi,
+          date: moment(tc.date).format('DD/MM/YYYY'),
+          loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
+          tongtien: tc.tongtien,
+          doituong: doituong?.name || '',
+          lydo: tc.lydo,
+          method: tc.method,
+          loaitien: tc.loaitien
+        }
+      })
+    )
+
+    const filtered = result.filter(r => r !== null)
+    res.json(filtered)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getphieuthu/:depotid', async (req, res) => {
+  try {
+    const depotid = req.params.depotid
+    const depot = await Depot.findById(depotid)
+    const thuchi = await Promise.all(
+      depot.thuchi.map(async tc => {
+        const thuchitien = await ThuChi.findById(tc._id)
+        let doituong = await NhaCungCap.findById(thuchitien.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(thuchitien.doituong)
+        }
+        const loaichungtu = await LoaiChungTu.findById(thuchitien.loaichungtu)
+        if (loaichungtu.name === 'Phiếu thu') {
+          return {
+            _id: thuchitien._id,
+            mathuchi: thuchitien.mathuchi,
+            date: moment(thuchitien.date).format('DD/MM/YYYY'),
+            loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
+            tongtien: thuchitien.tongtien,
+            doituong: doituong.name || '',
+            lydo: thuchitien.lydo,
+            method: thuchitien.method,
+            loaitien: thuchitien.loaitien
+          }
+        }
+        return null
+      })
+    )
+
+    const filteredThuChi = thuchi.filter(item => item !== null)
+    res.json(filteredThuChi)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getphieuthutheodate/:depotid', async (req, res) => {
+  try {
+    const { startDate, endDate } = req.query
+    const begintime = parseDate(startDate)
+    const endtime = parseDate(endDate)
+
+    const depotid = req.params.depotid
+    const depot = await Depot.findById(depotid)
+
+    const thuchiIds = depot.thuchi.map(tc => tc._id)
+
+    const query = {
+      _id: { $in: thuchiIds }
+    }
+
+    if (startDate && endDate) {
+      query.date = {
+        $gte: moment(begintime).startOf('day').toDate(),
+        $lte: moment(endtime).endOf('day').toDate()
+      }
+    }
+
+    const allThuChi = await ThuChi.find(query).lean()
+
+    const result = await Promise.all(
+      allThuChi.map(async tc => {
+        const loaichungtu = await LoaiChungTu.findById(tc.loaichungtu)
+        if (!loaichungtu || loaichungtu.name !== 'Phiếu thu') return null
+
+        let doituong = await NhaCungCap.findById(tc.doituong)
+        if (!doituong) {
+          doituong = await KhachHang.findById(tc.doituong)
+        }
+
+        return {
+          _id: tc._id,
+          mathuchi: tc.mathuchi,
+          date: moment(tc.date).format('DD/MM/YYYY'),
+          loaichungtu: `${loaichungtu.name} - ${loaichungtu.method}`,
+          tongtien: tc.tongtien,
+          doituong: doituong?.name || '',
+          lydo: tc.lydo,
+          method: tc.method,
+          loaitien: tc.loaitien
+        }
+      })
+    )
+
+    const filtered = result.filter(r => r !== null)
+    res.json(filtered)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
