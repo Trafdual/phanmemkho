@@ -99,7 +99,16 @@ router.get('/banhang/:idsku/:idkho/:userid', function _callee3(req, res) {
                 switch (_context2.prev = _context2.next) {
                   case 0:
                     _context2.next = 2;
-                    return regeneratorRuntime.awrap(DungLuongSku.findById(dungluong._id));
+                    return regeneratorRuntime.awrap(DungLuongSku.findOne({
+                      _id: dungluong._id,
+                      $or: [{
+                        status: 1
+                      }, {
+                        status: {
+                          $exists: false
+                        }
+                      }]
+                    }));
 
                   case 2:
                     dl = _context2.sent;
@@ -113,7 +122,16 @@ router.get('/banhang/:idsku/:idkho/:userid', function _callee3(req, res) {
 
                   case 5:
                     _context2.next = 7;
-                    return regeneratorRuntime.awrap(Sku.findById(dl.sku));
+                    return regeneratorRuntime.awrap(Sku.findOne({
+                      _id: dl.sku,
+                      $or: [{
+                        status: 1
+                      }, {
+                        status: {
+                          $exists: false
+                        }
+                      }]
+                    }));
 
                   case 7:
                     sku1 = _context2.sent;

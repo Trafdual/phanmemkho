@@ -44,10 +44,16 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
 
     const dungluongskujson = await Promise.all(
       sku.dungluong.map(async dungluong => {
-        const dl = await DungLuongSku.findById(dungluong._id)
+        const dl = await DungLuongSku.findOne({
+          _id: dungluong._id,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        })
         if (!dl) return null
 
-        const sku1 = await Sku.findById(dl.sku)
+        const sku1 = await Sku.findOne({
+          _id: dl.sku,
+          $or: [{ status: 1 }, { status: { $exists: false } }]
+        })
         let loaihanghoa
 
         const sanpham = await Promise.all(
