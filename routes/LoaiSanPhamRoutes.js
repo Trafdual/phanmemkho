@@ -753,9 +753,9 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
       for (const imel of imelList) {
         if (imelTrongKhoSet.has(imel)) {
-          return res.json({ message: 'Sản phẩm đã tồn tại trong kho' })
+          return res.json({message:'sản phẩm đã tồn tại'})
         } else {
-          sp = new SanPham({
+          let sp = new SanPham({
             name,
             imel,
             datenhap: loaisanpham.date,
@@ -777,9 +777,8 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
           dungluongsku.sanpham.push(sp._id)
           await dungluongsku.save()
+          updatedProducts.push(sp)
         }
-
-        updatedProducts.push(sp)
       }
     }
 
@@ -870,6 +869,30 @@ router.get('/getnonhacungcap/:nhacungcapid', async (req, res) => {
     })
 
     res.json(tranojson)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.get('/getdonno/:idtrano', async (req, res) => {
+  try {
+    const idtrano = req.params.idtrano
+    const trano = await TraNo.findById(idtrano)
+    const donnojson = await Promise.all(
+      trano.donno.map(async dn => {
+        const lohang = await LoaiSanPham.findById(dn.loaisanpham)
+        return {
+          _id: dn._id,
+          malohang: lohang.malsp,
+          tienno: dn.tienno,
+          tienphaitra: dn.tienphaitra,
+          tiendatra: dn.tiendatra,
+          ngaytra: moment(dn.ngaytra).format('HH:mm DD/MM/YYYY') || ''
+        }
+      })
+    )
+    res.json(donnojson)
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

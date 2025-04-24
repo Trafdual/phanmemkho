@@ -79,7 +79,8 @@ router.post('/postkhachhang/:depotId', async (req, res) => {
     const depot = await Depot.findById(depotId)
     const { name, phone, email, cancuoc, address, date, nhomkhachhang } =
       req.body
-    const formattedDate = moment(date, 'DD/MM/YYYY').format('YYYY-MM-DD')
+    const formattedDate = moment(date).format('YYYY-MM-DD')
+    console.log(formattedDate)
     const khachhang = new KhachHang({
       name,
       phone,
@@ -92,7 +93,7 @@ router.post('/postkhachhang/:depotId', async (req, res) => {
     if (nhomkhachhang) {
       khachhang.nhomkhachhang = nhomkhachhang
     }
-    
+
     const makh = 'KH' + khachhang._id.toString().slice(-5)
     khachhang.makh = makh
     depot.khachang.push(khachhang._id)
