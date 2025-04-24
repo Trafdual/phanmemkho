@@ -250,7 +250,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
 
     for (const product of products) {
       const { dongia, imelist, soluong, idsku } = product
-      hoadon.tongtien += dongia
+      hoadon.tongtien += dongia * soluong
 
       if (!imelist || !Array.isArray(imelist)) {
         const sanpham = await Promise.all(
@@ -369,7 +369,7 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
       hoadon.ghino = true
       const congno = new CongNo({
         khachhang: khachhang._id,
-        tongtien: hoadon.tongtien,
+        tongtien: hoadon.tongtien - hoadon.datcoc,
         date: momenttimezone().toDate(),
         depot: depot._id
       })
@@ -523,7 +523,7 @@ router.get('/soluonglenh/:idkho', async (req, res) => {
     if (!idkho || idkho === 'null' || idkho === 'undefined') {
       return res.status(400).json({ error: 'ID kho không hợp lệ' })
     }
-    
+
     if (!idkho.match(/^[0-9a-fA-F]{24}$/)) {
       return res.status(400).json({ error: 'ID kho không hợp lệ' })
     }

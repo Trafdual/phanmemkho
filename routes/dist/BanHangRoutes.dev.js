@@ -547,7 +547,7 @@ router.post('/postchonsanpham/:idkho', function _callee11(req, res) {
                   case 0:
                     product = _step.value;
                     dongia = product.dongia, imelist = product.imelist, soluong = product.soluong, idsku = product.idsku;
-                    hoadon.tongtien += dongia;
+                    hoadon.tongtien += dongia * soluong;
 
                     if (!(!imelist || !Array.isArray(imelist))) {
                       _context13.next = 40;
@@ -1013,7 +1013,7 @@ router.post('/postchonsanpham/:idkho', function _callee11(req, res) {
           hoadon.ghino = true;
           congno = new CongNo({
             khachhang: khachhang._id,
-            tongtien: hoadon.tongtien,
+            tongtien: hoadon.tongtien - hoadon.datcoc,
             date: momenttimezone().toDate(),
             depot: depot._id
           });

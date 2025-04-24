@@ -65,7 +65,7 @@ router.get('/gettrano/:idkho', async (req, res) => {
             namekhachhang: khachhang.name,
             phone: khachhang.phone,
             address: khachhang.address || '',
-            tongtien: tn.tongtien
+            tongtien: tn.tongtien - tn.datcoc
           }
         }
         return null
@@ -145,7 +145,7 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
 
       thuchi.chitiet.push({
         diengiai: `Trả nợ hóa đơn ${trano.mahoadon}`,
-        sotien: trano.tongtien,
+        sotien: trano.tongtien - trano.datcoc,
         mucthuchi: mucthuchi._id
       })
       mucthuchi.thuchi.push(thuchi._id)

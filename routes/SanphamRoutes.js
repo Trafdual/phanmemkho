@@ -596,10 +596,12 @@ router.post('/chuyenkho2/:khoId', async (req, res) => {
       tongtien += sanpham.price
       kho1.sanpham = kho1.sanpham.filter(sp => sp._id != idsanpham)
       kho.sanpham.push(sanpham._id)
+      sanpham.kho = kho._id
       dieuchuyen.sanpham.push(sanpham._id)
       loaisp.sanpham = loaisp.sanpham.filter(sp => sp._id != idsanpham)
       loaisp.conlai = loaisp.sanpham.length
       loaisp1.sanpham.push(sanpham._id)
+      await sanpham.save()
       await loaisp.save()
       await kho1.save()
       await kho.save()

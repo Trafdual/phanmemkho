@@ -163,7 +163,7 @@ router.get('/gettrano/:idkho', function _callee3(req, res) {
                       namekhachhang: khachhang.name,
                       phone: khachhang.phone,
                       address: khachhang.address || '',
-                      tongtien: tn.tongtien
+                      tongtien: tn.tongtien - tn.datcoc
                     });
 
                   case 12:
@@ -315,7 +315,7 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
         case 37:
           thuchi.chitiet.push({
             diengiai: "Tr\u1EA3 n\u1EE3 h\xF3a \u0111\u01A1n ".concat(trano.mahoadon),
-            sotien: trano.tongtien,
+            sotien: trano.tongtien - trano.datcoc,
             mucthuchi: mucthuchi._id
           });
           mucthuchi.thuchi.push(thuchi._id);
