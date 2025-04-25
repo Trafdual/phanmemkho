@@ -132,7 +132,8 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
       method,
       lydo: 'Trả nợ',
       loaitien: 'Tiền thu',
-      depot: khoId
+      depot: khoId,
+      date: new Date()
     })
     thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5)
     lct.thuchi.push(thuchi._id)
@@ -161,6 +162,21 @@ router.post('/thuno/:userID/:khoId', async (req, res) => {
     await depot.save()
     await lct.save()
     res.json({ message: 'Thu nợ thành công.' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/capngayhangloat', async (req, res) => {
+  try {
+    const { codes } = req.body
+    for (const code of codes) {
+      const thuchi = await ThuChi.findOne({ mathuchi: code })
+      thuchi.date = new Date()
+      await thuchi.save()
+    }
+    res.json({ message: 'thành công' })
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })

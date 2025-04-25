@@ -4,6 +4,7 @@ const CongNo = require('../models/CongNoModel')
 const HoaDon = require('../models/HoaDonModel')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
 const Depot = require('../models/DepotModel')
+const DieuChuyen = require('../models/DieuChuyenModel')
 router.post('/getdoanhthu/:depotid', async (req, res) => {
   try {
     const depotId = req.params.depotid
@@ -21,10 +22,11 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
 
     const congno = await CongNo.find({
       depot: depot._id,
-      date: { $lt: from, $lte: end }
+      date: { $gte: from, $lte: end }
     })
+    console.log(congno)
 
-    const tongCongNo = congno.reduce((sum, item) => sum + item.amount, 0)
+    const tongCongNo = congno.reduce((sum, item) => sum + item.tongtien, 0)
 
     const congnotruoc = await CongNo.find({
       depot: depot._id,
@@ -32,7 +34,7 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
     })
 
     const tongCongNoTruoc = congnotruoc.reduce(
-      (sum, item) => sum + item.amount,
+      (sum, item) => sum + item.tongtien,
       0
     )
 
@@ -48,6 +50,10 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
       date: { $gte: from, $lte: end }
     })
     const thuchi = await ThuChi.find({
+      depot: depotId,
+      date: { $gte: from, $lte: end }
+    })
+    const dieuchuyen = await DieuChuyen.find({
       depot: depotId,
       date: { $gte: from, $lte: end }
     })
@@ -74,6 +80,10 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
       depot: depotId,
       date: { $gte: fromtruoc, $lte: endtruoc }
     })
+    const dieuchuyentruoc = await DieuChuyen.find({
+      depot: depotId,
+      date: { $gte: fromtruoc, $lte: endtruoc }
+    })
 
     const { tongThu: tongThutruoc, tongChi: tongChitruoc } = thuchitruoc.reduce(
       (acc, tc) => {
@@ -88,12 +98,21 @@ router.post('/getdoanhthu/:depotid', async (req, res) => {
     )
 
     const tongThuChitruoc = tongThutruoc - tongChitruoc
-
-    const doanhthu = hoadon.reduce((total, hd) => total + hd.tongtien, 0)
-    const doanhthutruoc = hoadontruoc.reduce(
-      (total, hd) => total + hd.tongtien,
+    const dieu = dieuchuyen.reduce(
+      (total, hd) =>
+        total + (typeof hd.tongtien === 'number' ? hd.tongtien : 0),
       0
     )
+
+    const dieutruoc = dieuchuyentruoc.reduce(
+      (total, hd) =>
+        total + (typeof hd.tongtien === 'number' ? hd.tongtien : 0),
+      0
+    )
+
+    const doanhthu = hoadon.reduce((total, hd) => total + hd.tongtien, 0) + dieu
+    const doanhthutruoc =
+      hoadontruoc.reduce((total, hd) => total + hd.tongtien, 0) + dieutruoc
     const loaisanphamdoanhthu = loaisanpham.reduce(
       (total, lsp) => total + lsp.tongtien,
       0

@@ -38,6 +38,10 @@ var tranoSchema = new mongoose.Schema({
     },
     ngaytra: {
       type: Date
+    },
+    dathanhtoan: {
+      type: Boolean,
+      "default": false
     }
   }],
   created: {

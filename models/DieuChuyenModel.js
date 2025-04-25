@@ -5,6 +5,7 @@ const dieuchuyenSchema = new mongoose.Schema({
   depot: { type: mongoose.Schema.Types.ObjectId, ref: 'depot' },
   trangthai: { type: String },
   date: { type: Date },
+  tongtien:{type:Number},
   kiemtra:{type:Boolean, default:false}
 })
 const DieuChuyen = mongoose.model('dieuchuyen', dieuchuyenSchema)

@@ -12,8 +12,10 @@ var LoaiSanPham = require('../models/LoaiSanPhamModel');
 
 var Depot = require('../models/DepotModel');
 
+var DieuChuyen = require('../models/DieuChuyenModel');
+
 router.post('/getdoanhthu/:depotid', function _callee(req, res) {
-  var depotId, _req$query, fromDate, endDate, fromDatetruoc, endDatetruoc, from, end, fromtruoc, endtruoc, depot, congno, tongCongNo, congnotruoc, tongCongNoTruoc, hoadon, hoadontruoc, loaisanpham, thuchi, _thuchi$reduce, tongThu, tongChi, tongThuChi, loaisanphamtruoc, thuchitruoc, _thuchitruoc$reduce, tongThutruoc, tongChitruoc, tongThuChitruoc, doanhthu, doanhthutruoc, loaisanphamdoanhthu, loaisanphamdoanhthutruoc, doanhthutong, doanhthutongtruoc, doanhthujson;
+  var depotId, _req$query, fromDate, endDate, fromDatetruoc, endDatetruoc, from, end, fromtruoc, endtruoc, depot, congno, tongCongNo, congnotruoc, tongCongNoTruoc, hoadon, hoadontruoc, loaisanpham, thuchi, dieuchuyen, _thuchi$reduce, tongThu, tongChi, tongThuChi, loaisanphamtruoc, thuchitruoc, dieuchuyentruoc, _thuchitruoc$reduce, tongThutruoc, tongChitruoc, tongThuChitruoc, dieu, dieutruoc, doanhthu, doanhthutruoc, loaisanphamdoanhthu, loaisanphamdoanhthutruoc, doanhthutong, doanhthutongtruoc, doanhthujson;
 
   return regeneratorRuntime.async(function _callee$(_context) {
     while (1) {
@@ -48,17 +50,18 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
           return regeneratorRuntime.awrap(CongNo.find({
             depot: depot._id,
             date: {
-              $lt: from,
+              $gte: from,
               $lte: end
             }
           }));
 
         case 16:
           congno = _context.sent;
+          console.log(congno);
           tongCongNo = congno.reduce(function (sum, item) {
-            return sum + item.amount;
+            return sum + item.tongtien;
           }, 0);
-          _context.next = 20;
+          _context.next = 21;
           return regeneratorRuntime.awrap(CongNo.find({
             depot: depot._id,
             date: {
@@ -67,10 +70,10 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             }
           }));
 
-        case 20:
+        case 21:
           congnotruoc = _context.sent;
           tongCongNoTruoc = congnotruoc.reduce(function (sum, item) {
-            return sum + item.amount;
+            return sum + item.tongtien;
           }, 0);
           hoadon = depot.hoadon.filter(function (hd) {
             return new Date(hd.date) >= from && new Date(hd.date) <= end;
@@ -78,7 +81,7 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
           hoadontruoc = depot.hoadon.filter(function (hd) {
             return new Date(hd.date) >= fromtruoc && new Date(hd.date) <= endtruoc;
           });
-          _context.next = 26;
+          _context.next = 27;
           return regeneratorRuntime.awrap(LoaiSanPham.find({
             depot: depotId,
             date: {
@@ -87,9 +90,9 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             }
           }));
 
-        case 26:
+        case 27:
           loaisanpham = _context.sent;
-          _context.next = 29;
+          _context.next = 30;
           return regeneratorRuntime.awrap(ThuChi.find({
             depot: depotId,
             date: {
@@ -98,8 +101,19 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             }
           }));
 
-        case 29:
+        case 30:
           thuchi = _context.sent;
+          _context.next = 33;
+          return regeneratorRuntime.awrap(DieuChuyen.find({
+            depot: depotId,
+            date: {
+              $gte: from,
+              $lte: end
+            }
+          }));
+
+        case 33:
+          dieuchuyen = _context.sent;
           _thuchi$reduce = thuchi.reduce(function (acc, tc) {
             if (tc.loaitien === 'Tiền thu') {
               acc.tongThu += tc.tongtien;
@@ -113,7 +127,7 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             tongChi: 0
           }), tongThu = _thuchi$reduce.tongThu, tongChi = _thuchi$reduce.tongChi;
           tongThuChi = tongThu - tongChi;
-          _context.next = 34;
+          _context.next = 38;
           return regeneratorRuntime.awrap(LoaiSanPham.find({
             depot: depotId,
             date: {
@@ -122,9 +136,9 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             }
           }));
 
-        case 34:
+        case 38:
           loaisanphamtruoc = _context.sent;
-          _context.next = 37;
+          _context.next = 41;
           return regeneratorRuntime.awrap(ThuChi.find({
             depot: depotId,
             date: {
@@ -133,8 +147,19 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             }
           }));
 
-        case 37:
+        case 41:
           thuchitruoc = _context.sent;
+          _context.next = 44;
+          return regeneratorRuntime.awrap(DieuChuyen.find({
+            depot: depotId,
+            date: {
+              $gte: fromtruoc,
+              $lte: endtruoc
+            }
+          }));
+
+        case 44:
+          dieuchuyentruoc = _context.sent;
           _thuchitruoc$reduce = thuchitruoc.reduce(function (acc, tc) {
             if (tc.loaitien === 'Tiền thu') {
               acc.tongThu += tc.tongtien || 0;
@@ -148,12 +173,18 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             tongChi: 0
           }), tongThutruoc = _thuchitruoc$reduce.tongThu, tongChitruoc = _thuchitruoc$reduce.tongChi;
           tongThuChitruoc = tongThutruoc - tongChitruoc;
+          dieu = dieuchuyen.reduce(function (total, hd) {
+            return total + (typeof hd.tongtien === 'number' ? hd.tongtien : 0);
+          }, 0);
+          dieutruoc = dieuchuyentruoc.reduce(function (total, hd) {
+            return total + (typeof hd.tongtien === 'number' ? hd.tongtien : 0);
+          }, 0);
           doanhthu = hoadon.reduce(function (total, hd) {
             return total + hd.tongtien;
-          }, 0);
+          }, 0) + dieu;
           doanhthutruoc = hoadontruoc.reduce(function (total, hd) {
             return total + hd.tongtien;
-          }, 0);
+          }, 0) + dieutruoc;
           loaisanphamdoanhthu = loaisanpham.reduce(function (total, lsp) {
             return total + lsp.tongtien;
           }, 0);
@@ -175,23 +206,23 @@ router.post('/getdoanhthu/:depotid', function _callee(req, res) {
             doanhthutongtruoc: doanhthutongtruoc
           };
           res.json(doanhthujson);
-          _context.next = 54;
+          _context.next = 63;
           break;
 
-        case 50:
-          _context.prev = 50;
+        case 59:
+          _context.prev = 59;
           _context.t0 = _context["catch"](0);
           console.error(_context.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 54:
+        case 63:
         case "end":
           return _context.stop();
       }
     }
-  }, null, null, [[0, 50]]);
+  }, null, null, [[0, 59]]);
 });
 router.get('/getdoanhthu/:depotid', function _callee2(req, res) {
   var depotId, _req$query2, fromDate, endDate, fromDatetruoc, endDatetruoc, from, end, fromtruoc, endtruoc, hoadon, loaisanpham, thuchi, hoadontruoc, loaisanphamtruoc, thuchitruoc, doanhthu, doanhthutruoc, loaisanphamdoanhthu, loaisanphamdoanhthutruoc, thuchidoanhthu, thuchidoanhthutruoc, doanhthutong, doanhthutongtruoc, doanhthujson;

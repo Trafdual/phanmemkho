@@ -753,7 +753,7 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
       for (const imel of imelList) {
         if (imelTrongKhoSet.has(imel)) {
-          return res.json({message:'sản phẩm đã tồn tại'})
+          return res.json({ message: 'sản phẩm đã tồn tại' })
         } else {
           let sp = new SanPham({
             name,
@@ -888,7 +888,10 @@ router.get('/getdonno/:idtrano', async (req, res) => {
           tienno: dn.tienno,
           tienphaitra: dn.tienphaitra,
           tiendatra: dn.tiendatra,
-          ngaytra: moment(dn.ngaytra).format('HH:mm DD/MM/YYYY') || ''
+          ngaytra: dn.ngaytra
+            ? moment(dn.ngaytra).format('HH:mm DD/MM/YYYY')
+            : 'Chưa cập nhật',
+          dathanhtoan: dn.dathanhtoan || false
         }
       })
     )
@@ -896,6 +899,41 @@ router.get('/getdonno/:idtrano', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/tranonhacungcap/:idtrano', async (req, res) => {
+  try {
+    const { payments } = req.body
+    const idtrano = req.params.idtrano
+
+    const trano = await TraNo.findById(idtrano)
+    if (!trano) {
+      return res.status(404).json({ message: 'Không tìm thấy phiếu trả nợ.' })
+    }
+
+    payments.forEach(pay => {
+      const donno = trano.donno.find(dn => dn._id.toString() === pay.iddonno)
+      if (donno) {
+        donno.tiendatra += pay.sotientra
+        if (donno.tiendatra === donno.tienphaitra) {
+          donno.dathanhtoan = true
+        }
+        donno.ngaytra = new Date()
+      }
+    })
+
+    const allPaid = trano.donno.every(dn => dn.dathanhtoan)
+    if (allPaid) {
+      trano.datra = true
+      trano.ngaytrahet = new Date()
+    }
+
+    await trano.save()
+    res.json({ message: 'Trả nợ thành công.' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi khi trả nợ.' })
   }
 })
 

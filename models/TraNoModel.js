@@ -13,7 +13,8 @@ const tranoSchema = new mongoose.Schema({
       tienno: { type: Number },
       tienphaitra: { type: Number },
       tiendatra: { type: Number },
-      ngaytra: { type: Date }
+      ngaytra: { type: Date },
+      dathanhtoan: { type: Boolean, default: false }
     }
   ],
   created: { type: Date },

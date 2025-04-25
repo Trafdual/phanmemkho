@@ -16,6 +16,8 @@ var DungLuong = require('../models/DungluongSkuModel');
 
 var LoaiSanPham = require('../models/LoaiSanPhamModel');
 
+var DieuChuyen = require('../models/DieuChuyenModel');
+
 router.get('/topkhachhang/:idkho', function _callee3(req, res) {
   var idkho, depot, topkhachhang, sortedKhachHang, top4KhachHang;
   return regeneratorRuntime.async(function _callee3$(_context3) {
@@ -198,40 +200,37 @@ router.get('/sanphamban/:idkho', function _callee5(req, res) {
     }
   }, null, null, [[0, 15]]);
 });
-router.get('/doanhthutheothang/:idkho', function _callee8(req, res) {
-  var khoid, kho, year, tongTienHoaDon, tongTienLoaiSP, doanhThuTheoThang, i, barData;
-  return regeneratorRuntime.async(function _callee8$(_context8) {
+router.get('/doanhthutheothang/:idkho', function _callee9(req, res) {
+  var khoid, kho, year, tongTienHoaDon, tongTienLoaiSP, doanhThuTheoThang, tongtiendieuchuyen, i, barData;
+  return regeneratorRuntime.async(function _callee9$(_context9) {
     while (1) {
-      switch (_context8.prev = _context8.next) {
+      switch (_context9.prev = _context9.next) {
         case 0:
-          _context8.prev = 0;
+          _context9.prev = 0;
           khoid = req.params.idkho;
-          _context8.next = 4;
+          _context9.next = 4;
           return regeneratorRuntime.awrap(Depot.findById(khoid));
 
         case 4:
-          kho = _context8.sent;
+          kho = _context9.sent;
 
           if (kho) {
-            _context8.next = 7;
+            _context9.next = 7;
             break;
           }
 
-          return _context8.abrupt("return", res.status(404).json({
+          return _context9.abrupt("return", res.status(404).json({
             message: 'Không tìm thấy kho.'
           }));
 
         case 7:
-          year = new Date().getFullYear(); // Khởi tạo mảng 12 tháng cho hóa đơn, loại sản phẩm và doanh thu
+          year = new Date().getFullYear();
+          tongTienHoaDon = Array(12).fill(0);
+          tongTienLoaiSP = Array(12).fill(0);
+          doanhThuTheoThang = Array(12).fill(0);
+          tongtiendieuchuyen = Array(12).fill(0); // Tính tổng tiền hóa đơn theo tháng
 
-          tongTienHoaDon = Array(12).fill(0); // Tổng tiền hóa đơn theo tháng
-
-          tongTienLoaiSP = Array(12).fill(0); // Tổng tiền loại sản phẩm theo tháng
-
-          doanhThuTheoThang = Array(12).fill(0); // Doanh thu từng tháng
-          // Tính tổng tiền hóa đơn theo tháng
-
-          _context8.next = 13;
+          _context9.next = 14;
           return regeneratorRuntime.awrap(Promise.all(kho.hoadon.map(function _callee6(hd) {
             var hoaDon, ngayLap, month;
             return regeneratorRuntime.async(function _callee6$(_context6) {
@@ -262,8 +261,8 @@ router.get('/doanhthutheothang/:idkho', function _callee8(req, res) {
             });
           })));
 
-        case 13:
-          _context8.next = 15;
+        case 14:
+          _context9.next = 16;
           return regeneratorRuntime.awrap(Promise.all(kho.loaisanpham.map(function _callee7(loaiSP) {
             var loaiSanPham, ngayLap, month;
             return regeneratorRuntime.async(function _callee7$(_context7) {
@@ -293,10 +292,42 @@ router.get('/doanhthutheothang/:idkho', function _callee8(req, res) {
             });
           })));
 
-        case 15:
+        case 16:
+          _context9.next = 18;
+          return regeneratorRuntime.awrap(Promise.all(kho.dieuchuyen.map(function _callee8(dieuchuyen) {
+            var dieuchuyen1, ngayLap, month, tongtien;
+            return regeneratorRuntime.async(function _callee8$(_context8) {
+              while (1) {
+                switch (_context8.prev = _context8.next) {
+                  case 0:
+                    _context8.next = 2;
+                    return regeneratorRuntime.awrap(DieuChuyen.findById(dieuchuyen._id));
+
+                  case 2:
+                    dieuchuyen1 = _context8.sent;
+
+                    if (dieuchuyen1 && dieuchuyen1.date) {
+                      ngayLap = new Date(dieuchuyen1.date);
+
+                      if (ngayLap.getFullYear() === year) {
+                        month = ngayLap.getMonth();
+                        tongtien = typeof dieuchuyen1.tongtien === 'number' ? dieuchuyen1.tongtien : 0;
+                        tongtiendieuchuyen[month] = (tongtiendieuchuyen[month] || 0) + tongtien;
+                      }
+                    }
+
+                  case 4:
+                  case "end":
+                    return _context8.stop();
+                }
+              }
+            });
+          })));
+
+        case 18:
           // Tính doanh thu từng tháng
           for (i = 0; i < 12; i++) {
-            doanhThuTheoThang[i] = tongTienHoaDon[i] - tongTienLoaiSP[i];
+            doanhThuTheoThang[i] = tongTienHoaDon[i] - tongTienLoaiSP[i] + tongtiendieuchuyen[i];
           } // Tạo dữ liệu theo cấu trúc barData
 
 
@@ -310,22 +341,22 @@ router.get('/doanhthutheothang/:idkho', function _callee8(req, res) {
           }; // Trả về dữ liệu
 
           res.json(barData);
-          _context8.next = 24;
+          _context9.next = 27;
           break;
 
-        case 20:
-          _context8.prev = 20;
-          _context8.t0 = _context8["catch"](0);
-          console.error(_context8.t0);
+        case 23:
+          _context9.prev = 23;
+          _context9.t0 = _context9["catch"](0);
+          console.error(_context9.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 24:
+        case 27:
         case "end":
-          return _context8.stop();
+          return _context9.stop();
       }
     }
-  }, null, null, [[0, 20]]);
+  }, null, null, [[0, 23]]);
 });
 module.exports = router;

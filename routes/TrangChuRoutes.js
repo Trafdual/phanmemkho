@@ -6,6 +6,7 @@ const SanPham = require('../models/SanPhamModel')
 const Sku = require('../models/SkuModel')
 const DungLuong = require('../models/DungluongSkuModel')
 const LoaiSanPham = require('../models/LoaiSanPhamModel')
+const DieuChuyen = require('../models/DieuChuyenModel')
 
 router.get('/topkhachhang/:idkho', async (req, res) => {
   try {
@@ -106,10 +107,10 @@ router.get('/doanhthutheothang/:idkho', async (req, res) => {
 
     const year = new Date().getFullYear()
 
-    // Khởi tạo mảng 12 tháng cho hóa đơn, loại sản phẩm và doanh thu
-    const tongTienHoaDon = Array(12).fill(0) // Tổng tiền hóa đơn theo tháng
-    const tongTienLoaiSP = Array(12).fill(0) // Tổng tiền loại sản phẩm theo tháng
-    const doanhThuTheoThang = Array(12).fill(0) // Doanh thu từng tháng
+    const tongTienHoaDon = Array(12).fill(0)
+    const tongTienLoaiSP = Array(12).fill(0)
+    const doanhThuTheoThang = Array(12).fill(0)
+    const tongtiendieuchuyen = Array(12).fill(0)
 
     // Tính tổng tiền hóa đơn theo tháng
     await Promise.all(
@@ -144,9 +145,32 @@ router.get('/doanhthutheothang/:idkho', async (req, res) => {
       })
     )
 
+    await Promise.all(
+      kho.dieuchuyen.map(async dieuchuyen => {
+        const dieuchuyen1 = await DieuChuyen.findById(dieuchuyen._id)
+
+        if (dieuchuyen1 && dieuchuyen1.date) {
+          const ngayLap = new Date(dieuchuyen1.date)
+
+          if (ngayLap.getFullYear() === year) {
+            const month = ngayLap.getMonth()
+
+            const tongtien =
+              typeof dieuchuyen1.tongtien === 'number'
+                ? dieuchuyen1.tongtien
+                : 0
+
+            tongtiendieuchuyen[month] =
+              (tongtiendieuchuyen[month] || 0) + tongtien
+          }
+        }
+      })
+    )
+
     // Tính doanh thu từng tháng
     for (let i = 0; i < 12; i++) {
-      doanhThuTheoThang[i] = tongTienHoaDon[i] - tongTienLoaiSP[i]
+      doanhThuTheoThang[i] =
+        tongTienHoaDon[i] - tongTienLoaiSP[i] + tongtiendieuchuyen[i]
     }
 
     // Tạo dữ liệu theo cấu trúc barData
@@ -194,6 +218,5 @@ router.get('/doanhthutheothang/:idkho', async (req, res) => {
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
-
 
 module.exports = router

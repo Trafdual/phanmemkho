@@ -1659,39 +1659,44 @@ router.post('/chuyenkho2/:khoId', function _callee20(req, res) {
           return _context23.finish(35);
 
         case 43:
+          dieuchuyen.tongtien = tongtien;
           loaisp1.tongtien = tongtien;
-          _context23.next = 46;
+          _context23.next = 47;
+          return regeneratorRuntime.awrap(dieuchuyen.save());
+
+        case 47:
+          _context23.next = 49;
           return regeneratorRuntime.awrap(_kho.save());
 
-        case 46:
-          _context23.next = 48;
+        case 49:
+          _context23.next = 51;
           return regeneratorRuntime.awrap(kho1.save());
 
-        case 48:
-          _context23.next = 50;
+        case 51:
+          _context23.next = 53;
           return regeneratorRuntime.awrap(loaisp1.save());
 
-        case 50:
+        case 53:
           res.json({
             message: 'Chuyển kho hàng loạt thành công!'
           });
-          _context23.next = 57;
+          _context23.next = 60;
           break;
 
-        case 53:
-          _context23.prev = 53;
+        case 56:
+          _context23.prev = 56;
           _context23.t1 = _context23["catch"](0);
           console.error(_context23.t1);
           res.status(500).json({
             error: 'Có lỗi xảy ra.'
           });
 
-        case 57:
+        case 60:
         case "end":
           return _context23.stop();
       }
     }
-  }, null, null, [[0, 53], [20, 31, 35, 43], [36,, 38, 42]]);
+  }, null, null, [[0, 56], [20, 31, 35, 43], [36,, 38, 42]]);
 });
 router.get('/getxuatkho/:khoid', function _callee22(req, res) {
   var _khoid, _kho2, sp1;

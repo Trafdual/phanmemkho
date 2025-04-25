@@ -279,7 +279,8 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
             method: method,
             lydo: 'Trả nợ',
             loaitien: 'Tiền thu',
-            depot: khoId
+            depot: khoId,
+            date: new Date()
           });
           thuchi.mathuchi = 'PT' + thuchi._id.toString().slice(-5);
           lct.thuchi.push(thuchi._id);
@@ -402,5 +403,99 @@ router.post('/thuno/:userID/:khoId', function _callee4(req, res) {
       }
     }
   }, null, null, [[0, 71], [28, 47, 51, 59], [52,, 54, 58]]);
+});
+router.post('/capngayhangloat', function _callee5(req, res) {
+  var codes, _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, code, thuchi;
+
+  return regeneratorRuntime.async(function _callee5$(_context5) {
+    while (1) {
+      switch (_context5.prev = _context5.next) {
+        case 0:
+          _context5.prev = 0;
+          codes = req.body.codes;
+          _iteratorNormalCompletion2 = true;
+          _didIteratorError2 = false;
+          _iteratorError2 = undefined;
+          _context5.prev = 5;
+          _iterator2 = codes[Symbol.iterator]();
+
+        case 7:
+          if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
+            _context5.next = 18;
+            break;
+          }
+
+          code = _step2.value;
+          _context5.next = 11;
+          return regeneratorRuntime.awrap(ThuChi.findOne({
+            mathuchi: code
+          }));
+
+        case 11:
+          thuchi = _context5.sent;
+          thuchi.date = new Date();
+          _context5.next = 15;
+          return regeneratorRuntime.awrap(thuchi.save());
+
+        case 15:
+          _iteratorNormalCompletion2 = true;
+          _context5.next = 7;
+          break;
+
+        case 18:
+          _context5.next = 24;
+          break;
+
+        case 20:
+          _context5.prev = 20;
+          _context5.t0 = _context5["catch"](5);
+          _didIteratorError2 = true;
+          _iteratorError2 = _context5.t0;
+
+        case 24:
+          _context5.prev = 24;
+          _context5.prev = 25;
+
+          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
+            _iterator2["return"]();
+          }
+
+        case 27:
+          _context5.prev = 27;
+
+          if (!_didIteratorError2) {
+            _context5.next = 30;
+            break;
+          }
+
+          throw _iteratorError2;
+
+        case 30:
+          return _context5.finish(27);
+
+        case 31:
+          return _context5.finish(24);
+
+        case 32:
+          res.json({
+            message: 'thành công'
+          });
+          _context5.next = 39;
+          break;
+
+        case 35:
+          _context5.prev = 35;
+          _context5.t1 = _context5["catch"](0);
+          console.error(_context5.t1);
+          res.status(500).json({
+            message: 'Đã xảy ra lỗi.'
+          });
+
+        case 39:
+        case "end":
+          return _context5.stop();
+      }
+    }
+  }, null, null, [[0, 35], [5, 20, 24, 32], [25,, 27, 31]]);
 });
 module.exports = router;
