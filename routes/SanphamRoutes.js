@@ -14,7 +14,9 @@ router.get('/getsanpham/:idloaisanpham', async (req, res) => {
     const sanpham = await Promise.all(
       loaisanpham.sanpham.map(async sp => {
         const sp1 = await SanPham.findById(sp._id)
+        console.log(sp1)
         const sku = await DungLuongSku.findById(sp1.dungluongsku)
+        console.log(sku)
         return {
           masp: sp1.masp,
           masku: sku.madungluong,

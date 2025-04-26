@@ -55,11 +55,13 @@ router.get('/getsanpham/:idloaisanpham', function _callee2(req, res) {
 
                   case 2:
                     sp1 = _context.sent;
-                    _context.next = 5;
+                    console.log(sp1);
+                    _context.next = 6;
                     return regeneratorRuntime.awrap(DungLuongSku.findById(sp1.dungluongsku));
 
-                  case 5:
+                  case 6:
                     sku = _context.sent;
+                    console.log(sku);
                     return _context.abrupt("return", {
                       masp: sp1.masp,
                       masku: sku.madungluong,
@@ -71,7 +73,7 @@ router.get('/getsanpham/:idloaisanpham', function _callee2(req, res) {
                       xuat: sp1.xuat
                     });
 
-                  case 7:
+                  case 9:
                   case "end":
                     return _context.stop();
                 }

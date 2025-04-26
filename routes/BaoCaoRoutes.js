@@ -11,6 +11,7 @@ const NhomKhacHang = require('../models/NhomKhacHangModel')
 const MucThuChi = require('../models/MucThuChiModel')
 const ThuChi = require('../models/ThuChiModel')
 const HoaDon = require('../models/HoaDonModel')
+const DieuChuyen = require('../models/DieuChuyenModel')
 const moment = require('moment')
 
 router.get('/getsptest/:khoID', async (req, res) => {
@@ -24,14 +25,37 @@ router.get('/getsptest/:khoID', async (req, res) => {
     const prevDay = new Date(fromDate)
     prevDay.setDate(prevDay.getDate() - 1)
 
+    const dieuchuyen = await DieuChuyen.find({
+      depot: khoId,
+      date: { $gte: from, $lte: end }
+    })
+
+    console.log(dieuchuyen)
+
     const depot = await DePot.findById(khoId)
+    const sanPhamDieuChuyen = []
+    for (const dc of dieuchuyen) {
+      for (const spId of dc.sanpham) {
+        sanPhamDieuChuyen.push(spId)
+      }
+    }
+
+    const allSanPhamIds = [
+      ...depot.sanpham.map(sp => sp._id.toString()),
+      ...sanPhamDieuChuyen.map(id => id.toString())
+    ]
+
+    const uniqueSanPhamIds = [...new Set(allSanPhamIds)]
+
     const sanphamtest = await Promise.all(
-      depot.sanpham.map(async sanpham => {
-        const sanpham1 = await SanPham.findById(sanpham._id)
+      uniqueSanPhamIds.map(async spId => {
+        const sanpham1 = await SanPham.findById(spId)
         const dungluongsku = await DungLuongSku.findById(sanpham1.dungluongsku)
         const sku = await Sku.findById(dungluongsku.sku)
 
         const sanphamjson = {
+          _id: sanpham1._id,
+          masp: sanpham1.masp,
           madungluongsku: dungluongsku.madungluong,
           name: sanpham1.name,
           datenhap: sanpham1.datenhap,
@@ -118,13 +142,13 @@ router.get('/getsptest/:khoID', async (req, res) => {
 
         if (dungluong.datenhap.length > 0) {
           dungluong.soluongsp = dungluong.datenhap.length
-          dungluong.nhaptrongky.soluong = dungluong.datenhap.filter(date => {
-            return (
-              new Date(date).setHours(0, 0, 0, 0) >=
-                from.setHours(0, 0, 0, 0) &&
-              new Date(date).setHours(0, 0, 0, 0) <= end.setHours(0, 0, 0, 0)
-            )
-          }).length
+          // dungluong.nhaptrongky.soluong = dungluong.datenhap.filter(date => {
+          //   return (
+          //     new Date(date).setHours(0, 0, 0, 0) >=
+          //       from.setHours(0, 0, 0, 0) &&
+          //     new Date(date).setHours(0, 0, 0, 0) <= end.setHours(0, 0, 0, 0)
+          //   )
+          // }).length
           let productsOnPrevDay = []
 
           skuItem.sanpham.forEach(product => {
@@ -146,6 +170,8 @@ router.get('/getsptest/:khoID', async (req, res) => {
               const prevDayDate = new Date(prevDay).setHours(0, 0, 0, 0)
 
               if (productDate >= fromdate && productDate <= enddate) {
+
+                dungluong.nhaptrongky.soluong++
                 dungluong.nhaptrongky.price += product.price
               }
               if (productDate === prevDayDate) {
@@ -155,7 +181,14 @@ router.get('/getsptest/:khoID', async (req, res) => {
                 }
               }
               if (productdatexuat >= fromdate && productdatexuat <= enddate) {
-                if (product.xuat === true) {
+                const isDieuChuyen = dieuchuyen.some(dc =>
+                  dc.sanpham.some(
+                    spId => spId.toString() === product._id.toString()
+                  )
+                )
+
+                if (product.xuat === true || isDieuChuyen) {
+                  console.log(product)
                   dungluong.xuattrongky.soluong++
                   dungluong.xuattrongky.price += product.price
                 }
