@@ -691,6 +691,8 @@ router.post('/searchsanpham/:khoid', async (req, res) => {
       }
     }
     query.kho = khoid
+    query.xuat = false
+
     const products = await SanPham.find(query)
     const product = await Promise.all(
       products.map(async product => {

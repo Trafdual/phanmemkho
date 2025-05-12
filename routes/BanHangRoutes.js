@@ -229,8 +229,16 @@ router.get('/getspbanhang/:iduser', async (req, res) => {
 
 router.post('/postchonsanpham/:idkho', async (req, res) => {
   try {
-    const { products, idnganhang, method, makh, datcoc, tienkhachtra, ghino } =
-      req.body
+    const {
+      products,
+      idnganhang,
+      method,
+      makh,
+      datcoc,
+      tienkhachtra,
+      ghino,
+      idnhanvien
+    } = req.body
     const idkho = req.params.idkho
     const depot = await Depot.findById(idkho)
 
@@ -245,7 +253,8 @@ router.post('/postchonsanpham/:idkho', async (req, res) => {
       date: momenttimezone().toDate(),
       method,
       khachhang: khachhang._id,
-      tongtien: 0
+      tongtien: 0,
+      nhanvienbanhang: idnhanvien
     })
 
     if (method === 'chuyển khoản') {

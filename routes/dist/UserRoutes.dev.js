@@ -26,6 +26,8 @@ var passport = require('passport');
 
 var NhanVien = require('../models/NhanVienModel');
 
+var mongoose = require('mongoose');
+
 firebase.initializeApp({
   credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
 });
@@ -938,5 +940,52 @@ router.post('/loginadmin', function _callee10(req, res) {
       }
     }
   }, null, null, [[0, 63]]);
+});
+router.post('/clearalldata', function _callee11(req, res) {
+  var collections, key, collection;
+  return regeneratorRuntime.async(function _callee11$(_context11) {
+    while (1) {
+      switch (_context11.prev = _context11.next) {
+        case 0:
+          _context11.prev = 0;
+          collections = mongoose.connection.collections;
+          _context11.t0 = regeneratorRuntime.keys(collections);
+
+        case 3:
+          if ((_context11.t1 = _context11.t0()).done) {
+            _context11.next = 10;
+            break;
+          }
+
+          key = _context11.t1.value;
+          collection = collections[key];
+          _context11.next = 8;
+          return regeneratorRuntime.awrap(collection.deleteMany({}));
+
+        case 8:
+          _context11.next = 3;
+          break;
+
+        case 10:
+          res.status(200).json({
+            message: 'Tất cả dữ liệu trong các collection đã được xóa.'
+          });
+          _context11.next = 17;
+          break;
+
+        case 13:
+          _context11.prev = 13;
+          _context11.t2 = _context11["catch"](0);
+          console.error('Lỗi khi xóa dữ liệu:', _context11.t2);
+          res.status(500).json({
+            error: 'Lỗi khi xóa dữ liệu'
+          });
+
+        case 17:
+        case "end":
+          return _context11.stop();
+      }
+    }
+  }, null, null, [[0, 13]]);
 });
 module.exports = router;

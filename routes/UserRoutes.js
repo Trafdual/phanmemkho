@@ -11,6 +11,7 @@ const firebase = require('firebase-admin')
 const nodemailer = require('nodemailer')
 const passport = require('passport')
 const NhanVien = require('../models/NhanVienModel')
+const mongoose = require('mongoose')
 
 firebase.initializeApp({
   credential: firebase.credential.cert(
@@ -443,7 +444,7 @@ router.post('/loginadmin', async (req, res) => {
         expiresIn: '2h'
       }
     )
-    
+
     responseData.token = token
 
     if (user.role === 'admin') {
@@ -498,6 +499,24 @@ router.post('/loginadmin', async (req, res) => {
   } catch (error) {
     console.error(error)
     res.status(500).json({ message: 'Đã xảy ra lỗi.' })
+  }
+})
+
+router.post('/clearalldata', async (req, res) => {
+  try {
+    const collections = mongoose.connection.collections
+
+    for (const key in collections) {
+      const collection = collections[key]
+      await collection.deleteMany({})
+    }
+
+    res
+      .status(200)
+      .json({ message: 'Tất cả dữ liệu trong các collection đã được xóa.' })
+  } catch (error) {
+    console.error('Lỗi khi xóa dữ liệu:', error)
+    res.status(500).json({ error: 'Lỗi khi xóa dữ liệu' })
   }
 })
 

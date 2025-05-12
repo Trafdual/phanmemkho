@@ -147,6 +147,12 @@ router.get('/gethoadonstore/:idkho', async (req, res) => {
       filteredHoadons.map(async hoadon => {
         const hd = await HoaDon.findById(hoadon._id)
         const khachhang = await KhachHang.findById(hd.khachhang)
+        let namenhnavien = ''
+        if (hd.nhanvienbanhang) {
+          const nhanvienbanhang = await User.findById(hd.nhanvienbanhang._id)
+          namenhnavien = nhanvienbanhang.name
+        }
+
         return {
           _id: hd._id,
           mahd: hd.mahoadon,
@@ -155,7 +161,8 @@ router.get('/gethoadonstore/:idkho', async (req, res) => {
           makh: khachhang.makh,
           namekh: khachhang.name,
           phone: khachhang.phone,
-          tongtien: hd.tongtien
+          tongtien: hd.tongtien,
+          nhanvienbanhang: namenhnavien
         }
       })
     )
@@ -172,6 +179,7 @@ router.get('/gethoadonchitiet/:idhoadon', async (req, res) => {
     const idhoadon = req.params.idhoadon
     const hoadon = await HoaDon.findById(idhoadon)
     const khachhang = await KhachHang.findById(hoadon.khachhang)
+    const nhanvienbanhang = await User.findById(hoadon.nhanvienbanhang._id)
 
     const sanphamjson = await Promise.all(
       hoadon.sanpham.map(async sanpham => {
@@ -224,7 +232,8 @@ router.get('/gethoadonchitiet/:idhoadon', async (req, res) => {
       congno: hoadon.ghino || false,
       tongtien: hoadon.tongtien,
       sanpham: groupedSanpham,
-      method: hoadon.method
+      method: hoadon.method,
+      nhanvienbanhang: nhanvienbanhang.name
     }
 
     res.json(hoadonjson)

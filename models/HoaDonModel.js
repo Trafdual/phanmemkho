@@ -19,7 +19,8 @@ const hoadonSchema = new mongoose.Schema({
   tienkhachtra: { type: Number },
   tientralaikhach: { type: Number },
   ghino: { type: Boolean, default: false },
-  congno: { type: mongoose.Schema.Types.ObjectId, ref: 'congno' }
+  congno: { type: mongoose.Schema.Types.ObjectId, ref: 'congno' },
+  nhanvienbanhang: { type: mongoose.Schema.Types.ObjectId, ref: 'user' }
 })
 
 const HoaDon = mongoose.model('hoadon', hoadonSchema)

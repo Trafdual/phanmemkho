@@ -1946,12 +1946,13 @@ router.post('/searchsanpham/:khoid', function _callee25(req, res) {
           }
 
           query.kho = _khoid2;
-          _context29.next = 13;
+          query.xuat = false;
+          _context29.next = 14;
           return regeneratorRuntime.awrap(SanPham.find(query));
 
-        case 13:
+        case 14:
           products = _context29.sent;
-          _context29.next = 16;
+          _context29.next = 17;
           return regeneratorRuntime.awrap(Promise.all(products.map(function _callee24(product) {
             var loaisp;
             return regeneratorRuntime.async(function _callee24$(_context28) {
@@ -1983,26 +1984,26 @@ router.post('/searchsanpham/:khoid', function _callee25(req, res) {
             });
           })));
 
-        case 16:
+        case 17:
           product = _context29.sent;
           res.json(product);
-          _context29.next = 24;
+          _context29.next = 25;
           break;
 
-        case 20:
-          _context29.prev = 20;
+        case 21:
+          _context29.prev = 21;
           _context29.t0 = _context29["catch"](0);
           console.error(_context29.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 24:
+        case 25:
         case "end":
           return _context29.stop();
       }
     }
-  }, null, null, [[0, 20]]);
+  }, null, null, [[0, 21]]);
 });
 router.post('/putsomeproduct', function _callee27(req, res) {
   var products, updatePromises, updatedProducts;

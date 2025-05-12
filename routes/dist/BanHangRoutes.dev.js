@@ -502,14 +502,14 @@ router.get('/getspbanhang/:iduser', function _callee8(req, res) {
   }, null, null, [[0, 11]]);
 });
 router.post('/postchonsanpham/:idkho', function _callee11(req, res) {
-  var _req$body, products, idnganhang, method, makh, datcoc, tienkhachtra, ghino, idkho, depot, khachhang, nhomkhachhang, hoadon, processedDepots, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, sanpham, groupedSanpham, result, congno, hoadonjson;
+  var _req$body, products, idnganhang, method, makh, datcoc, tienkhachtra, ghino, idnhanvien, idkho, depot, khachhang, nhomkhachhang, hoadon, processedDepots, _iteratorNormalCompletion, _didIteratorError, _iteratorError, _loop, _iterator, _step, sanpham, groupedSanpham, result, congno, hoadonjson;
 
   return regeneratorRuntime.async(function _callee11$(_context14) {
     while (1) {
       switch (_context14.prev = _context14.next) {
         case 0:
           _context14.prev = 0;
-          _req$body = req.body, products = _req$body.products, idnganhang = _req$body.idnganhang, method = _req$body.method, makh = _req$body.makh, datcoc = _req$body.datcoc, tienkhachtra = _req$body.tienkhachtra, ghino = _req$body.ghino;
+          _req$body = req.body, products = _req$body.products, idnganhang = _req$body.idnganhang, method = _req$body.method, makh = _req$body.makh, datcoc = _req$body.datcoc, tienkhachtra = _req$body.tienkhachtra, ghino = _req$body.ghino, idnhanvien = _req$body.idnhanvien;
           idkho = req.params.idkho;
           _context14.next = 5;
           return regeneratorRuntime.awrap(Depot.findById(idkho));
@@ -543,7 +543,8 @@ router.post('/postchonsanpham/:idkho', function _callee11(req, res) {
             date: momenttimezone().toDate(),
             method: method,
             khachhang: khachhang._id,
-            tongtien: 0
+            tongtien: 0,
+            nhanvienbanhang: idnhanvien
           });
 
           if (method === 'chuyển khoản') {
