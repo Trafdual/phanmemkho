@@ -746,7 +746,8 @@ router.post('/updateloaisanpham4', async (req, res) => {
 
       const sanphamTrongKho = await SanPham.find({
         _id: { $in: depot.sanpham },
-        imel: { $in: imelList }
+        imel: { $in: imelList },
+        xuat: false
       })
 
       const imelTrongKhoSet = new Set(sanphamTrongKho.map(sp => sp.imel))

@@ -1673,7 +1673,8 @@ router.post('/updateloaisanpham4', function _callee15(req, res) {
             },
             imel: {
               $in: imelList
-            }
+            },
+            xuat: false
           }));
 
         case 63:
