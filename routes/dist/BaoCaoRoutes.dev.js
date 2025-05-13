@@ -900,6 +900,7 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
 
         case 11:
           hoaDons = _context4.sent;
+          console.log(hoaDons);
           hoaDonReport = hoaDons.reduce(function (acc, hoaDon) {
             var dateKey = hoaDon.date.toISOString().split('T')[0];
 
@@ -910,7 +911,7 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             acc[dateKey] += hoaDon.tongtien || 0;
             return acc;
           }, {});
-          _context4.next = 15;
+          _context4.next = 16;
           return regeneratorRuntime.awrap(SanPham.find({
             _id: {
               $in: kho.sanpham
@@ -922,7 +923,7 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             xuat: true
           }));
 
-        case 15:
+        case 16:
           sanPhams = _context4.sent;
           nhapHangReport = sanPhams.reduce(function (acc, sanPham) {
             var dateKey = sanPham.datexuat.toISOString().split('T')[0];
@@ -934,7 +935,7 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             acc[dateKey] += sanPham.price || 0;
             return acc;
           }, {});
-          _context4.next = 19;
+          _context4.next = 20;
           return regeneratorRuntime.awrap(CongNo.find({
             depot: idkho,
             date: {
@@ -943,9 +944,9 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             }
           }).populate('khachhang', 'ten'));
 
-        case 19:
+        case 20:
           congNoHoaDons = _context4.sent;
-          _context4.next = 22;
+          _context4.next = 23;
           return regeneratorRuntime.awrap(HoaDon.find({
             _id: {
               $in: kho.hoadon
@@ -957,9 +958,9 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             method: 'Tiền mặt'
           }).populate('khachhang', 'ten'));
 
-        case 22:
+        case 23:
           tienmatHoaDons = _context4.sent;
-          _context4.next = 25;
+          _context4.next = 26;
           return regeneratorRuntime.awrap(HoaDon.find({
             _id: {
               $in: kho.hoadon
@@ -968,10 +969,10 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
               $gte: from,
               $lte: end
             },
-            method: 'chuyển khoản'
+            method: 'Chuyển khoản'
           }).populate('khachhang', 'ten'));
 
-        case 25:
+        case 26:
           chuyenkhoanHoaDons = _context4.sent;
           congNoReport = congNoHoaDons.reduce(function (acc, hoaDon) {
             var dateKey = hoaDon.date.toISOString().split('T')[0];
@@ -1016,11 +1017,11 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             });
           });
           res.status(200).json(combinedReport);
-          _context4.next = 39;
+          _context4.next = 40;
           break;
 
-        case 35:
-          _context4.prev = 35;
+        case 36:
+          _context4.prev = 36;
           _context4.t0 = _context4["catch"](0);
           console.error('Lỗi khi tạo báo cáo:', _context4.t0);
           res.status(500).json({
@@ -1028,11 +1029,11 @@ router.get('/baocaobanhang/:idkho', function _callee4(req, res) {
             message: 'Lỗi máy chủ. Không thể tạo báo cáo.'
           });
 
-        case 39:
+        case 40:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[0, 35]]);
+  }, null, null, [[0, 36]]);
 });
 module.exports = router;

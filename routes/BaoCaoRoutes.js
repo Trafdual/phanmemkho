@@ -609,6 +609,7 @@ router.get('/baocaobanhang/:idkho', async (req, res) => {
         $lte: end
       }
     })
+    console.log(hoaDons)
 
     const hoaDonReport = hoaDons.reduce((acc, hoaDon) => {
       const dateKey = hoaDon.date.toISOString().split('T')[0]
@@ -662,7 +663,7 @@ router.get('/baocaobanhang/:idkho', async (req, res) => {
         $gte: from,
         $lte: end
       },
-      method: 'chuyển khoản'
+      method: 'Chuyển khoản'
     }).populate('khachhang', 'ten')
 
     const congNoReport = congNoHoaDons.reduce((acc, hoaDon) => {
