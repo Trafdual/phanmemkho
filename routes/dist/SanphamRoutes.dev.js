@@ -1579,30 +1579,31 @@ router.post('/chuyenkho2/:khoId', function _callee20(req, res) {
                     });
                     loaisp.conlai = loaisp.sanpham.length;
                     loaisp1.sanpham.push(sanpham._id);
-                    _context22.next = 17;
+                    sanpham.loaisanpham = loaisp1._id;
+                    _context22.next = 18;
                     return regeneratorRuntime.awrap(sanpham.save());
 
-                  case 17:
-                    _context22.next = 19;
+                  case 18:
+                    _context22.next = 20;
                     return regeneratorRuntime.awrap(loaisp.save());
 
-                  case 19:
-                    _context22.next = 21;
+                  case 20:
+                    _context22.next = 22;
                     return regeneratorRuntime.awrap(kho1.save());
 
-                  case 21:
-                    _context22.next = 23;
+                  case 22:
+                    _context22.next = 24;
                     return regeneratorRuntime.awrap(_kho.save());
 
-                  case 23:
-                    _context22.next = 25;
+                  case 24:
+                    _context22.next = 26;
                     return regeneratorRuntime.awrap(dieuchuyen.save());
 
-                  case 25:
-                    _context22.next = 27;
+                  case 26:
+                    _context22.next = 28;
                     return regeneratorRuntime.awrap(loaisp1.save());
 
-                  case 27:
+                  case 28:
                   case "end":
                     return _context22.stop();
                 }
