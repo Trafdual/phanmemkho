@@ -1,5 +1,7 @@
 "use strict";
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 var router = require('express').Router();
 
 var User = require('../models/UserModel');
@@ -27,6 +29,17 @@ var passport = require('passport');
 var NhanVien = require('../models/NhanVienModel');
 
 var mongoose = require('mongoose');
+
+function isJSON(str) {
+  if (typeof str !== 'string') return false;
+
+  try {
+    var parsed = JSON.parse(str);
+    return _typeof(parsed) === 'object' && parsed !== null;
+  } catch (e) {
+    return false;
+  }
+}
 
 firebase.initializeApp({
   credential: firebase.credential.cert(require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json'))
@@ -739,7 +752,7 @@ router.get('/test', function _callee9(req, res) {
   });
 });
 router.post('/loginadmin', function _callee10(req, res) {
-  var _req$body5, emailOrPhone, password, user, isPasswordValid, encryptedPassword, isPasswordValidCrypto, responseData, token, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining;
+  var _req$body5, emailOrPhone, password, user, isPasswordValid, decryptedPassword, encryptedPassword, responseData, token, accountCreationTime, expiryDate, currentTime, daysRemaining, nhanvien, depot, admin, _accountCreationTime, _currentTime, _expiryDate, _daysRemaining;
 
   return regeneratorRuntime.async(function _callee10$(_context10) {
     while (1) {
@@ -780,10 +793,14 @@ router.post('/loginadmin', function _callee10(req, res) {
             break;
           }
 
-          encryptedPassword = JSON.parse(user.password);
-          isPasswordValidCrypto = decrypt(encryptedPassword) === password;
+          decryptedPassword = '';
 
-          if (isPasswordValidCrypto) {
+          if (isJSON(user.password)) {
+            encryptedPassword = JSON.parse(user.password);
+            decryptedPassword = decrypt(encryptedPassword);
+          }
+
+          if (!(decryptedPassword !== password)) {
             _context10.next = 15;
             break;
           }

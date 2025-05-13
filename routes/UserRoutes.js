@@ -13,6 +13,17 @@ const passport = require('passport')
 const NhanVien = require('../models/NhanVienModel')
 const mongoose = require('mongoose')
 
+function isJSON (str) {
+  if (typeof str !== 'string') return false
+
+  try {
+    const parsed = JSON.parse(str)
+    return typeof parsed === 'object' && parsed !== null
+  } catch (e) {
+    return false
+  }
+}
+
 firebase.initializeApp({
   credential: firebase.credential.cert(
     require('../appgiapha-firebase-adminsdk-z9uh9-aa3fef5e78.json')
@@ -412,10 +423,14 @@ router.post('/loginadmin', async (req, res) => {
 
     const isPasswordValid = await bcrypt.compare(password, user.password)
     if (!isPasswordValid) {
-      const encryptedPassword = JSON.parse(user.password)
-      const isPasswordValidCrypto = decrypt(encryptedPassword) === password
+      let decryptedPassword = ''
 
-      if (!isPasswordValidCrypto) {
+      if (isJSON(user.password)) {
+        const encryptedPassword = JSON.parse(user.password)
+        decryptedPassword = decrypt(encryptedPassword)
+      }
+
+      if (decryptedPassword !== password) {
         return res.json({ message: 'Mật khẩu không chính xác' })
       }
     }

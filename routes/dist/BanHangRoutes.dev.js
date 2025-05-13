@@ -152,10 +152,19 @@ router.get('/banhang/:idsku/:idkho/:userid', function _callee3(req, res) {
 
                             case 5:
                               loaisanpham = _context.sent;
+
+                              if (!(!loaisanpham || loaisanpham.status !== 1)) {
+                                _context.next = 8;
+                                break;
+                              }
+
+                              return _context.abrupt("return", null);
+
+                            case 8:
                               loaihanghoa = loaisanpham.loaihanghoa;
 
                               if (!(sp1.xuat === false)) {
-                                _context.next = 9;
+                                _context.next = 11;
                                 break;
                               }
 
@@ -168,10 +177,10 @@ router.get('/banhang/:idsku/:idkho/:userid', function _callee3(req, res) {
                                 kho: sp1.kho.toString()
                               });
 
-                            case 9:
+                            case 11:
                               return _context.abrupt("return", null);
 
-                            case 10:
+                            case 12:
                             case "end":
                               return _context.stop();
                           }

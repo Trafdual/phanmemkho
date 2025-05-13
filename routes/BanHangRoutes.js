@@ -60,6 +60,8 @@ router.get('/banhang/:idsku/:idkho/:userid', async (req, res) => {
           dl.sanpham.map(async sp => {
             const sp1 = await SanPham.findById(sp._id)
             const loaisanpham = await LoaiSanPham.findById(sp1.loaisanpham)
+            if (!loaisanpham || loaisanpham.status !== 1) return null
+
             loaihanghoa = loaisanpham.loaihanghoa
 
             if (sp1.xuat === false) {
