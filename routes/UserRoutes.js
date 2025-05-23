@@ -10,6 +10,7 @@ const moment = require('moment')
 const firebase = require('firebase-admin')
 const nodemailer = require('nodemailer')
 const passport = require('passport')
+const axios = require('axios')
 const NhanVien = require('../models/NhanVienModel')
 const mongoose = require('mongoose')
 
@@ -278,6 +279,8 @@ router.post('/register', async (req, res) => {
       message: 'thành công'
     }
 
+    await axios.post(`/sendemail/${user._id}`)
+
     res.json(responseData)
   } catch (error) {
     console.error(error)
@@ -442,7 +445,6 @@ router.post('/loginadmin', async (req, res) => {
           {
             _id: user._id,
             name: user.name,
-            password: user.password,
             role: user.role,
             isVerified: user.isVerified,
             date: moment(user.date).format('DD/MM/YYYY HH:mm:ss'),
@@ -463,6 +465,13 @@ router.post('/loginadmin', async (req, res) => {
     responseData.token = token
 
     if (user.role === 'admin') {
+      req.session.user = {
+        _id: user._id,
+        name: user.name,
+        role: user.role
+      }
+      console.log('After login, session user:', req.session.user)
+
       return res.json(responseData)
     } else if (user.role === 'manager') {
       const accountCreationTime = moment(user.date)
@@ -479,6 +488,15 @@ router.post('/loginadmin', async (req, res) => {
         })
       }
 
+      if (user.duyet === false) {
+        return res.json({ message: 'Tài khoản của bạn đang chờ xét duyệt' })
+      }
+      req.session.user = {
+        _id: user._id,
+        name: user.name,
+        role: user.role
+      }
+      console.log('After login, session user:', req.session.user)
       return res.json(responseData)
     } else {
       const nhanvien = await NhanVien.findOne({ user: user._id })
@@ -508,6 +526,12 @@ router.post('/loginadmin', async (req, res) => {
         return res.json({ message: 'Bạn không có quyền truy cập trang web' })
       }
       responseData.data.user[0].quyen = nhanvien.quyen
+      req.session.user = {
+        _id: user._id,
+        name: user.name,
+        role: user.role
+      }
+      console.log('After login, session user:', req.session.user)
 
       return res.json(responseData)
     }

@@ -16,7 +16,6 @@ router.get('/getuser/:iduser', async (req, res) => {
     const limit = parseInt(req.query.limit) || 10
     const skip = (page - 1) * limit
 
-
     const users = await User.find({
       _id: {
         $ne: iduser
@@ -43,6 +42,7 @@ router.get('/getuser/:iduser', async (req, res) => {
         }
       })
     )
+    console.log(userjson)
     const totalEmployees = await User.countDocuments({
       role: 'manager',
       _id: { $ne: iduser }
@@ -56,7 +56,7 @@ router.get('/getuser/:iduser', async (req, res) => {
       data: userjson
     })
   } catch (error) {
-    console.log(error)
+    console.error(error)
     res.status(500).json({ message: 'Internal Server Error' })
   }
 })

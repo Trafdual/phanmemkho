@@ -26,6 +26,8 @@ var nodemailer = require('nodemailer');
 
 var passport = require('passport');
 
+var axios = require('axios');
+
 var NhanVien = require('../models/NhanVienModel');
 
 var mongoose = require('mongoose');
@@ -458,24 +460,28 @@ router.post('/register', function _callee4(req, res) {
             },
             message: 'thành công'
           };
+          _context4.next = 28;
+          return regeneratorRuntime.awrap(axios.post("/sendemail/".concat(user._id)));
+
+        case 28:
           res.json(responseData);
-          _context4.next = 33;
+          _context4.next = 35;
           break;
 
-        case 29:
-          _context4.prev = 29;
+        case 31:
+          _context4.prev = 31;
           _context4.t0 = _context4["catch"](0);
           console.error(_context4.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 33:
+        case 35:
         case "end":
           return _context4.stop();
       }
     }
-  }, null, null, [[0, 29]]);
+  }, null, null, [[0, 31]]);
 });
 router.post('/sendemail/:id', function _callee5(req, res) {
   var id, user, otpCreatedAt, otp, transporter, mailOptions;
@@ -816,7 +822,6 @@ router.post('/loginadmin', function _callee10(req, res) {
               user: [{
                 _id: user._id,
                 name: user.name,
-                password: user.password,
                 role: user.role,
                 isVerified: user.isVerified,
                 date: moment(user.date).format('DD/MM/YYYY HH:mm:ss'),
@@ -834,15 +839,21 @@ router.post('/loginadmin', function _callee10(req, res) {
           responseData.token = token;
 
           if (!(user.role === 'admin')) {
-            _context10.next = 22;
+            _context10.next = 24;
             break;
           }
 
+          req.session.user = {
+            _id: user._id,
+            name: user.name,
+            role: user.role
+          };
+          console.log('After login, session user:', req.session.user);
           return _context10.abrupt("return", res.json(responseData));
 
-        case 22:
+        case 24:
           if (!(user.role === 'manager')) {
-            _context10.next = 36;
+            _context10.next = 42;
             break;
           }
 
@@ -852,17 +863,17 @@ router.post('/loginadmin', function _callee10(req, res) {
           daysRemaining = expiryDate.diff(currentTime, 'days');
 
           if (!(daysRemaining <= 15 && daysRemaining > 0)) {
-            _context10.next = 31;
+            _context10.next = 33;
             break;
           }
 
           responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
-          _context10.next = 33;
+          _context10.next = 35;
           break;
 
-        case 31:
+        case 33:
           if (!(daysRemaining <= 0)) {
-            _context10.next = 33;
+            _context10.next = 35;
             break;
           }
 
@@ -870,26 +881,42 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
           }));
 
-        case 33:
+        case 35:
+          if (!(user.duyet === false)) {
+            _context10.next = 37;
+            break;
+          }
+
+          return _context10.abrupt("return", res.json({
+            message: 'Tài khoản của bạn đang chờ xét duyệt'
+          }));
+
+        case 37:
+          req.session.user = {
+            _id: user._id,
+            name: user.name,
+            role: user.role
+          };
+          console.log('After login, session user:', req.session.user);
           return _context10.abrupt("return", res.json(responseData));
 
-        case 36:
-          _context10.next = 38;
+        case 42:
+          _context10.next = 44;
           return regeneratorRuntime.awrap(NhanVien.findOne({
             user: user._id
           }));
 
-        case 38:
+        case 44:
           nhanvien = _context10.sent;
-          _context10.next = 41;
+          _context10.next = 47;
           return regeneratorRuntime.awrap(Depot.findById(nhanvien.depot));
 
-        case 41:
+        case 47:
           depot = _context10.sent;
-          _context10.next = 44;
+          _context10.next = 50;
           return regeneratorRuntime.awrap(User.findById(depot.user[0]._id));
 
-        case 44:
+        case 50:
           admin = _context10.sent;
           _accountCreationTime = moment(admin.date);
           _currentTime = moment();
@@ -897,17 +924,17 @@ router.post('/loginadmin', function _callee10(req, res) {
           _daysRemaining = _expiryDate.diff(_currentTime, 'days');
 
           if (!(_daysRemaining <= 15 && _daysRemaining > 0)) {
-            _context10.next = 53;
+            _context10.next = 59;
             break;
           }
 
           responseData.data.user[0].warning = "T\xE0i kho\u1EA3n c\u1EE7a b\u1EA1n s\u1EBD h\u1EBFt h\u1EA1n sau ".concat(_daysRemaining, " ng\xE0y. Vui l\xF2ng gia h\u1EA1n s\u1EDBm.");
-          _context10.next = 55;
+          _context10.next = 61;
           break;
 
-        case 53:
+        case 59:
           if (!(_daysRemaining <= 0)) {
-            _context10.next = 55;
+            _context10.next = 61;
             break;
           }
 
@@ -915,9 +942,9 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã hết hạn. Vui lòng liên hệ quản trị viên.'
           }));
 
-        case 55:
+        case 61:
           if (!(nhanvien.khoa === true)) {
-            _context10.next = 57;
+            _context10.next = 63;
             break;
           }
 
@@ -925,9 +952,9 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Tài khoản của bạn đã bị khóa'
           }));
 
-        case 57:
+        case 63:
           if (!(nhanvien.quyen.length === 0)) {
-            _context10.next = 59;
+            _context10.next = 65;
             break;
           }
 
@@ -935,28 +962,34 @@ router.post('/loginadmin', function _callee10(req, res) {
             message: 'Bạn không có quyền truy cập trang web'
           }));
 
-        case 59:
+        case 65:
           responseData.data.user[0].quyen = nhanvien.quyen;
+          req.session.user = {
+            _id: user._id,
+            name: user.name,
+            role: user.role
+          };
+          console.log('After login, session user:', req.session.user);
           return _context10.abrupt("return", res.json(responseData));
 
-        case 61:
-          _context10.next = 67;
+        case 69:
+          _context10.next = 75;
           break;
 
-        case 63:
-          _context10.prev = 63;
+        case 71:
+          _context10.prev = 71;
           _context10.t0 = _context10["catch"](0);
           console.error(_context10.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 67:
+        case 75:
         case "end":
           return _context10.stop();
       }
     }
-  }, null, null, [[0, 63]]);
+  }, null, null, [[0, 71]]);
 });
 router.post('/clearalldata', function _callee11(req, res) {
   var collections, key, collection;

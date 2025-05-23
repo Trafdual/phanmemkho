@@ -74,6 +74,14 @@ var userSchema = new mongoose.Schema({
   },
   message: {
     type: String
+  },
+  khoadulieu: {
+    type: Boolean,
+    "default": false
+  },
+  duyet: {
+    type: Boolean,
+    "default": false
   }
 });
 var User = mongoose.model('user', userSchema);

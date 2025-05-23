@@ -26,7 +26,9 @@ const userSchema = new mongoose.Schema({
   ],
   nhanvien: [{ type: mongoose.Schema.Types.ObjectId, ref: 'nhanvien' }],
   khoa: { type: Boolean, default: false },
-  message: { type: String }
+  message: { type: String },
+  khoadulieu: { type: Boolean, default: false },
+  duyet: { type: Boolean, default: false }
 })
 
 const User = mongoose.model('user', userSchema)

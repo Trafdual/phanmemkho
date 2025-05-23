@@ -68,7 +68,8 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
 
         case 11:
           userjson = _context2.sent;
-          _context2.next = 14;
+          console.log(userjson);
+          _context2.next = 15;
           return regeneratorRuntime.awrap(User.countDocuments({
             role: 'manager',
             _id: {
@@ -76,7 +77,7 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
             }
           }));
 
-        case 14:
+        case 15:
           totalEmployees = _context2.sent;
           res.json({
             page: page,
@@ -85,23 +86,23 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
             totalPages: Math.ceil(totalEmployees / limit),
             data: userjson
           });
-          _context2.next = 22;
+          _context2.next = 23;
           break;
 
-        case 18:
-          _context2.prev = 18;
+        case 19:
+          _context2.prev = 19;
           _context2.t0 = _context2["catch"](0);
-          console.log(_context2.t0);
+          console.error(_context2.t0);
           res.status(500).json({
             message: 'Internal Server Error'
           });
 
-        case 22:
+        case 23:
         case "end":
           return _context2.stop();
       }
     }
-  }, null, null, [[0, 18]]);
+  }, null, null, [[0, 19]]);
 });
 router.post('/registeradmin', function _callee3(req, res) {
   var _req$body, name, email, password, phone, birthday, role, vietnamTime, exitphone, existingemail, hashedPassword, user;

@@ -1127,9 +1127,28 @@ router.get('/getsanphamchon/:idkho/:idsku', function _callee13(req, res) {
 
                   case 2:
                     sp1 = _context15.sent;
+                    console.log(sp._id);
 
+                    if (sp1) {
+                      _context15.next = 7;
+                      break;
+                    }
+
+                    console.warn("Kh\xF4ng t\xECm th\u1EA5y s\u1EA3n ph\u1EA9m v\u1EDBi ID: ".concat(sp._id));
+                    return _context15.abrupt("return", null);
+
+                  case 7:
+                    if (sp1.dungluongsku) {
+                      _context15.next = 10;
+                      break;
+                    }
+
+                    console.warn("S\u1EA3n ph\u1EA9m ".concat(sp1._id, " c\xF3 dungluongsku null"));
+                    return _context15.abrupt("return", null);
+
+                  case 10:
                     if (!(sp1.dungluongsku.toString() === idsku.toString() && sp1.xuat === false)) {
-                      _context15.next = 5;
+                      _context15.next = 12;
                       break;
                     }
 
@@ -1138,10 +1157,10 @@ router.get('/getsanphamchon/:idkho/:idsku', function _callee13(req, res) {
                       imel: sp1.imel
                     });
 
-                  case 5:
+                  case 12:
                     return _context15.abrupt("return", null);
 
-                  case 6:
+                  case 13:
                   case "end":
                     return _context15.stop();
                 }
@@ -1152,24 +1171,25 @@ router.get('/getsanphamchon/:idkho/:idsku', function _callee13(req, res) {
         case 8:
           sanphamjson = _context16.sent;
           filteredSanpham = sanphamjson.filter(Boolean);
+          console.log(filteredSanpham);
           res.json(filteredSanpham);
-          _context16.next = 17;
+          _context16.next = 18;
           break;
 
-        case 13:
-          _context16.prev = 13;
+        case 14:
+          _context16.prev = 14;
           _context16.t0 = _context16["catch"](0);
           console.error(_context16.t0);
           res.status(500).json({
             message: 'Đã xảy ra lỗi.'
           });
 
-        case 17:
+        case 18:
         case "end":
           return _context16.stop();
       }
     }
-  }, null, null, [[0, 13]]);
+  }, null, null, [[0, 14]]);
 });
 router.post('/postyeucaudc/:idkho', function _callee14(req, res) {
   var idkho, _req$body2, idsku, soluong, idkhochuyen, lido, khonhan, khochuyen, dungluongsku, sku, tensanpham, lenhdc, malenhdc;

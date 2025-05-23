@@ -39,6 +39,7 @@ const apiadminRoutes = require('./routes/ApiAdminRoutes')
 const menuitemroutes = require('./routes/MenuItemRoutes')
 const useradminroutes = require('./routes/admin/UserAdminRoutes')
 const theloaitrogiuproutes = require('./routes/admin/TheLoaiTroGiupRoutes')
+const { checkKhoaDuLieu } = require('./checkKhoaDuLIEU/checkkhoa')
 const { router } = require('./routes/sendEvent')
 require('./routes/passport')
 require('./routes/passportface')
@@ -62,6 +63,12 @@ const mongoStoreOptions = {
   mongoUrl: uri,
   collection: 'sessions'
 }
+const originalLog = console.log
+
+console.log = (...args) => {
+  const stack = new Error().stack.split('\n')[2].trim() // Lấy dòng gọi console.log
+  originalLog(`[LOG from ${stack}]`, ...args)
+}
 
 app.use(cookieParser())
 app.use(bodyParser.json())
@@ -84,31 +91,36 @@ app.use(
 )
 app.use(express.static(path.join(__dirname, '/style')))
 
-app.use(
-  session({
-    secret: 'mysecretkey',
-    resave: false,
-    saveUninitialized: true,
-    store: MongoStore.create(mongoStoreOptions),
-    cookie: {
-      secure: false
-    }
-  })
-)
-
-app.use(passport.initialize())
-app.use(passport.session())
+const allowedOrigins = ['http://localhost:3006', 'https://baotech.vn']
+const allowedIPs = ['::1', '171.241.24.194']
 
 app.use(
   cors({
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Not allowed by CORS'))
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true
   })
 )
 
-const allowedOrigins = ['http://localhost:3006', 'https://baotech.vn']
-const allowedIPs = ['::1', '171.241.24.194']
+app.use(
+  session({
+    secret: 'adscascd8saa8sdv87ds78v6dsv87asvdasv8',
+    resave: false,
+    saveUninitialized: true,
+    store: MongoStore.create(mongoStoreOptions)
+    // ,cookie: { secure: true }
+  })
+)
+
+app.use(passport.initialize())
+app.use(passport.session())
 
 const normalizeIP = ip => {
   if (ip?.startsWith('::ffff:')) {

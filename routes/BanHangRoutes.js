@@ -428,6 +428,18 @@ router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
     const sanphamjson = await Promise.all(
       kho.sanpham.map(async sp => {
         const sp1 = await SanPham.findById(sp._id)
+        console.log(sp._id)
+
+        if (!sp1) {
+          console.warn(`Không tìm thấy sản phẩm với ID: ${sp._id}`)
+          return null
+        }
+
+        if (!sp1.dungluongsku) {
+          console.warn(`Sản phẩm ${sp1._id} có dungluongsku null`)
+          return null
+        }
+
         if (
           sp1.dungluongsku.toString() === idsku.toString() &&
           sp1.xuat === false
@@ -437,10 +449,14 @@ router.get('/getsanphamchon/:idkho/:idsku', async (req, res) => {
             imel: sp1.imel
           }
         }
+
         return null
       })
     )
+
     const filteredSanpham = sanphamjson.filter(Boolean)
+    console.log(filteredSanpham)
+
     res.json(filteredSanpham)
   } catch (error) {
     console.error(error)
