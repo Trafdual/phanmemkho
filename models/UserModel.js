@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema({
   khoa: { type: Boolean, default: false },
   message: { type: String },
   khoadulieu: { type: Boolean, default: false },
-  duyet: { type: Boolean, default: false }
+  duyet: { type: Boolean, default: true }
 })
 
 const User = mongoose.model('user', userSchema)

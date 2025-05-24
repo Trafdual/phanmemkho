@@ -256,7 +256,8 @@ router.post('/register', async (req, res) => {
       phone,
       date: vietnamTime,
       isVerified: false,
-      birthday
+      birthday,
+      duyet: false
     })
 
     await user.save()
@@ -279,7 +280,7 @@ router.post('/register', async (req, res) => {
       message: 'thành công'
     }
 
-    await axios.post(`/sendemail/${user._id}`)
+    await axios.post(`http://localhost:3015/sendemail/${user._id}`)
 
     res.json(responseData)
   } catch (error) {
@@ -309,10 +310,35 @@ router.post('/sendemail/:id', async (req, res) => {
       }
     })
     const mailOptions = {
-      from: 'trafdual0810@gmail.com',
+      from: '"BaoTech" <trafdual0810@gmail.com>',
       to: user.email,
-      subject: 'Mã OTP của bạn',
-      text: `Mã OTP của bạn là: ${user.otp}`
+      subject: '🔐 Xác thực tài khoản – Mã OTP của bạn',
+      html: `
+        <div style="background: #f5f8fa; padding: 40px 20px; font-family: 'Segoe UI', Roboto, sans-serif;">
+          <div style="max-width: 600px; background: #fff; margin: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="background-color: #1a73e8; padding: 20px; text-align: center;">
+              <img src="http://localhost:3015/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
+              <h1 style="color: #ffffff; margin: 10px 0 0; font-size: 24px;">Mã xác thực OTP</h1>
+            </div>
+            <div style="padding: 30px;">
+              <p style="font-size: 16px; color: #333;">Xin chào <strong>${user.name}</strong>,</p>
+              <p style="font-size: 16px; color: #333;">Cảm ơn bạn đã đăng ký tài khoản tại <strong>BaoTech</strong>.</p>
+              <p style="font-size: 16px; margin-bottom: 10px;">Dưới đây là mã OTP của bạn:</p>
+              <div style="font-size: 36px; font-weight: bold; color: #1a73e8; text-align: center; letter-spacing: 2px; margin: 20px 0;">
+                ${user.otp}
+              </div>
+              <p style="font-size: 14px; color: #555;">Mã OTP có hiệu lực trong vòng <strong>5 phút</strong>. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="#" style="display: inline-block; background: #1a73e8; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 16px;">Xác minh ngay</a>
+              </div>
+              <p style="font-size: 12px; color: #aaa; text-align: center;">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+            </div>
+            <div style="background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+              Email này được gửi từ hệ thống tự động của <strong>BaoTech</strong>. Vui lòng không trả lời.
+            </div>
+          </div>
+        </div>
+      `
     }
 
     await transporter.sendMail(mailOptions)
@@ -320,6 +346,100 @@ router.post('/sendemail/:id', async (req, res) => {
   } catch (error) {
     console.error('Error verifying OTP:', error)
     res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' })
+  }
+})
+
+router.post('/resendemail/:email', async (req, res) => {
+  try {
+    const email = req.params.email
+    const user = await User.findOne({ email })
+    const otpCreatedAt = new Date()
+    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+
+    if (!user) {
+      return res.status(400).json({ message: 'Người dùng không tồn tại.' })
+    }
+    user.otp = otp
+    user.otpCreatedAt = otpCreatedAt
+    await user.save()
+    let transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: 'trafdual0810@gmail.com',
+        pass: 'pjrg xxdq cyfs zosf'
+      }
+    })
+    const mailOptions = {
+      from: '"BaoTech" <trafdual0810@gmail.com>',
+      to: user.email,
+      subject: '🔐 Xác thực tài khoản – Mã OTP của bạn',
+      html: `
+        <div style="background: #f5f8fa; padding: 40px 20px; font-family: 'Segoe UI', Roboto, sans-serif;">
+          <div style="max-width: 600px; background: #fff; margin: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
+            <div style="background-color: #1a73e8; padding: 20px; text-align: center;">
+              <img src="http://localhost:3015/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
+              <h1 style="color: #ffffff; margin: 10px 0 0; font-size: 24px;">Mã xác thực OTP</h1>
+            </div>
+            <div style="padding: 30px;">
+              <p style="font-size: 16px; color: #333;">Xin chào <strong>${user.name}</strong>,</p>
+              <p style="font-size: 16px; color: #333;">Cảm ơn bạn đã đăng ký tài khoản tại <strong>BaoTech</strong>.</p>
+              <p style="font-size: 16px; margin-bottom: 10px;">Dưới đây là mã OTP của bạn:</p>
+              <div style="font-size: 36px; font-weight: bold; color: #1a73e8; text-align: center; letter-spacing: 2px; margin: 20px 0;">
+                ${user.otp}
+              </div>
+              <p style="font-size: 14px; color: #555;">Mã OTP có hiệu lực trong vòng <strong>5 phút</strong>. Vui lòng không chia sẻ mã này với bất kỳ ai.</p>
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="#" style="display: inline-block; background: #1a73e8; color: #fff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-size: 16px;">Xác minh ngay</a>
+              </div>
+              <p style="font-size: 12px; color: #aaa; text-align: center;">Nếu bạn không thực hiện yêu cầu này, vui lòng bỏ qua email này.</p>
+            </div>
+            <div style="background: #f0f0f0; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+              Email này được gửi từ hệ thống tự động của <strong>BaoTech</strong>. Vui lòng không trả lời.
+            </div>
+          </div>
+        </div>
+      `
+    }
+
+    await transporter.sendMail(mailOptions)
+    res.json({ message: 'gửi thành công' })
+  } catch (error) {
+    console.error('Error verifying OTP:', error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh mã OTP.' })
+  }
+})
+
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body
+
+    const user = await User.findOne({ email })
+
+    if (!user) {
+      return res.status(400).json({ error: 'Người dùng không tồn tại.' })
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ error: 'Mã OTP không chính xác.' })
+    }
+
+    const now = new Date()
+    const otpExpiration = new Date(user.otpCreatedAt)
+    otpExpiration.setMinutes(otpExpiration.getMinutes() + 5)
+
+    if (now > otpExpiration) {
+      return res.status(400).json({ error: 'Mã OTP đã hết hạn.' })
+    }
+
+    user.isVerified = true
+    user.otp = null
+    user.otpCreatedAt = null
+    await user.save()
+
+    return res.json({ message: 'Xác minh OTP thành công.' })
+  } catch (error) {
+    console.error('Lỗi khi xác minh OTP:', error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi khi xác minh OTP.' })
   }
 })
 
@@ -556,6 +676,21 @@ router.post('/clearalldata', async (req, res) => {
   } catch (error) {
     console.error('Lỗi khi xóa dữ liệu:', error)
     res.status(500).json({ error: 'Lỗi khi xóa dữ liệu' })
+  }
+})
+
+router.post('/duyetuser', async (req, res) => {
+  try {
+    const { ids } = req.body
+    for (const id of ids) {
+      const user = await User.findById(id)
+      user.duyet = true
+      await user.save()
+    }
+    res.json({ message: 'Duyệt thành công' })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ message: 'Đã xảy ra lỗi.' })
   }
 })
 

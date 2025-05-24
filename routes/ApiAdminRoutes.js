@@ -38,7 +38,8 @@ router.get('/getuser/:iduser', async (req, res) => {
           phone: u.phone,
           birthday: u.birthday,
           ngaydangky: u.date,
-          role: u.role
+          role: u.role,
+          duyet: u.duyet
         }
       })
     )

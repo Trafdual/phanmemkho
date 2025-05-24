@@ -81,7 +81,7 @@ var userSchema = new mongoose.Schema({
   },
   duyet: {
     type: Boolean,
-    "default": false
+    "default": true
   }
 });
 var User = mongoose.model('user', userSchema);

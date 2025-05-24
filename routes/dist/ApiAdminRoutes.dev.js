@@ -55,7 +55,8 @@ router.get('/getuser/:iduser', function _callee2(req, res) {
                       phone: u.phone,
                       birthday: u.birthday,
                       ngaydangky: u.date,
-                      role: u.role
+                      role: u.role,
+                      duyet: u.duyet
                     });
 
                   case 1:

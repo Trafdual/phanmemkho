@@ -12,6 +12,8 @@ const passport = require('passport')
 const JavaScriptObfuscator = require('javascript-obfuscator')
 const puppeteer = require('puppeteer')
 const fs = require('fs')
+const cron = require('node-cron')
+const User = require('./models/UserModel')
 const userRoutes = require('./routes/UserRoutes')
 
 const depotroutes = require('./routes/DepotRoutes')
@@ -252,6 +254,19 @@ app.use((req, res, next) => {
 //   createSitemap(links, 'sitemap.xml')
 //   console.log('Sitemap created')
 // })
+
+cron.schedule('0 * * * *', async () => {
+  const expiredDate = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const usersToRemove = await User.find({
+    isVerified: false,
+    otpCreatedAt: { $lt: expiredDate }
+  })
+
+  for (const user of usersToRemove) {
+    await User.deleteOne({ _id: user._id })
+    console.log(`Đã xóa user ${user.email} vì không xác minh OTP trong 24h.`)
+  }
+})
 
 app.listen(port, () => {
   try {
