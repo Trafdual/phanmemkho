@@ -14,6 +14,7 @@ const puppeteer = require('puppeteer')
 const fs = require('fs')
 const cron = require('node-cron')
 const User = require('./models/UserModel')
+const { verifyHMAC } = require('./checkKhoaDuLIEU/hmac')
 const userRoutes = require('./routes/UserRoutes')
 
 const depotroutes = require('./routes/DepotRoutes')
@@ -106,7 +107,12 @@ app.use(
       }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Signature',
+      'X-Timestamp'
+    ],
     credentials: true
   })
 )
@@ -169,7 +175,7 @@ app.use('/', nhomkhachang)
 app.use('/', router)
 app.use('/', tranoroutes)
 app.use('/', trangchuroutes)
-app.use('/', apiadminRoutes)
+app.use('/', verifyHMAC, apiadminRoutes)
 app.use('/', menuitemroutes)
 app.use('/admin', theloaitrogiuproutes)
 app.use('/admin', useradminroutes)

@@ -316,8 +316,8 @@ router.post('/sendemail/:id', async (req, res) => {
       html: `
         <div style="background: #f5f8fa; padding: 40px 20px; font-family: 'Segoe UI', Roboto, sans-serif;">
           <div style="max-width: 600px; background: #fff; margin: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
-            <div style="background-color: #1a73e8; padding: 20px; text-align: center;">
-              <img src="http://localhost:3015/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
+            <div style="background-color: #67a8fd; padding: 20px; text-align: center;">
+              <img src="https://baotech.shop/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
               <h1 style="color: #ffffff; margin: 10px 0 0; font-size: 24px;">Mã xác thực OTP</h1>
             </div>
             <div style="padding: 30px;">
@@ -376,8 +376,8 @@ router.post('/resendemail/:email', async (req, res) => {
       html: `
         <div style="background: #f5f8fa; padding: 40px 20px; font-family: 'Segoe UI', Roboto, sans-serif;">
           <div style="max-width: 600px; background: #fff; margin: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow: hidden;">
-            <div style="background-color: #1a73e8; padding: 20px; text-align: center;">
-              <img src="http://localhost:3015/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
+            <div style="background-color: #67a8fd; padding: 20px; text-align: center;">
+              <img src="https://baotech.shop/LOGO.png" alt="BaoTech Logo" style="height: 50px;" />
               <h1 style="color: #ffffff; margin: 10px 0 0; font-size: 24px;">Mã xác thực OTP</h1>
             </div>
             <div style="padding: 30px;">
